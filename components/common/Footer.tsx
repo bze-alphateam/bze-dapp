@@ -115,29 +115,6 @@ function Dependency({ name, desc, link }: Project) {
 export function Footer() {
   return (
     <>
-      <Box
-        display="grid"
-        gridTemplateColumns={{
-          tablet: "repeat(2, 1fr)",
-          desktop: "repeat(3, 1fr)",
-        }}
-        mb="$16"
-        gap="$12"
-      >
-        {products.map((product) => (
-          <Product key={product.name} {...product}></Product>
-        ))}
-      </Box>
-      <Box
-        display="grid"
-        gridTemplateColumns={{ tablet: "repeat(3, 1fr)" }}
-        gap="$12"
-        mb="$19"
-      >
-        {dependencies.map((dependency) => (
-          <Dependency key={dependency.name} {...dependency}></Dependency>
-        ))}
-      </Box>
       <Box mb="$6">
         <Divider />
       </Box>
@@ -153,6 +130,10 @@ export function Footer() {
         <Text>Built with</Text>
         <Link href="https://cosmology.zone/" target="_blank">
           Cosmology
+        </Link>
+        <Text>by BZE Alpha Team. Powered by </Text>
+        <Link href="https://getbze.com" target="_blank">
+          BeeZee blockchain and BZE coin.
         </Link>
       </Stack>
     </>
