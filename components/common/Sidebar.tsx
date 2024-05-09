@@ -10,7 +10,19 @@ import {
   Divider,
   Icon,
 } from "@interchain-ui/react";
-import { BurnerIcon, ChainParamsIcon, ExternalLinkIcon, FactoryIcon, RewardsIcon, TradeIcon } from "./Icons";
+import { SidebarIcon } from "./Icons";
+
+function SidebarItem({ icon, text }: {icon: string, text: string}) {
+  const textColor = useColorModeValue("black", "white");
+
+  return (
+    <Box p={"$6"} m={"$2"}>
+      <Text>
+        {SidebarIcon({ type: icon, color: textColor })} {text}
+      </Text>
+    </Box>
+  );
+}
 
 export function Sidebar() {
   return (
@@ -46,25 +58,13 @@ export function Sidebar() {
       }}
       // textColor={useColorModeValue(PRIMARY_TEXT_LIGHT, PRIMARY_TEXT_DARK)}
     >
-      <Box p={"$6"} m={"$2"}>  
-        <TradeIcon width={15} height={15}/> Trade
-      </Box>
-      <Box p={"$6"} m={"$2"}>  
-        <FactoryIcon width={15} height={15}/> Token Factory
-      </Box>
-      <Box p={"$6"} m={"$2"}>  
-        <RewardsIcon width={15} height={15}/> Earn
-      </Box>
-      <Box p={"$6"} m={"$2"}>  
-        <BurnerIcon width={15} height={15}/> Burner
-      </Box>
-      <Box p={"$6"} m={"$2"}>  
-        <ChainParamsIcon width={15} height={15}/> Chain Params
-      </Box>
+      <SidebarItem icon="trade" text="Trade" />
+      <SidebarItem icon="factory" text="Token Factory" />
+      <SidebarItem icon="rewards" text="Earn" />
+      <SidebarItem icon="burner" text="Burner" />
+      <SidebarItem icon="chain-params" text="Chain Params" />
       <Divider m={"$6"} width={"$auto"}/>
-      <Box p={"$6"} mt={"$16"}>  
-        <ExternalLinkIcon width={15} height={15}/> BZE website
-      </Box>
+      <SidebarItem icon="external-link" text="BZE website" />
     </Box>
   );
 }

@@ -7,13 +7,8 @@ import {
   useColorModeValue,
   useTheme,
 } from "@interchain-ui/react";
-import { dependencies } from "@/config";
 import { Wallet } from "../wallet";
 import Image from "next/image";
-
-const stacks = ["CosmosKit", "Next.js"];
-
-const osmojs = dependencies[0];
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -25,7 +20,7 @@ export function Header() {
   return (
     <>
       <Box display="flex" mb="$8" flexDirection={"row"}>
-        <Image src={useColorModeValue("/beezee_dark.svg", "/beezee_light.svg")} alt="beezee blockchain" width={178} height={40}/>
+        <Image src={useColorModeValue("/beezee_dark.svg", "/beezee_light.svg")} alt="beezee blockchain" width={178} height={40} priority={true}/>
         <Box display="flex" justifyContent="end" gap={5} flex={1}>
           <Wallet />
           <Box marginX={"$6"}>
