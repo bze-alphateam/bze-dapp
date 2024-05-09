@@ -16,7 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Divider mb="$6" />
       <Box display={'flex'} flexDirection={"row"} flex={1}>
         <Sidebar/>
-        <Box flex={1} m={'$6'} p={'$2'}>
+        <Box flex={1} m={'$6'} p={'$2'} flexDirection={"row"} attributes={{ overflowY: 'auto', height: 'calc(100vh - 150px)'}}>
           {children}
         </Box>
       </Box>

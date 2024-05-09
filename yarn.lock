@@ -44,7 +44,7 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
-"@babel/runtime@^7.23.2":
+"@babel/runtime@^7.19.0", "@babel/runtime@^7.19.4", "@babel/runtime@^7.23.2":
   version "7.24.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.5.tgz#230946857c053a36ccc66e1dd03b17dd0c4ed02c"
   integrity sha512-Nms86NXrsaeU9vbBJKni6gXiEXZ4CVpYVzEjDH9Sb8vmZ3UljyA1GSOJl/6LGPO8EHLuSF9H+IxNXHPX8QHJ4g==
@@ -59,6 +59,19 @@
     "@babel/helper-string-parser" "^7.23.4"
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
+
+"@bze/bzejs@^0.7.12":
+  version "0.7.12"
+  resolved "https://registry.yarnpkg.com/@bze/bzejs/-/bzejs-0.7.12.tgz#f0dd2edfd65297c294236cea67c6769a0b612b11"
+  integrity sha512-8obg83msIW7raEZO7KDwlCH/pgRwUK9nfiOQMfC+t3K2rUJ5ycKPjMlLa45zgu+B6AjAC6EJSelSaR9nXZNA0A==
+  dependencies:
+    "@babel/runtime" "^7.19.4"
+    "@cosmjs/amino" "0.32.2"
+    "@cosmjs/proto-signing" "0.32.2"
+    "@cosmjs/stargate" "0.32.2"
+    "@cosmjs/tendermint-rpc" "^0.32.2"
+    "@osmonauts/lcd" "^0.10.0"
+    protobufjs "^6.11.2"
 
 "@chain-registry/client@^1.18.0":
   version "1.21.13"
@@ -140,6 +153,16 @@
   dependencies:
     "@noble/hashes" "^1.0.0"
     protobufjs "^6.8.8"
+
+"@cosmjs/amino@0.32.2":
+  version "0.32.2"
+  resolved "https://registry.yarnpkg.com/@cosmjs/amino/-/amino-0.32.2.tgz#ba3cf255e4e6b1ba67461f1ef7b0b8ad3f895da7"
+  integrity sha512-lcK5RCVm4OfdAooxKcF2+NwaDVVpghOq6o/A40c2mHXDUzUoRZ33VAHjVJ9Me6vOFxshrw/XEFn1f4KObntjYA==
+  dependencies:
+    "@cosmjs/crypto" "^0.32.2"
+    "@cosmjs/encoding" "^0.32.2"
+    "@cosmjs/math" "^0.32.2"
+    "@cosmjs/utils" "^0.32.2"
 
 "@cosmjs/amino@^0.31.0", "@cosmjs/amino@^0.31.1", "@cosmjs/amino@^0.31.3":
   version "0.31.3"
@@ -343,6 +366,22 @@
     protobufjs "~6.11.3"
     xstream "^11.14.0"
 
+"@cosmjs/stargate@0.32.2":
+  version "0.32.2"
+  resolved "https://registry.yarnpkg.com/@cosmjs/stargate/-/stargate-0.32.2.tgz#73718c5c6a3ae138682ee9987333d911eca22a13"
+  integrity sha512-AsJa29fT7Jd4xt9Ai+HMqhyj7UQu7fyYKdXj/8+/9PD74xe6lZSYhQPcitUmMLJ1ckKPgXSk5Dd2LbsQT0IhZg==
+  dependencies:
+    "@confio/ics23" "^0.6.8"
+    "@cosmjs/amino" "^0.32.2"
+    "@cosmjs/encoding" "^0.32.2"
+    "@cosmjs/math" "^0.32.2"
+    "@cosmjs/proto-signing" "^0.32.2"
+    "@cosmjs/stream" "^0.32.2"
+    "@cosmjs/tendermint-rpc" "^0.32.2"
+    "@cosmjs/utils" "^0.32.2"
+    cosmjs-types "^0.9.0"
+    xstream "^11.14.0"
+
 "@cosmjs/stargate@^0.31.1":
   version "0.31.3"
   resolved "https://registry.npmjs.org/@cosmjs/stargate/-/stargate-0.31.3.tgz#a2b38e398097a00f897dbd8f02d4d347d8fed818"
@@ -384,7 +423,7 @@
   dependencies:
     xstream "^11.14.0"
 
-"@cosmjs/stream@^0.32.3":
+"@cosmjs/stream@^0.32.2", "@cosmjs/stream@^0.32.3":
   version "0.32.3"
   resolved "https://registry.npmjs.org/@cosmjs/stream/-/stream-0.32.3.tgz#7522579aaf18025d322c2f33d6fb7573220395d6"
   integrity sha512-J2zVWDojkynYifAUcRmVczzmp6STEpyiAARq0rSsviqjreGIfspfuws/8rmkPa6qQBZvpQOBQCm2HyZZwYplIw==
@@ -407,7 +446,7 @@
     readonly-date "^1.0.0"
     xstream "^11.14.0"
 
-"@cosmjs/tendermint-rpc@^0.32.3":
+"@cosmjs/tendermint-rpc@^0.32.2", "@cosmjs/tendermint-rpc@^0.32.3":
   version "0.32.3"
   resolved "https://registry.npmjs.org/@cosmjs/tendermint-rpc/-/tendermint-rpc-0.32.3.tgz#f0406b9f0233e588fb924dca8c614972f9038aff"
   integrity sha512-xeprW+VR9xKGstqZg0H/KBZoUp8/FfFyS9ljIUTLM/UINjP2MhiwncANPS2KScfJVepGufUKk0/phHUeIBSEkw==
@@ -1721,6 +1760,14 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@osmonauts/lcd@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@osmonauts/lcd/-/lcd-0.10.0.tgz#c982942dc13d7f6ab2a7873b289c7907e2169b14"
+  integrity sha512-PzmXk9x9MHyLn2fUztpAqWqvDmMiEJaQv/JcAoAOE8VdHrD9Hf/KWnE1RZtamuS2ngQRqvQPD0xotCGXW7eTxA==
+  dependencies:
+    "@babel/runtime" "^7.19.0"
+    axios "0.27.2"
 
 "@parcel/watcher-android-arm64@2.4.1":
   version "2.4.1"
@@ -3670,20 +3717,20 @@ axe-core@=4.7.0:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.7.0.tgz#34ba5a48a8b564f67e103f0aa5768d76e15bbbbf"
   integrity sha512-M0JtH+hlOL5pLQwHOLNYZaXuhqmvS8oExsqB1SBYgA4Dk7u/xx+YdGHXaK5pyUfed5mYXdlYiphWq3G8cRi5JQ==
 
-axios@^0.21.2:
-  version "0.21.4"
-  resolved "https://registry.npmjs.org/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
-  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
-  dependencies:
-    follow-redirects "^1.14.0"
-
-axios@^0.27.2:
+axios@0.27.2, axios@^0.27.2:
   version "0.27.2"
   resolved "https://registry.npmjs.org/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
   integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
   dependencies:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
+
+axios@^0.21.2:
+  version "0.21.4"
+  resolved "https://registry.npmjs.org/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+  dependencies:
+    follow-redirects "^1.14.0"
 
 axios@^1.6.0:
   version "1.6.8"
