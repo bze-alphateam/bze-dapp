@@ -1,7 +1,8 @@
 import Head from "next/head";
-import { Container } from "@interchain-ui/react";
+import { Container, Divider, Box } from "@interchain-ui/react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { Sidebar } from "./Sidebar";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +13,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="icon" href="/logo_320px.png" />
       </Head>
       <Header />
-      {children}
+      <Divider mb="$6" />
+      <Box display={'flex'} flexDirection={"row"} flex={1}>
+        <Sidebar/>
+        <Box flex={1} m={'$6'} p={'$2'}>
+          {children}
+        </Box>
+      </Box>
       <Footer />
     </Container>
   );

@@ -35,8 +35,9 @@ export function Sidebar() {
       display="flex"
       flexDirection={"column"} 
       gap={"$6"} 
-      flex={1}
+      // flex={1}
       mb={"$6"}
+      maxWidth={'$auto'}
       attributes={{
         width: '200px',
         padding: '$2',
