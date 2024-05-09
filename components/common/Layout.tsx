@@ -5,7 +5,7 @@ import { Footer } from "./Footer";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <Container attributes={{ py: "$6" }}>
+    <Container attributes={{ py: "$6", height: "100vh", display: "flex", flexDirection: "column"}}>
       <Head>
         <title>BZE DApp</title>
         <meta name="description" content="BeeZee blockchain decentralized application" />

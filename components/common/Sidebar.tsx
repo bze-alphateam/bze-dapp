@@ -10,17 +10,22 @@ import {
   Divider,
   Icon,
 } from "@interchain-ui/react";
+import { useRouter } from 'next/router';
 import { SidebarIcon } from "./Icons";
 
-function SidebarItem({ icon, text }: {icon: string, text: string}) {
+function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text: string, path: string, target?: string}) {
+  const router = useRouter();
   const textColor = useColorModeValue("black", "white");
+  const isActive = router.pathname === path;
 
   return (
-    <Box p={"$6"} m={"$2"}>
-      <Text>
-        {SidebarIcon({ type: icon, color: textColor })} {text}
-      </Text>
-    </Box>
+    <Link href={path} underline={!isActive} background={isActive} attributes={{marginX: '$4', marginTop: '$2'}} target={target}>
+      <Box p={"$2"}>
+        <Text fontSize={'$md'}>
+          {SidebarIcon({ type: icon, color: textColor })} {text}
+        </Text>
+      </Box>
+    </Link>
   );
 }
 
@@ -32,18 +37,9 @@ export function Sidebar() {
       gap={"$6"} 
       flex={1}
       mb={"$6"}
-      // width={200}
-      // alignItems={"center"}
-      // borderColor={useColorModeValue('$blackAlpha200', '$whiteAlpha100')}
-      // borderWidth={0.5}
-      // borderRadius={1}
-      // padding={5}
-      // fontSize={16}
-      // height={"full"}
       attributes={{
         width: '200px',
-        padding: '$1',
-        justifyContent: 'center',
+        padding: '$2',
         borderWidth: '1px',
         borderStyle: 'solid',
         borderColor: useColorModeValue('$blackAlpha200', '$whiteAlpha100'),
@@ -58,13 +54,17 @@ export function Sidebar() {
       }}
       // textColor={useColorModeValue(PRIMARY_TEXT_LIGHT, PRIMARY_TEXT_DARK)}
     >
-      <SidebarItem icon="trade" text="Trade" />
-      <SidebarItem icon="factory" text="Token Factory" />
-      <SidebarItem icon="rewards" text="Earn" />
-      <SidebarItem icon="burner" text="Burner" />
-      <SidebarItem icon="chain-params" text="Chain Params" />
-      <Divider m={"$6"} width={"$auto"}/>
-      <SidebarItem icon="external-link" text="BZE website" />
+      <SidebarItem icon="trade" text="Trade" path="/"/>
+      <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
+      <SidebarItem icon="rewards" text="Earn" path="/earn"/>
+      <SidebarItem icon="burner" text="Burner" path="/burner"/>
+      <SidebarItem icon="chain-params" text="Chain Params" path="/chain-params"/>
+      <Box marginTop="$auto">
+        <Divider m="$2" width="$auto"/>
+        <Box p={'$6'}>
+          <SidebarItem icon="external-link" text="BZE website" path="https://getbze.com" target="_blank"/>
+        </Box>
+      </Box>
     </Box>
   );
 }
