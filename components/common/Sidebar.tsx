@@ -1,16 +1,11 @@
 import {
   Box,
-  Button,
-  Center,
-  Container,
-  Link,
   Text,
   useColorModeValue,
-  useTheme,
   Divider,
-  Icon,
 } from "@interchain-ui/react";
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
 import { SidebarIcon } from "./Icons";
 
 function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text: string, path: string, target?: string}) {
@@ -19,13 +14,15 @@ function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text
   const isActive = router.pathname === path;
 
   return (
-    <Link href={path} underline={!isActive} background={isActive} attributes={{marginX: '$4', marginTop: '$2'}} target={target}>
-      <Box p={"$2"}>
-        <Text fontSize={'$md'}>
+    <NextLink href={path} 
+    style={{ textDecoration: 'none' }}
+    target={target}>
+      <Box p={"$4"} backgroundColor={isActive ? '$divider' : 'transparent'} mx="$4" mt="$6" borderRadius='$xl'>
+        <Text fontSize={'$lg'}>
           {SidebarIcon({ type: icon, color: textColor })} {text}
         </Text>
       </Box>
-    </Link>
+    </NextLink>
   );
 }
 
@@ -45,19 +42,11 @@ export function Sidebar() {
         borderStyle: 'solid',
         borderColor: useColorModeValue('$blackAlpha200', '$whiteAlpha100'),
         borderRadius: '$xl',
-        // boxShadow: {
-        //   base: 'none',
-        //   hover: useColorModeValue(
-        //     '0 2px 5px #ccc',
-        //     '0 1px 3px #727272, 0 2px 12px -2px #2f2f2f'
-        //   ),
-        // },
       }}
-      // textColor={useColorModeValue(PRIMARY_TEXT_LIGHT, PRIMARY_TEXT_DARK)}
     >
       <SidebarItem icon="trade" text="Trade" path="/"/>
-      <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
       <SidebarItem icon="rewards" text="Earn" path="/earn"/>
+      <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
       <SidebarItem icon="burner" text="Burner" path="/burner"/>
       <SidebarItem icon="chain-params" text="Chain Params" path="/chain-params"/>
       <Box marginTop="$auto">
