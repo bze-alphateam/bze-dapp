@@ -30,7 +30,7 @@ export function minutesUntil(date: Date): number {
 
   // Check if the future date is in the past
   if (futureDate < now) {
-    throw new Error('The specified date is in the past.');
+    return 0;
   }
 
   const millisecondsPerMinute = 1000 * 60; // Number of milliseconds in a minute

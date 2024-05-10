@@ -24,10 +24,27 @@ const FAILOVER_DATA = {
   ]
 }
 
-const BURNER = 'burner';
+export const BURNER = 'burner';
 const BURNED_KEY = 'burner:all_burned_coins';
 const PROPOSAL_TYPE_BURNING = '/bze.burner.v1.BurnCoinsProposal';
 const LOCAL_CACHE_TTL = 1000 * 60 * 60 * 4; //4 hours
+
+let cacheExpireAt: number = 0;
+
+async function resetBurnedCoinsCache(until: Date): Promise<void> {
+  let localData = localStorage.getItem(BURNED_KEY);
+    if (null === localData) {
+        return;
+    }
+
+    let parsed = JSON.parse(localData);
+    if (parsed && parsed.expiresAt !== until) {
+      parsed.expiresAt = until.getTime();
+      cacheExpireAt = parsed.expiresAt
+      localStorage.setItem(BURNED_KEY, JSON.stringify(parsed));
+    }
+}
+
 
 export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSDKType> {
   try {
@@ -35,12 +52,13 @@ export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSD
     if (null !== localData) {
         let parsed = JSON.parse(localData);
         if (parsed) {
-            if (parsed.expiresAt > new Date().getTime()) {
-                
-                return new Promise<QueryAllBurnedCoinsResponseSDKType> ((resolve) => {
-                    resolve({...parsed.params});
-                })
-            }
+          cacheExpireAt = parsed.expiresAt;
+          if (parsed.expiresAt > new Date().getTime()) {
+              
+              return new Promise<QueryAllBurnedCoinsResponseSDKType> ((resolve) => {
+                  resolve({...parsed.params});
+              })
+          }
         }
     }
 
@@ -50,6 +68,7 @@ export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSD
         params: {...response},
         expiresAt: new Date().getTime() + LOCAL_CACHE_TTL,
     }
+    cacheExpireAt = cacheData.expiresAt;
     localStorage.setItem(BURNED_KEY, JSON.stringify(cacheData));
 
     return new Promise<QueryAllBurnedCoinsResponseSDKType> ((resolve) => {
@@ -70,6 +89,14 @@ export async function getNextBurning(): Promise<NextBurning|undefined> {
   const filtered = proposals.proposals.filter((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
   if (filtered.length === 0 || filtered[0].voting_end_time === undefined) {
     return undefined;
+  }
+
+  //check the date
+  let checkDate = new Date(filtered[0].voting_end_time);
+  //if we have a proposal that will burn coins, set the TTL for all burned coins listing response at voting time end.
+  //this way the cache is available until that moment and we are sure it will reset right after the voting period ended
+  if (checkDate.getTime() !== cacheExpireAt) {
+    resetBurnedCoinsCache(checkDate);
   }
 
   let address = await getModuleAddress(BURNER);

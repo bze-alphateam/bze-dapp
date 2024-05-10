@@ -1,4 +1,5 @@
 import { getRestClient } from "../Client";
+import { BURNER } from "./Burner";
 
 const MODULE_ADDRESS_KEY = 'auth:module:address:';
 const BALANCES_CACHE_TTL = 1000 * 60 * 60 * 48; //48 hours
@@ -13,7 +14,7 @@ function getHardcodedBurnerAddress(): string {
 
 export async function getModuleAddress(module: string): Promise<string> {
   //save some requests
-  if (module === 'burner') {
+  if (module === BURNER) {
     return getHardcodedBurnerAddress();
   }
 

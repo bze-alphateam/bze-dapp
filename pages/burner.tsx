@@ -42,7 +42,7 @@ function BurnCard({burned}: {burned: BurnedCoinsSDKType}) {
           <Text fontSize={'$md'} color='$primary100'> {date}</Text>
         </Box>
         <Box p='$6'>
-          <Text fontWeight={'$thin'} fontSize={'$xs'} color='$primary50'> At height {height}</Text>
+          <Text fontWeight={'$thin'} fontSize={'$sm'} color='$primary100'> At height {height}</Text>
         </Box>
       </Box>
     </DefaultBorderedBox>
@@ -112,10 +112,10 @@ function NextBurning() {
     setAmount(`${prettyAmount(uAmountToAmount(next.amount, 6))} ${toPrettyDenom(next.denom)} 🔥`);
     setDate(prettyDateTime(burnDate));
     let until = hoursUntil(burnDate);
-    setWhen(`In ${until} hours`);
+    setWhen(`In ${until} hours if vote passes.`);
     if (until <= 2) {
       until = minutesUntil(burnDate);
-      setWhen(`In ${until} minutes`);
+      setWhen(`In ${until} minutes if vote passes.`);
     }
   }
 
@@ -128,13 +128,13 @@ function NextBurning() {
       <DefaultBorderedBox p='$6' m='$6' maxWidth={'20vw'} flex='1'>
       <Box display={'flex'} flexDirection={'column'} alignItems='center'>
         <Box p='$6'>
-          <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>{amount}</Text>
+          <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>{amount}</Text>
         </Box>
         <Box p='$6' fontWeight={'$bold'}>
-          <Text fontSize={'$md'} color='$primary100'> {date}</Text>
+          <Text fontSize={'$md'} color='$primary200'> {date}</Text>
         </Box>
         <Box p='$6'>
-          <Text fontWeight={'$thin'} fontSize={'$xs'} color='$primary50'>{when}</Text>
+          <Text fontWeight={'$thin'} fontSize={'$sm'} color='$primary200'>{when}</Text>
         </Box>
       </Box>
     </DefaultBorderedBox>
