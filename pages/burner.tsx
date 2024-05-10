@@ -19,7 +19,7 @@ function BurnCard({burned}: {burned: BurnedCoinsSDKType}) {
       return;
     }
 
-    setDate(prettyDate(blockTime));
+    setDate(prettyDate(new Date(blockTime)));
   }
 
   useEffect(() => {
@@ -107,7 +107,6 @@ function NextBurning() {
       return;
     }
     let burnDate = new Date(next.time);
-
 
     setAmount(`${prettyAmount(uAmountToAmount(next.amount, 6))} ${toPrettyDenom(next.denom)} 🔥`);
     setDate(prettyDateTime(burnDate));
