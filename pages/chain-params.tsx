@@ -1,5 +1,5 @@
 import { Divider, Box, Text, useColorModeValue } from "@interchain-ui/react";
-import { Layout } from "@/components";
+import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState } from "react";
 import { getRewardsParams, getTokenFactoryParams, getTradebinParams } from "@/services";
 import { parseCoins } from "@cosmjs/stargate";
@@ -7,13 +7,13 @@ import { prettyAmount, uAmountToAmount } from "@/utils";
 
 function prettyFee(fee: string): string {
   let parsed = parseCoins(fee);
-    if (parsed.length === 0) {
-      return 'Not found';
-    } else {
-      let coin = parsed[0];
-      let prettyCoin = prettyAmount(uAmountToAmount(coin.amount, 6));
-      return `${prettyCoin} BZE`;
-    }
+  if (parsed.length === 0) {
+    return 'Not found';
+  } else {
+    let coin = parsed[0];
+    let prettyCoin = prettyAmount(uAmountToAmount(coin.amount, 6));
+    return `${prettyCoin} BZE`;
+  }
 }
 
 function prettyDestination(dest: string) {
@@ -30,15 +30,7 @@ function prettyDestination(dest: string) {
 
 function ChainParamItem({ children, name, value }: { children: React.ReactNode, name: string, value: string }) {
   return (
-      <Box
-        mr='$6'
-        attributes={{
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          borderColor: useColorModeValue('$blackAlpha200', '$whiteAlpha100'),
-          borderRadius: '$xl',
-        }}
-      >
+      <DefaultBorderedBox mr='$6'>
         <Box display={'flex'} flexDirection={'column'} alignItems='center'>
           <Box p='$6'>
             <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>{name}</Text>
@@ -51,14 +43,14 @@ function ChainParamItem({ children, name, value }: { children: React.ReactNode, 
         <Box m='$6' textAlign='center'>
           {children}
         </Box>
-      </Box>
+      </DefaultBorderedBox>
   );
 }
 
 function ChainModuleParams({ children, title }: { children: React.ReactNode, title: string}) {
   return (
     <Box p='$6'>
-      <Box m='$6'>
+      <Box mb='$6'>
         <Text as="h2" fontSize={'$xl'}>{title}</Text>
       </Box>
       <Box display='flex' >
@@ -181,8 +173,8 @@ function RewardsModuleParams() {
 export default function ChainParams() {
   return (
     <Layout>
-      <Box display={'block'} flexDirection={'column'} overflow={"scroll"}>
-        <Box marginBottom={'$6'}>
+      <Box display={'block'} flexDirection={'column'}>
+        <Box marginBottom={'$12'} ml='$6'>
           <Text as="h1" fontSize={'$2xl'}>Blockchain Params</Text>
         </Box>
         <TradebinModuleParams />

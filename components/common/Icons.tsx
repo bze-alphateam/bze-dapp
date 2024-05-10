@@ -1,4 +1,3 @@
-import { useColorModeValue } from "@interchain-ui/react";
 
 export const SidebarIcon = ({ type, color }: {type: string, color: string}) => {
   switch (type) {
