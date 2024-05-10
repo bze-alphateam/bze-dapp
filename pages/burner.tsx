@@ -75,7 +75,14 @@ function BurnHistory() {
 
   const fetchBurnings = async () => {
     const list = await getAllBurnedCoins();
-    setBurnings(list.burnedCoins);
+    const sorted = list.burnedCoins.sort((a, b) => {
+      let parsedA = parseInt(a.height);
+      let parsedB = parseInt(b.height);
+
+      return parsedB - parsedA;
+    });
+    
+    setBurnings(sorted);
     setLoading(false);
   }
 
