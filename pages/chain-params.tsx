@@ -53,7 +53,7 @@ function ChainModuleParams({ children, title }: { children: React.ReactNode, tit
       <Box mb='$6'>
         <Text as="h2" fontSize={'$xl'}>{title}</Text>
       </Box>
-      <Box display='flex' >
+      <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}}>
         {children}
       </Box>
     </Box>
