@@ -5,26 +5,16 @@ import type { AppProps } from "next/app";
 import { SignerOptions } from "cosmos-kit";
 import { wallets as keplrWallets } from '@cosmos-kit/keplr';
 import { ChainProvider } from "@cosmos-kit/react";
-import { assets, chains } from "chain-registry";
 import {
   Box,
   ThemeProvider,
   useColorModeValue,
   useTheme,
 } from "@interchain-ui/react";
-import { useEffect, useState } from "react";
-import { getChain } from "@/utils";
+import { ASSETS, CHAINS } from "@/config";
 
 function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const { themeClass } = useTheme();
-  const [modifiedChains, setModifiedChains] = useState([]);
-  const [modifiedAssets, setModifiedAssets] = useState([]);
-
-  useEffect(() => {
-    let ch = getChain();
-    setModifiedChains([ch.chain]);
-    setModifiedAssets([ch.assets]);
-  }, []);
 
   const signerOptions: SignerOptions = {
     // signingStargate: () => {
@@ -35,8 +25,8 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <ChainProvider
-        chains={chains}
-        assetLists={assets}
+        chains={CHAINS}
+        assetLists={ASSETS}
         wallets={[...keplrWallets]}
         walletConnectOptions={{
           signClient: {

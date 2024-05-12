@@ -10,7 +10,7 @@ export function isTestnet(): boolean {
 }
 
 export function isMainnet(): boolean {
-  return process.env.NEXT_PUBLIC_CHAIN_ID !== MAINNET_CHAIN_ID;
+  return process.env.NEXT_PUBLIC_CHAIN_ID === MAINNET_CHAIN_ID;
 }
 
 export function getCurrentChainId(): string {

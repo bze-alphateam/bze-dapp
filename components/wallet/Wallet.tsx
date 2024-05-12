@@ -1,15 +1,10 @@
 import {
   Box,
   ClipboardCopyText,
-  Stack,
-  useColorModeValue,
 } from "@interchain-ui/react";
 import { WalletStatus } from "cosmos-kit";
 import { useChain } from "@cosmos-kit/react";
-import { getChainLogo } from "@/utils";
 import { CHAIN_NAME } from "@/config";
-import { User } from "./User";
-import { Chain } from "./Chain";
 import { Warning } from "./Warning";
 import {
   ButtonConnect,
@@ -31,7 +26,7 @@ export function Wallet() {
     message,
     connect,
     openView,
-  } = useChain(CHAIN_NAME);
+  } = useChain(process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME);
 
   const ConnectButton = {
     [WalletStatus.Connected]: <ButtonConnected onClick={openView} text={username}/>,

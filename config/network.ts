@@ -7,8 +7,8 @@ const BZE_PREFIX_TESTNET = "testbz";
 
 const BZE_TESTNET_2_SUGGEST_CHAIN = {
   chain_id: "bzetestnet-2",
-  chain_name: "BZE Testnet 2",
-  pretty_name: 'BZE Testnet 2',
+  chain_name: "BeeZee Testnet",
+  pretty_name: 'BeeZee Testnet',
   network_type: 'mainnet',
   bech32_prefix: BZE_PREFIX_TESTNET,
   status: "live",
@@ -81,7 +81,7 @@ const BZE_TESTNET_2_SUGGEST_CHAIN = {
   }
 };
 
-const networks = {
+export const networks = {
   mainnet: {
     base: {
       explorerBaseUrl: 'https://ping.pub/beezee',
@@ -184,6 +184,16 @@ const networks = {
     ]
   }
 }
+
+export const CHAINS = [
+  ...chains,
+  BZE_TESTNET_2_SUGGEST_CHAIN,
+];
+
+export const ASSETS = [
+  ...assets,
+  ...networks.testnet.assets,
+];
 
 export function getNetwork(chainId: string) {
   if (chainId === 'bzetestnet-2') {
