@@ -2,7 +2,8 @@ import "../styles/globals.css";
 import "@interchain-ui/react/styles";
 
 import type { AppProps } from "next/app";
-import { SignerOptions, wallets } from "cosmos-kit";
+import { SignerOptions } from "cosmos-kit";
+import { wallets as keplrWallets } from '@cosmos-kit/keplr';
 import { ChainProvider } from "@cosmos-kit/react";
 import { assets, chains } from "chain-registry";
 import {
@@ -11,9 +12,19 @@ import {
   useColorModeValue,
   useTheme,
 } from "@interchain-ui/react";
+import { useEffect, useState } from "react";
+import { getChain } from "@/utils";
 
 function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const { themeClass } = useTheme();
+  const [modifiedChains, setModifiedChains] = useState([]);
+  const [modifiedAssets, setModifiedAssets] = useState([]);
+
+  useEffect(() => {
+    let ch = getChain();
+    setModifiedChains([ch.chain]);
+    setModifiedAssets([ch.assets]);
+  }, []);
 
   const signerOptions: SignerOptions = {
     // signingStargate: () => {
@@ -26,7 +37,7 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
       <ChainProvider
         chains={chains}
         assetLists={assets}
-        wallets={wallets}
+        wallets={[...keplrWallets]}
         walletConnectOptions={{
           signClient: {
             projectId: "a8510432ebb71e6948cfd6cde54b70f7",

@@ -1,3 +1,4 @@
+import { MAINNET_CHAIN_ID } from "./Network";
 
 export const TESTNET_UDENOM = 'utbz';
 export const TESTNET_DENOM = 'TBZE';
@@ -19,7 +20,7 @@ export function toPrettyDenom(udenom: string): string {
 }
 
 export function getCurrentuDenom(): string {
-  if (process.env.NEXT_PUBLIC_CHAIN_ID === 'beezee-1') {
+  if (process.env.NEXT_PUBLIC_CHAIN_ID === MAINNET_CHAIN_ID) {
       return MAINNET_UDENOM;
   }
 
