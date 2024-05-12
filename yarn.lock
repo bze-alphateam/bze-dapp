@@ -1385,10 +1385,10 @@
   dependencies:
     browser-headers "^0.4.1"
 
-"@interchain-ui/react@^1.21.16":
-  version "1.22.11"
-  resolved "https://registry.npmjs.org/@interchain-ui/react/-/react-1.22.11.tgz#4c4d64edf8ebff400774cf6f4e8375a99994130a"
-  integrity sha512-oZrp4+AEWG8JC55+WGL6KU8pO6NNbifyYp4eOMzThIrilyi54ghZ8kbt4A2SgJgC3wlSBnmxo+EzV/5QEc11Fw==
+"@interchain-ui/react@^1.23.11":
+  version "1.23.11"
+  resolved "https://registry.yarnpkg.com/@interchain-ui/react/-/react-1.23.11.tgz#ab56b9b5efbac577f0728a9d19148d1173fe05fc"
+  integrity sha512-FHXm13aYTVxRJKO6ayyj9P4Z24qcb7+o/i00vv1fXcNNJSwpHl4J1zfiChIYJKEl0QKSRinrniR0rA9iOrd8TQ==
   dependencies:
     "@floating-ui/core" "^1.6.0"
     "@floating-ui/dom" "^1.5.3"

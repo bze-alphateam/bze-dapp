@@ -35,6 +35,7 @@ export async function getModuleAddress(module: string): Promise<string> {
 
     const client = await getRestClient();
     let response = await client.cosmos.auth.v1beta1.moduleAccounts({module: module});
+    {/* @ts-ignore */}
     let addy = response.accounts[0].base_account?.address;
     if (addy === undefined) {
       return '';

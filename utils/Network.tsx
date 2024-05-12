@@ -30,7 +30,9 @@ export function getChain() {
     return data;
   }
 
+  {/* @ts-ignore */}
   data.chain = data.chain.filter((item) => item.chain_id === currentChainId);
+  {/* @ts-ignore */}
   data.assets = data.assets.filter((item) => item.chain_name === data.base.chainName);
 
   cachedChain.set(currentChainId, data);

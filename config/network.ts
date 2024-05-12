@@ -1,4 +1,3 @@
-import { isTestnet } from '@/utils';
 import { chains, assets } from 'chain-registry';
 
 const TESTNET_COIN_DENOM = "tbz";

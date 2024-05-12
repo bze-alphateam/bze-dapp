@@ -5,6 +5,7 @@ export * from './Amount';
 export * from './Denom';
 export * from './DateTime';
 export * from './Network';
+export * from './Functions';
 
 export function getLogo(from: Asset | Chain) {
   return from.logo_URIs?.svg || from.logo_URIs?.png || from.logo_URIs?.jpeg;

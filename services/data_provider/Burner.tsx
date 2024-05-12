@@ -63,6 +63,7 @@ export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSD
     }
 
     const client = await getRestClient();
+    {/* @ts-ignore */}
     let response = await client.bze.burner.v1.allBurnedCoins({pagination: {reverse: true}});
     let cacheData = {
         params: {...response},
@@ -86,6 +87,7 @@ export async function getNextBurning(): Promise<NextBurning|undefined> {
     return undefined;
   }
 
+  {/* @ts-ignore */}
   const filtered = proposals.proposals.filter((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
   if (filtered.length === 0 || filtered[0].voting_end_time === undefined) {
     return undefined;
