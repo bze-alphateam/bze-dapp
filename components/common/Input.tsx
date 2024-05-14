@@ -21,11 +21,7 @@ export function SearchInput(props: SearchInputProps) {
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setText(newValue);
-    if (newValue.length < 2) {
-      cancelDebounce(searchDebounceName);
-    } else {
-      addDebounce(searchDebounceName, searchDelay, () => {props.onSubmit(newValue)});
-    }
+    addDebounce(searchDebounceName, searchDelay, () => {props.onSubmit(newValue)});
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -17,3 +17,11 @@ export async function cancelDebounce(name: string): Promise<void> {
     debounces.delete(name);
   }
 }
+
+export function getLastCharsAfterSlash(input: string): string {
+  const lastSlashIndex = input.lastIndexOf('/');
+  if (lastSlashIndex === -1) {
+      return input;  // Return the original string if no '/' found
+  }
+  return input.substring(lastSlashIndex + 1);
+}

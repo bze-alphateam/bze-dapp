@@ -2,7 +2,7 @@
 import { AssetListItemProps, Box, Button, Stack, Text } from "@interchain-ui/react";
 
 export default function AssetListItem(props: AssetListItemProps) {
-  console.log("props", props);
+
   return (
     <Stack
       attributes={{
