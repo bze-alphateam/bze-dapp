@@ -1,9 +1,46 @@
-import { Divider, Box, Text } from "@interchain-ui/react";
+import { Divider, Box, Text, Button } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllTokens } from "@/services";
+import { Token, getAllTokens, getTokenFactoryParams } from "@/services";
+import { prettyFee } from "@/utils";
+
+function CallToActionBox() {
+  const [createTokenFee, setCreateTokenFee] = useState('Loading fee...');
+
+  const fetchParams = async () => {
+    let params = await getTokenFactoryParams();
+    if (params.params === undefined) {
+      setCreateTokenFee('Unknown');
+
+      return;
+    }
+
+    setCreateTokenFee(`${prettyFee(params.params.createDenomFee)} Required`);
+  }
+
+  useEffect(() => {
+    fetchParams();
+  }, []);
+
+  return (
+    <DefaultBorderedBox ml='$6' mb={{desktop: '$0', mobile: '$6'}}>
+        <Box display={'flex'} flexDirection={'column'} alignItems='center'>
+          <Box p='$12'>
+            <Text fontSize={'$md'} fontWeight={'$bold'} color='$primary200'>Unleash Your Creativity with BZE Blockchain's Token Factory!</Text>
+          </Box>
+          <Box p='$12'>
+            <Text letterSpacing={'$wide'} fontSize={'$sm'}>Create your own custom tokens with the Token Factory module on the BZE blockchain! Experience the freedom to design denominations that operate just like any other coin on the blockchain. Enjoy the flexibility of sending and using your tokens both within the BZE ecosystem and across other blockchains through Inter-Blockchain Communication (IBC).</Text>
+          </Box>
+        </Box>
+        <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
+          <Button intent="text">Create Token</Button>
+          <Box mt='$6'><Text fontSize={'$sm'} fontWeight={'$hairline'}>{createTokenFee}</Text></Box>
+        </Box>
+      </DefaultBorderedBox>
+  );
+}
 
 function TokenList() {
   const [loading, setLoading] = useState(true);
@@ -50,7 +87,7 @@ function TokenList() {
     <DefaultBorderedBox 
       ml='$6' 
       flexDirection='column' 
-      width={'55vw'}
+      width={{desktop: '65vw', mobile: '$auto'}}
       >
        <Box
        display='flex'
@@ -107,6 +144,7 @@ export default function Factory() {
       </Box >
       <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
         <TokenList />
+        <CallToActionBox />
       </Box>
     </Layout>
   );

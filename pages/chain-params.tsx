@@ -1,20 +1,8 @@
-import { Divider, Box, Text, useColorModeValue } from "@interchain-ui/react";
+import { Divider, Box, Text } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState } from "react";
 import { getRewardsParams, getTokenFactoryParams, getTradebinParams } from "@/services";
-import { parseCoins } from "@cosmjs/stargate";
-import { prettyAmount, uAmountToAmount } from "@/utils";
-
-function prettyFee(fee: string): string {
-  let parsed = parseCoins(fee);
-  if (parsed.length === 0) {
-    return 'Not found';
-  } else {
-    let coin = parsed[0];
-    let prettyCoin = prettyAmount(uAmountToAmount(coin.amount, 6));
-    return `${prettyCoin} BZE`;
-  }
-}
+import { prettyFee } from "@/utils";
 
 function prettyDestination(dest: string) {
   if (dest === 'community_pool') {
