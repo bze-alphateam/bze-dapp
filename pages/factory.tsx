@@ -87,7 +87,7 @@ function TokenList() {
     <DefaultBorderedBox 
       ml='$6' 
       flexDirection='column' 
-      width={{desktop: '65vw', mobile: '$auto'}}
+      width={{desktop: '$containerlg', mobile: '$auto'}}
       >
        <Box
        display='flex'
