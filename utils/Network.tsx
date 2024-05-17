@@ -39,3 +39,7 @@ export function getChain() {
 
   return data;
 }
+
+export function getMinDenom(): string {
+  return isTestnet() ? 'utbz' : 'ubze';
+}

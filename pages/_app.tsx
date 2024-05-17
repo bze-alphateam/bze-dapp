@@ -10,16 +10,18 @@ import {
   ThemeProvider,
   useColorModeValue,
   useTheme,
+  Toaster,
 } from "@interchain-ui/react";
 import { ASSETS, CHAINS } from "@/config";
+import { GasPrice } from '@cosmjs/stargate';
 
 function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const { themeClass } = useTheme();
 
   const signerOptions: SignerOptions = {
-    // signingStargate: () => {
-    //   return getSigningCosmosClientOptions();
-    // }
+    preferredSignType: (chainName) => {
+      return 'direct'
+    }
   };
 
   return (
@@ -51,6 +53,7 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
           {/* TODO fix type error */}
           {/* @ts-ignore */}
           <Component {...pageProps} />
+          <Toaster position="top-right" closeButton={true} />
         </Box>
       </ChainProvider>
     </ThemeProvider>
