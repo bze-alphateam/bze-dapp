@@ -13,6 +13,7 @@ import { useTx } from "@/hooks";
 import { bze } from '@bze/bzejs';
 import { CHAIN_NAME } from "@/config";
 import { DeliverTxResponse } from "@cosmjs/stargate";
+import { useRouter } from "next/router";
 
 const minDenomLength = 2;
 const { createDenom } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
@@ -182,6 +183,8 @@ function TokenList() {
   const [list, setList] = useState<Map<string, Token>>(new Map());
   const [filtered, setFiltered] = useState<Token[]>([]);
 
+  const router = useRouter();
+
   const handleSearch = (query: string) => {
     setLoading(true);
     if (query.length === 0) {
@@ -255,10 +258,16 @@ function TokenList() {
                 tokenAmount: token.verified ? '✅ YES' : '❌ NO',
                 tokenAmountPrice: token.verified ? 'Verified by BZE' : '❗ Proceed with caution',
                 onWithdraw: () => {
-                  console.log('onWithdraw');
+                  router.push({
+                    pathname: '/token',
+                    query: {
+                      denom: token.metadata.base
+                    }
+                  });
                 },
                 showWithdraw: true,
                 withdrawLabel: "Details",
+                
               };
             })
           }

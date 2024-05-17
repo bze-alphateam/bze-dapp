@@ -15,27 +15,44 @@ export interface Token {
 }
 
 let cachedTokens: Map<string, Token>;
+let cachedChainMetadata: MetadataSDKType[] = [];
 
-export async function getAllTokens(): Promise<Map<string, Token>> {
-  if (cachedTokens !== undefined) {
-    // return cachedTokens;
+async function getChainMetadatas(): Promise<MetadataSDKType[]> {
+  if (cachedChainMetadata.length !== 0) {
+    // return cachedChainMetadata;
   }
-  cachedTokens = new Map();
 
   try {
     const client = await getRestClient();
     {/* @ts-ignore */}
     let response = await client.cosmos.bank.v1beta1.denomsMetadata({pagination: {limit: Long.ZERO.add(DENOM_METADATA_LIMIT)}});
-    for (let i = 0; i < response.metadatas.length; i++) {
+    cachedChainMetadata = response.metadatas;
+  } catch (e) {
+    console.error(e);
+  }
+
+  return cachedChainMetadata;
+}
+
+export async function getAllTokens(): Promise<Map<string, Token>> {
+  if (cachedTokens !== undefined) {
+    // return cachedTokens;
+  }
+
+  cachedTokens = new Map();
+
+  try {
+    let metadatas = await getChainMetadatas();
+    for (let i = 0; i < metadatas.length; i++) {
       //exclude metadata for okens without base (should never be possible) and those that are not minted with factory
-      if (response.metadatas[i].base === "" || !response.metadatas[i].base.startsWith('factory')) {
+      if (metadatas[i].base === "" || !metadatas[i].base.startsWith('factory')) {
         continue;
       }
 
       let meta = {
-        metadata: response.metadatas[i],
+        metadata: metadatas[i],
         logo: TOKEN_IMG_DEFAULT,
-        verified: VERIFIED_TOKENS[response.metadatas[i].base] ?? false,
+        verified: VERIFIED_TOKENS[metadatas[i].base] ?? false,
       }
 
       if (meta.metadata.symbol === "") {
@@ -46,7 +63,7 @@ export async function getAllTokens(): Promise<Map<string, Token>> {
         meta.metadata.name = meta.metadata.base;
       }
 
-      cachedTokens.set(response.metadatas[i].base, meta)
+      cachedTokens.set(metadatas[i].base, meta)
     }
 
      //override metadata with details from chain registry
@@ -85,3 +102,23 @@ export async function getAllTokens(): Promise<Map<string, Token>> {
     return new Map();
   }
 } 
+
+export async function getTokenChainMetadata(denom: string): Promise<MetadataSDKType|undefined> {
+  let metadatas = await getChainMetadatas();
+  let filtered = metadatas.filter((item) => item.base === denom);
+
+  return filtered.length > 0 ? filtered[0] : undefined;
+}
+
+export async function getTokenAdminAddress(denom: string): Promise<string> {
+  try {
+    const client = await getRestClient();
+    let res = await client.bze.tokenfactory.v1.denomAuthority({denom: denom});
+
+    return res.denomAuthority?.admin ?? ''
+  } catch (e) {
+    console.error(e);
+
+    return '';
+  }
+}

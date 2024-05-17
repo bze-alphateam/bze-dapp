@@ -26,7 +26,7 @@ export enum TxStatus {
 const simulateFee = async (address: string, signingClient: any, messages: any[], memo?: string|undefined): Promise<StdFee> => {
   try {
     const gasEstimated = await signingClient.simulate(address, messages, memo);
-    let gasAmount = gasEstimated * 1.3;
+    let gasAmount = gasEstimated * 1.5;
     let gasPayment = (gasAmount * 0.1).toFixed(0).toString();
     
     return {
