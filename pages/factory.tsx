@@ -242,7 +242,13 @@ function TokenList() {
       </Box>
       <Divider mb='$2'/>
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
-      {loading ? <Text textAlign={'center'}>Loading list...</Text> :
+      {loading ? 
+        <AssetList
+          needChainSpace={true}
+          isOtherChains={false}
+          titles={['Asset', 'Verified']}
+          list={[]}
+          /> :
         <AssetList
           needChainSpace={true}
           isOtherChains={false}
