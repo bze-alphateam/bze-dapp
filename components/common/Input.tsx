@@ -36,7 +36,7 @@ export function SearchInput(props: SearchInputProps) {
   }
 
   return(
-    <DefaultBorderedBox display={'flex'}>
+    <DefaultBorderedBox display={'flex'} boxShadow={'$none'}>
       <input 
         value={text}
         onChange={handleTextChange}

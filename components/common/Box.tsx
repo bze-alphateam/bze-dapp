@@ -7,6 +7,7 @@ interface DefaultBoxProps extends BoxProps {
 export function DefaultBorderedBox({ children, ...props}: DefaultBoxProps) {
   return(
     <Box
+        boxShadow={'$dark-lg'}
         attributes={{
           borderWidth: '2px',
           borderStyle: 'solid',

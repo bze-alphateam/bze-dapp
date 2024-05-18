@@ -111,7 +111,7 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
   }, [props]);
 
   return (
-    <DefaultBorderedBox m='$12'>
+    <DefaultBorderedBox mb='$12'>
       <Box p='$6' mb='$6'>
         <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Admin</Text>
         <Box mt='$4'>
@@ -287,11 +287,12 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
   }, []);
 
   return (
-    <DefaultBorderedBox m='$12'>
+    <DefaultBorderedBox mb='$12'>
       <Box p='$6' mb='$6'>
         <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply</Text>
         <Box mt='$4'>
-          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply} {denomUnit?.denom}</Text>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply}</Text>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{denomUnit?.denom}</Text>
         </Box>
       </Box>
       {address === props.admin &&
@@ -457,7 +458,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
   }, []);
 
   return (
-    <DefaultBorderedBox ml='$6' width={{desktop: '$containerMd', mobile: '$auto'}}>
+    <DefaultBorderedBox mx='$6' width={{desktop: '$containerMd', mobile: '$auto'}}>
       <Box p='$6'>
         <Text as="h3" fontSize={'xl'} color='$primary200'>Metadata</Text>
       </Box>
@@ -615,14 +616,14 @@ export default function Token() {
         </Box>
       </Box>
       {!loading && chainMetadata &&
-        <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1}>
+        <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}} flex={1}>
           <TokenMetadata props={{chainMetadata: chainMetadata, admin: admin}} />
-          <DefaultBorderedBox marginLeft='$6' flex={1} marginTop={{desktop: '$0', mobile: '$6'}} flexDirection={'column'}>
+          <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
             <Box flexDirection={'row'} flex={1}>
               <TokenSupply props={{chainMetadata: chainMetadata, admin: admin}} />
               <TokenOwnership props={{chainMetadata: chainMetadata, admin: admin}}/>
             </Box>
-          </DefaultBorderedBox>
+          </Box>
         </Box>
       }
     </Layout>
