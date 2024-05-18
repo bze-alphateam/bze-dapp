@@ -2,7 +2,7 @@ import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosm
 import { getRestClient } from "../Client";
 import Long from 'long';
 import { getChain, getLastCharsAfterSlash } from "@/utils";
-import { VERIFIED_TOKENS } from "@/config/verified";
+import { EXCLUDED_TOKENS, VERIFIED_TOKENS } from "@/config/verified";
 import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 
 const DENOM_METADATA_LIMIT = 5000;
@@ -46,10 +46,9 @@ export async function getAllTokens(): Promise<Map<string, Token>> {
   try {
     let metadatas = await getChainMetadatas();
     for (let i = 0; i < metadatas.length; i++) {
-      //exclude metadata for okens without base (should never be possible) and those that are not minted with factory
-      if (metadatas[i].base === "" || !metadatas[i].base.startsWith('factory')) {
-        continue;
-      }
+      //exclude metadata for tokens without base (should never be possible) and those that are not minted with factory
+      if (metadatas[i].base === "" || !metadatas[i].base.startsWith('factory')) continue;
+      if (EXCLUDED_TOKENS[metadatas[i].base]) continue;
 
       let meta = {
         metadata: metadatas[i],
