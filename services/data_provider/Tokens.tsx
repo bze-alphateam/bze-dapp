@@ -144,6 +144,10 @@ async function getSupply() {
   }
 }
 
+export function resetSupplyCache() {
+  allDenomsSupply = [];
+}
+
 export async function getTokenSupply(denom: string): Promise<string> {
   let all = await getSupply();
   let filtered = all.filter((item) => item.denom === denom);
@@ -151,11 +155,15 @@ export async function getTokenSupply(denom: string): Promise<string> {
   return filtered.length > 0 ? filtered[0].amount : "0";
 }
 
-export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKType|undefined> {
+export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKType> {
   const all = await getAllTokens();
   const details = all.get(denom);
   if (details === undefined) {
-    return undefined;
+    return {
+      denom: denom,
+      exponent: 0,
+      aliases: [],
+    };
   }
   
   if (details.metadata.display === "") {

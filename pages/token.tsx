@@ -1,14 +1,14 @@
 import { DefaultBorderedBox, Layout } from "@/components";
-import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply } from "@/services";
+import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, resetSupplyCache } from "@/services";
 import { Box, Button, Divider, Spinner, Text, TextField, Tooltip } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { useToast, useTx } from "@/hooks";
 import { bze } from '@bze/bzejs';
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
-import { getChainName, prettyAmount, uAmountToAmount } from "@/utils";
+import { amountToUAmount, getChainName, prettyAmount, uAmountToAmount } from "@/utils";
 
 interface TokenOwnershipProps extends TokenMetadataProps {}
 
@@ -39,52 +39,130 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
   );
 }
 
+const { mint, burn } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+
 interface TokenSupplyProps extends TokenMetadataProps {}
 
 function TokenSupply({props}: {props: TokenSupplyProps}) {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showBurnButton, setShowBurnButton] = useState<boolean>(true);
   const [showMintButton, setShowMintButton] = useState<boolean>(true);
+  const [submitPending, setSubmitPending] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [supply, setSupply] = useState<string>("0");
-  const [denom, setDenom] = useState<string>("");
+  const [denomUnit, setDenomUnit] = useState<DenomUnitSDKType>();
 
   const { address } = useChain(getChainName());
+  const { toast } = useToast();
+  const { tx } = useTx();
 
   const fetchSupply = async () => {
     const s = await getTokenSupply(props.chainMetadata.base);
     const denomUnit = await getTokenDisplayDenom(props.chainMetadata.base);
-    if (denomUnit === undefined) {
-      return;
-    }
-
+    setDenomUnit(denomUnit);
     const pretty = uAmountToAmount(s, denomUnit.exponent);
     setSupply(prettyAmount(pretty));
-    setDenom(denomUnit.denom)
+  }
+
+  const validateAmount = (amt: string): boolean => {
+    let parsed = parseFloat(amt);
+    if (!parsed) {
+      toast({
+        type: 'error',
+        title: 'Invalid amount',
+      });
+      return false;
+    }
+
+    if (parsed <= 0) {
+      toast({
+        type: 'error',
+        title: 'Invalid amount',
+        description: 'Amount should be higher than 0'
+      });
+      return false;
+    }
+
+    return true;
   }
 
   const onMintClick = async () => {
+    if (!address || !denomUnit) {
+      return;
+    }
+
     if (!showForm) {
       setShowForm(true);
       setShowBurnButton(false);
       return;
     }
+
+    if (!validateAmount(amount)) {
+      return;
+    }
+
+    setSubmitPending(true);
+    let uAmount = amountToUAmount(amount, denomUnit.exponent);
+    let msg = mint({
+      creator: address,
+      coins: `${uAmount}${props.chainMetadata.base}`
+    })
+
+    await tx([msg], {
+      toast: {
+        description: 'Mint successful'
+      },
+      onSuccess: () => {
+        resetSupplyCache();
+        fetchSupply();
+        onCancelClick();
+      }
+    });
+    setSubmitPending(false);
   }
 
   const onBurnClick = async () => {
+    if (!address || !denomUnit) {
+      return;
+    }
+
     if (!showForm) {
       setShowForm(true);
       setShowMintButton(false);
       return;
     }
+
+
+    if (!validateAmount(amount)) {
+      return;
+    }
+
+    setSubmitPending(true);
+    let uAmount = amountToUAmount(amount, denomUnit.exponent);
+    let msg = burn({
+      creator: address,
+      coins: `${uAmount}${props.chainMetadata.base}`
+    })
+
+    await tx([msg], {
+      toast: {
+        description: 'Burn successful'
+      },
+      onSuccess: () => {
+        resetSupplyCache();
+        fetchSupply();
+        onCancelClick();
+      }
+    });
+    setSubmitPending(false);
   }
 
   const onCancelClick = () => {
     setShowForm(false);
     setShowMintButton(true);
     setShowBurnButton(true);
-    setAmount("0");
+    setAmount("");
   }
 
   useEffect(() => {
@@ -96,7 +174,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
       <Box p='$6' mb='$6'>
         <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply</Text>
         <Box mt='$4'>
-          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply} {denom}</Text>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply} {denomUnit?.denom}</Text>
         </Box>
       </Box>
       {address === props.admin &&
@@ -114,12 +192,12 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
                 placeholder="Amount to burn/mint"
                 value={amount}
                 intent={'default'}
-                // disabled={disabled || pendingSubmit}
+                disabled={submitPending}
               />
             }
-            {(!showBurnButton || !showMintButton) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}}>Cancel</Button>}
-            {showBurnButton && <Button size="sm" intent="primary" onClick={() => {onBurnClick()}}>Burn</Button>}
-            {showMintButton && <Button size="sm" intent="primary" onClick={() => {onMintClick()}}>Mint</Button>}
+            {(!showBurnButton || !showMintButton) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}} disabled={submitPending}>Cancel</Button>}
+            {showBurnButton && <Button size="sm" intent="primary" onClick={() => {onBurnClick()}} isLoading={submitPending}>Burn</Button>}
+            {showMintButton && <Button size="sm" intent="primary" onClick={() => {onMintClick()}} isLoading={submitPending}>Mint</Button>}
           </Box>
         </>
       }
