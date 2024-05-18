@@ -1,5 +1,5 @@
 import { DefaultBorderedBox, Layout } from "@/components";
-import { getTokenAdminAddress, getTokenChainMetadata } from "@/services";
+import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply } from "@/services";
 import { Box, Button, Divider, Spinner, Text, TextField, Tooltip } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -9,6 +9,69 @@ import { bze } from '@bze/bzejs';
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { CHAIN_NAME } from "@/config";
 import { WalletStatus } from "cosmos-kit";
+import { prettyAmount, uAmountToAmount } from "@/utils";
+
+interface TokenOwnershipProps extends TokenMetadataProps {}
+
+function TokenOwnership({props}: {props: TokenOwnershipProps}) {
+  return (
+    <DefaultBorderedBox m='$12'>
+      <Box p='$6' mb='$6'>
+        <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Admin</Text>
+        <Box mt='$4'>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{props.admin}</Text>
+          <Box mt='$6'>
+            <Text fontSize={'$sm'}  textAlign={'center'} color={'$primary50'} fontWeight={'$thin'}>This address has the power to mint, burn tokens and change token metadata. Proceed with caution.</Text>
+          </Box>
+        </Box>
+      </Box>
+      <Divider />
+      <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
+        <Button size="sm" intent="primary" onClick={() => {}}>Give Up Ownership</Button>
+        <Button size="sm" intent="primary" onClick={() => {}}>Transfer Ownership</Button>
+      </Box>
+    </DefaultBorderedBox>
+  );
+}
+
+interface TokenSupplyProps extends TokenMetadataProps {}
+
+function TokenSupply({props}: {props: TokenSupplyProps}) {
+  const [supply, setSupply] = useState<string>("0");
+  const [denom, setDenom] = useState<string>("");
+
+  const fetchSupply = async () => {
+    const s = await getTokenSupply(props.chainMetadata.base);
+    const denomUnit = await getTokenDisplayDenom(props.chainMetadata.base);
+    if (denomUnit === undefined) {
+      return;
+    }
+
+    const pretty = uAmountToAmount(s, denomUnit.exponent);
+    setSupply(prettyAmount(pretty));
+    setDenom(denomUnit.denom)
+  }
+
+  useEffect(() => {
+    fetchSupply();
+  }, []);
+
+  return (
+    <DefaultBorderedBox m='$12'>
+      <Box p='$6' mb='$6'>
+        <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply</Text>
+        <Box mt='$4'>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply} {denom}</Text>
+        </Box>
+      </Box>
+      <Divider />
+      <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
+        <Button size="sm" intent="primary" onClick={() => {}}>Burn</Button>
+        <Button size="sm" intent="primary" onClick={() => {}}>Mint</Button>
+      </Box>
+    </DefaultBorderedBox>
+  );
+}
 
 const { setDenomMetadata } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
 
@@ -302,9 +365,15 @@ export default function Token() {
           <Text as="h1" fontSize={'$2xl'}>Token details</Text>
         </Box>
       </Box>
-      {!loading && 
+      {!loading && chainMetadata &&
         <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1}>
-          {chainMetadata && <TokenMetadata props={{chainMetadata: chainMetadata, admin: admin}} />}
+          <TokenMetadata props={{chainMetadata: chainMetadata, admin: admin}} />
+          <DefaultBorderedBox marginLeft='$6' flex={1} marginTop={{desktop: '$0', mobile: '$6'}} flexDirection={'column'}>
+            <Box flexDirection={'row'} flex={1}>
+              <TokenSupply props={{chainMetadata: chainMetadata, admin: admin}} />
+              <TokenOwnership props={{chainMetadata: chainMetadata, admin: admin}}/>
+            </Box>
+          </DefaultBorderedBox>
         </Box>
       }
     </Layout>

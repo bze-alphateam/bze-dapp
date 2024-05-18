@@ -1,8 +1,9 @@
-import { MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { getRestClient } from "../Client";
 import Long from 'long';
 import { getChain, getLastCharsAfterSlash } from "@/utils";
 import { VERIFIED_TOKENS } from "@/config/verified";
+import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -16,6 +17,7 @@ export interface Token {
 
 let cachedTokens: Map<string, Token>;
 let cachedChainMetadata: MetadataSDKType[] = [];
+let allDenomsSupply: CoinSDKType[] = [];
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
   if (cachedChainMetadata.length !== 0) {
@@ -121,4 +123,59 @@ export async function getTokenAdminAddress(denom: string): Promise<string> {
 
     return '';
   }
+}
+
+async function getSupply() {
+  if (allDenomsSupply.length > 0) {
+    return allDenomsSupply;
+  }
+
+  try {
+    const client = await getRestClient();
+     {/* @ts-ignore */}
+    let res = await client.cosmos.bank.v1beta1.totalSupply({pagination: {limit: Long.fromNumber(DENOM_METADATA_LIMIT)}})
+
+    allDenomsSupply = res.supply;
+
+    return allDenomsSupply;
+  } catch (e) {
+    console.error(e);
+
+    return [];
+  }
+}
+
+export async function getTokenSupply(denom: string): Promise<string> {
+  let all = await getSupply();
+  let filtered = all.filter((item) => item.denom === denom);
+
+  return filtered.length > 0 ? filtered[0].amount : "0";
+}
+
+export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKType|undefined> {
+  const all = await getAllTokens();
+  const details = all.get(denom);
+  if (details === undefined) {
+    return undefined;
+  }
+  
+  if (details.metadata.display === "") {
+    return {
+      denom: details.metadata.base,
+      exponent: 0,
+      aliases: [],
+    };
+  }
+
+  const filtered = details.metadata.denom_units.filter((item) => item.denom === details.metadata.display);
+  if (filtered.length === 0) {
+    //should never happen
+    return {
+      denom: details.metadata.base,
+      exponent: 0,
+      aliases: [],
+    };
+  }
+
+  return filtered[0];
 }
