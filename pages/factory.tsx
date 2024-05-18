@@ -152,11 +152,11 @@ function CallToActionBox({props}: {props: CallToActionBoxProps}) {
   }, []);
 
   return (
-    <Box ml='$6' mb={{desktop: '$0', mobile: '$6'}}>
+    <Box mx={{desktop: '$12', mobile: '$6'}} mb={{desktop: '$0', mobile: '$12'}}>
       <DefaultBorderedBox>
         <Box display={'flex'} flexDirection={'column'} alignItems='center'>
           <Box p='$6' mt='$6'>
-            <Text fontSize={'$md'} fontWeight={'$bold'} color='$primary200'>Unleash Your Creativity with BZE Blockchain's Token Factory!</Text>
+            <Text fontSize={'$md'} fontWeight={'$bold'} color='$primary200'>Unleash Your Creativity with BZE Blockchain&apos;s Token Factory!</Text>
           </Box>
           <Box p='$6' mb='$6'>
             <Text letterSpacing={'$wide'} fontSize={'$sm'}>Create your own custom tokens with the Token Factory module on the BZE blockchain! Experience the freedom to design denominations that operate just like any other coin on the blockchain. Enjoy the flexibility of sending and using your tokens both within the BZE ecosystem and across other blockchains through Inter-Blockchain Communication (IBC).</Text>
@@ -226,6 +226,8 @@ function TokenList() {
   return (
     <DefaultBorderedBox 
       ml='$6' 
+      mr={{desktop: '$0', mobile: '$6'}}
+      mb='$6'
       flexDirection='column' 
       width={{desktop: '$containerlg', mobile: '$auto'}}
       >

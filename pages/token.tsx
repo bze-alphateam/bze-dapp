@@ -125,8 +125,9 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
         <>
           <Divider />
           {showWarning && 
-            <Box p='$6'>
-              <Text fontWeight={'$bold'} color={"$textDanger"}>Are you sure? Giving up ownership of the token is an irreversible action! You will NOT be able to undo this action, mint, burn tokens or edit metadata.</Text>
+            <Box p='$6' textAlign={"center"}>
+              <Text fontWeight={'$bold'} color={"$textDanger"}>Are you sure?</Text>
+              <Text fontWeight={'$light'} color={"$textDanger"}>Giving up ownership of the token is an irreversible action! You will NOT be able to undo this action, mint, burn tokens or edit metadata.</Text>
             </Box>
           }
           <Box p='$6' flexDirection={'row'} display={'flex'} alignItems={'center'}>
@@ -144,7 +145,7 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
                   disabled={submitPending}
                 />
               }
-            <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-between'} flex={1} alignItems={'center'}>
+            <Box flexDirection={'row'} display={'flex'} justifyContent={'space-around'} flex={1} alignItems={'center'}>
               {(showForm || showWarning) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}} disabled={submitPending}>Cancel</Button>}
               {showRenounceButton && <Button size="sm" intent="primary" onClick={() => {onRenounceClick()}} isLoading={submitPending}>Give Up Ownership</Button>}
               {showTransferButton && <Button size="sm" intent="primary" onClick={() => {onTransferClick()}} isLoading={submitPending}>Transfer Ownership</Button>}
@@ -284,6 +285,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
 
   useEffect(() => {
     fetchSupply();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -455,6 +457,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
 
   useEffect(() => {
     defaultDisplayAndDecimals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -605,6 +608,7 @@ export default function Token() {
 
     fetchChainMetadata(query.denom);
     fetchAdmin(query.denom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.denom]);
 
 

@@ -17,7 +17,7 @@ function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text
     <NextLink href={path} 
     style={{ textDecoration: 'none' }}
     target={target}>
-      <Box p={"$4"} backgroundColor={isActive ? '$divider' : 'transparent'} mx="$4" mt="$6" borderRadius='$xl'>
+      <Box p={"$4"} backgroundColor={isActive ? '$divider' : 'transparent'} boxShadow={isActive ? '$dark-lg' : 'transparent'} mx="$4" mt="$6" borderRadius='$xl'>
         <Text fontSize={'$lg'}>
           {SidebarIcon({ type: icon, color: textColor })} {text}
         </Text>
