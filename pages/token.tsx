@@ -12,26 +12,143 @@ import { amountToUAmount, getChainName, prettyAmount, uAmountToAmount } from "@/
 
 interface TokenOwnershipProps extends TokenMetadataProps {}
 
+const { changeAdmin } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+
 function TokenOwnership({props}: {props: TokenOwnershipProps}) {
+  const [admin, setAdmin] = useState(props.admin);
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [showTransferButton, setShowTransferButton] = useState<boolean>(true);
+  const [showRenounceButton, setShowRenounceButton] = useState<boolean>(true);
+  const [submitPending, setSubmitPending] = useState(false);
+  const [to, setTo] = useState("");
+
   const { address } = useChain(getChainName());
+  const { toast } = useToast();
+  const { tx } = useTx();
+
+  const onTransferClick = async () => {
+    if (!address) {
+      return;
+    }
+
+    if (!showForm) {
+      setShowRenounceButton(false);
+      setShowForm(true);
+      return;
+    }
+
+    let trimmed = to.trim();
+    if (trimmed.length === 0) {
+      toast({
+        type: 'error',
+        title: 'Invalid new owner address',
+      });
+
+      return;
+    }
+
+    setSubmitPending(true);
+    let msg = changeAdmin({
+      creator: address,
+      newAdmin: to,
+      denom: props.chainMetadata.base,
+    })
+
+    await tx([msg], {
+      toast: {
+        title: 'Owner successfully changed'
+      },
+      onSuccess: () => {
+        setAdmin(to);
+      }
+    })
+
+    setSubmitPending(false);
+  }
+
+  const onRenounceClick = async () => {
+    if (!address) {
+      return;
+    }
+
+    if (!showWarning) {
+      setShowTransferButton(false);
+      setShowForm(false);
+      setShowWarning(true);
+      return;
+    }
+
+    setSubmitPending(true);
+    let msg = changeAdmin({
+      creator: address,
+      newAdmin: "", //to nobody
+      denom: props.chainMetadata.base,
+    })
+
+    await tx([msg], {
+      toast: {
+        title: 'Token owner removed'
+      },
+      onSuccess: () => {
+        setAdmin("");
+      }
+    })
+
+    setSubmitPending(false);
+  }
+
+  const onCancelClick = () => {
+    setShowRenounceButton(true);
+    setShowTransferButton(true);
+    setShowForm(false);
+    setTo("");
+    setShowWarning(false);
+  }
+
+  useEffect(() => {
+    setAdmin(props.admin);
+  }, [props]);
 
   return (
     <DefaultBorderedBox m='$12'>
       <Box p='$6' mb='$6'>
         <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Admin</Text>
         <Box mt='$4'>
-          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{props.admin !== "" ? props.admin : "Nobody"}</Text>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{admin !== "" ? admin : "Nobody"}</Text>
             <Box mt='$6'>
-              <Text fontSize={'$sm'}  textAlign={'center'} color={'$primary50'} fontWeight={'$thin'}>{props.admin !== ""  ? "This address has the power to mint, burn tokens and change token metadata. Proceed with caution." : "The creator of this token gave up on the ownership. Tokens can not be minted anymore and the metadata can not be modified."}</Text>
+              <Text fontSize={'$sm'}  textAlign={'center'} color={admin !== ""  ? '$textDanger' : '$textSuccess'} fontWeight={'$thin'}>{admin !== ""  ? "This address has the power to mint, burn tokens and change token metadata. Proceed with caution." : "The creator of this token gave up on the ownership. Tokens can NOT be minted anymore and the metadata can NOT be modified."}</Text>
             </Box>
         </Box>
       </Box>
-      {address === props.admin &&
+      {address === admin &&
         <>
           <Divider />
-          <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
-            <Button size="sm" intent="primary" onClick={() => {}}>Give Up Ownership</Button>
-            <Button size="sm" intent="primary" onClick={() => {}}>Transfer Ownership</Button>
+          {showWarning && 
+            <Box p='$6'>
+              <Text fontWeight={'$bold'} color={"$textDanger"}>Are you sure? Giving up ownership of the token is an irreversible action! You will NOT be able to undo this action, mint, burn tokens or edit metadata.</Text>
+            </Box>
+          }
+          <Box p='$6' flexDirection={'row'} display={'flex'} alignItems={'center'}>
+            {showForm && 
+                <TextField
+                  id="transfer"
+                  type="text"
+                  inputMode="text"
+                  label={""}
+                  size="sm"
+                  onChange={(e) => {setTo(e.target.value)}}
+                  placeholder="New owner address"
+                  value={to}
+                  intent={'default'}
+                  disabled={submitPending}
+                />
+              }
+            <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-between'} flex={1} alignItems={'center'}>
+              {(showForm || showWarning) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}} disabled={submitPending}>Cancel</Button>}
+              {showRenounceButton && <Button size="sm" intent="primary" onClick={() => {onRenounceClick()}} isLoading={submitPending}>Give Up Ownership</Button>}
+              {showTransferButton && <Button size="sm" intent="primary" onClick={() => {onTransferClick()}} isLoading={submitPending}>Transfer Ownership</Button>}
+            </Box>
           </Box>
         </>
       }
