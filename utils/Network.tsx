@@ -1,4 +1,4 @@
-import { getNetwork } from "@/config";
+import { CHAIN_NAME, getNetwork } from "@/config";
 
 let cachedChain: Map<string, any> = new Map();
 
@@ -42,4 +42,8 @@ export function getChain() {
 
 export function getMinDenom(): string {
   return isTestnet() ? 'utbz' : 'ubze';
+}
+
+export function getChainName(): string {
+  return process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME;
 }

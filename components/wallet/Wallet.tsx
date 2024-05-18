@@ -15,6 +15,7 @@ import {
   ButtonNotExist,
   ButtonRejected,
 } from "./Connect";
+import { getChainName } from "@/utils";
 
 export function Wallet() {
   const {
@@ -26,7 +27,7 @@ export function Wallet() {
     message,
     connect,
     openView,
-  } = useChain(process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME);
+  } = useChain(getChainName());
 
   const ConnectButton = {
     [WalletStatus.Connected]: <ButtonConnected onClick={openView} text={username}/>,

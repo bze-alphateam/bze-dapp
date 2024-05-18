@@ -7,13 +7,14 @@ import { MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/ba
 import { useToast, useTx } from "@/hooks";
 import { bze } from '@bze/bzejs';
 import { useChain, useWallet } from "@cosmos-kit/react";
-import { CHAIN_NAME } from "@/config";
 import { WalletStatus } from "cosmos-kit";
-import { prettyAmount, uAmountToAmount } from "@/utils";
+import { getChainName, prettyAmount, uAmountToAmount } from "@/utils";
 
 interface TokenOwnershipProps extends TokenMetadataProps {}
 
 function TokenOwnership({props}: {props: TokenOwnershipProps}) {
+  const { address } = useChain(getChainName());
+
   return (
     <DefaultBorderedBox m='$12'>
       <Box p='$6' mb='$6'>
@@ -25,11 +26,15 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
           </Box>
         </Box>
       </Box>
-      <Divider />
-      <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
-        <Button size="sm" intent="primary" onClick={() => {}}>Give Up Ownership</Button>
-        <Button size="sm" intent="primary" onClick={() => {}}>Transfer Ownership</Button>
-      </Box>
+      {address === props.admin &&
+        <>
+          <Divider />
+          <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
+            <Button size="sm" intent="primary" onClick={() => {}}>Give Up Ownership</Button>
+            <Button size="sm" intent="primary" onClick={() => {}}>Transfer Ownership</Button>
+          </Box>
+        </>
+      }
     </DefaultBorderedBox>
   );
 }
@@ -37,8 +42,15 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
 interface TokenSupplyProps extends TokenMetadataProps {}
 
 function TokenSupply({props}: {props: TokenSupplyProps}) {
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showBurnButton, setShowBurnButton] = useState<boolean>(true);
+  const [showMintButton, setShowMintButton] = useState<boolean>(true);
+
+  const [amount, setAmount] = useState("0");
   const [supply, setSupply] = useState<string>("0");
   const [denom, setDenom] = useState<string>("");
+
+  const { address } = useChain(getChainName());
 
   const fetchSupply = async () => {
     const s = await getTokenSupply(props.chainMetadata.base);
@@ -50,6 +62,29 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
     const pretty = uAmountToAmount(s, denomUnit.exponent);
     setSupply(prettyAmount(pretty));
     setDenom(denomUnit.denom)
+  }
+
+  const onMintClick = async () => {
+    if (!showForm) {
+      setShowForm(true);
+      setShowBurnButton(false);
+      return;
+    }
+  }
+
+  const onBurnClick = async () => {
+    if (!showForm) {
+      setShowForm(true);
+      setShowMintButton(false);
+      return;
+    }
+  }
+
+  const onCancelClick = () => {
+    setShowForm(false);
+    setShowMintButton(true);
+    setShowBurnButton(true);
+    setAmount("0");
   }
 
   useEffect(() => {
@@ -64,11 +99,30 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
           <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{supply} {denom}</Text>
         </Box>
       </Box>
-      <Divider />
-      <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'}>
-        <Button size="sm" intent="primary" onClick={() => {}}>Burn</Button>
-        <Button size="sm" intent="primary" onClick={() => {}}>Mint</Button>
-      </Box>
+      {address === props.admin &&
+        <>
+          <Divider />
+          <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
+            {showForm && 
+              <TextField
+                id="burn-mint-amount"
+                type="number"
+                inputMode="numeric"
+                label={""}
+                size="sm"
+                onChange={(e) => {setAmount(e.target.value)}}
+                placeholder="Amount to burn/mint"
+                value={amount}
+                intent={'default'}
+                // disabled={disabled || pendingSubmit}
+              />
+            }
+            {(!showBurnButton || !showMintButton) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}}>Cancel</Button>}
+            {showBurnButton && <Button size="sm" intent="primary" onClick={() => {onBurnClick()}}>Burn</Button>}
+            {showMintButton && <Button size="sm" intent="primary" onClick={() => {onMintClick()}}>Mint</Button>}
+          </Box>
+        </>
+      }
     </DefaultBorderedBox>
   );
 }
@@ -94,7 +148,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
   //hooks
   const { tx } = useTx();
   const { toast } = useToast();
-  const { address } = useChain(process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME);
+  const { address } = useChain(getChainName());
   const { status: walletStatus } = useWallet();
 
   const onEditSave = async () => {
@@ -309,7 +363,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       {!disabled && 
         <Box display={'flex'} m='$6' justifyContent={'space-evenly'} flexDirection={'row'}>
           <Button size="sm" intent="secondary" onClick={() => {onEditCancel()}} disabled={pendingSubmit}>Cancel</Button>
-          <Button size="sm" intent="primary" onClick={() => {onEditSave()}} disabled={pendingSubmit}>Save {pendingSubmit && <Spinner />}</Button>
+          <Button size="sm" intent="primary" onClick={() => {onEditSave()}} disabled={pendingSubmit} isLoading={pendingSubmit}>Save</Button>
         </Box>
       }
     </DefaultBorderedBox>

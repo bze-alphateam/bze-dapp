@@ -4,7 +4,7 @@ import { coins, DeliverTxResponse, isDeliverTxSuccess, StdFee } from '@cosmjs/st
 import { useToast, type CustomToast } from './useToast';
 import { CHAIN_NAME } from '@/config';
 import { getSigningClient } from '@/services';
-import { getMinDenom } from '@/utils';
+import { getChainName, getMinDenom } from '@/utils';
 
 interface Msg {
   typeUrl: string;
@@ -44,7 +44,7 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
 }
 
 export const useTx = () => {
-  const { address, getOfflineSigner } = useChain(process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME);
+  const { address, getOfflineSigner } = useChain(getChainName());
 
   const { toast } = useToast();
 

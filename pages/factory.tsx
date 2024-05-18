@@ -4,7 +4,7 @@ import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
 import { Token, getAllTokens, getTokenFactoryParams } from "@/services";
-import { prettyFee } from "@/utils";
+import { getChainName, prettyFee } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -31,7 +31,7 @@ function CreateTokenForm({props}: {props: CreateTokenFormProps}) {
   const [inputIntent, setInputIntent] = useState<"default"|"error">("default");
   const [submitPending, setSubmitPending] = useState<boolean>(false);
   
-  const { address } = useChain(process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME);
+  const { address } = useChain(getChainName());
 
   const { toast } = useToast();
   const { tx } = useTx();
@@ -112,7 +112,7 @@ function CreateTokenForm({props}: {props: CreateTokenFormProps}) {
       </Callout>
       <Box display={'flex'} flexDirection={'row'} justifyContent={'space-evenly'} mt={'$12'}>
         <Button size="sm" intent="secondary" onClick={props.onCancel} disabled={submitPending}>Cancel</Button>
-        <Button size="sm" intent="primary" onClick={() => {onSubmit()}} disabled={submitPending}>Create {submitPending  && <Spinner />}</Button>
+        <Button size="sm" intent="primary" onClick={() => {onSubmit()}} disabled={submitPending} isLoading={submitPending}>Create</Button>
       </Box>
     </Box>
   );
