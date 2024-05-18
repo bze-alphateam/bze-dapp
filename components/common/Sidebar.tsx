@@ -18,7 +18,7 @@ function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text
     style={{ textDecoration: 'none' }}
     target={target}>
       <Box p={"$4"} backgroundColor={isActive ? '$divider' : 'transparent'} boxShadow={isActive ? '$dark-lg' : 'transparent'} mx="$4" mt="$6" borderRadius='$xl'>
-        <Text fontSize={'$lg'}>
+        <Text fontSize={{desktop: '$lg', mobile: '$sm'}}>
           {SidebarIcon({ type: icon, color: textColor })} {text}
         </Text>
       </Box>
@@ -29,7 +29,7 @@ function SidebarItem({ icon, text, path, target = '_self' }: {icon: string, text
 export function Sidebar() {
   return (
     <Box
-      display="flex"
+      display={{desktop: 'flex', mobile: 'none'}}
       flexDirection={"column"} 
       gap={"$6"} 
       // flex={1}
@@ -56,5 +56,33 @@ export function Sidebar() {
         </Box>
       </Box>
     </Box>
+  );
+}
+
+
+export function Topbar() {
+  return (
+    <>
+      <Box
+        display={{desktop: 'none', mobile: 'flex'}}
+        flexDirection={"column"}
+      >
+        <Divider />
+        <Box
+          display={{desktop: 'none', mobile: 'flex'}}
+          flexDirection={"row"} 
+          justifyContent={'center'}
+          flexWrap={'wrap'}
+          mb='$6'
+        >
+          <SidebarItem icon="trade" text="Trade" path="/"/>
+          <SidebarItem icon="rewards" text="Earn" path="/earn"/>
+          <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
+          <SidebarItem icon="burner" text="Burner" path="/burner"/>
+          <SidebarItem icon="chain-params" text="Chain Params" path="/chain-params"/>
+        </Box>
+        <Divider />
+      </Box>
+    </>
   );
 }
