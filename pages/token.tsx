@@ -20,10 +20,10 @@ function TokenOwnership({props}: {props: TokenOwnershipProps}) {
       <Box p='$6' mb='$6'>
         <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Admin</Text>
         <Box mt='$4'>
-          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{props.admin}</Text>
-          <Box mt='$6'>
-            <Text fontSize={'$sm'}  textAlign={'center'} color={'$primary50'} fontWeight={'$thin'}>This address has the power to mint, burn tokens and change token metadata. Proceed with caution.</Text>
-          </Box>
+          <Text fontSize={'$md'}  textAlign={'center'} color={'$primary100'}>{props.admin !== "" ? props.admin : "Nobody"}</Text>
+            <Box mt='$6'>
+              <Text fontSize={'$sm'}  textAlign={'center'} color={'$primary50'} fontWeight={'$thin'}>{props.admin !== ""  ? "This address has the power to mint, burn tokens and change token metadata. Proceed with caution." : "The creator of this token gave up on the ownership. Tokens can not be minted anymore and the metadata can not be modified."}</Text>
+            </Box>
         </Box>
       </Box>
       {address === props.admin &&
@@ -46,7 +46,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
   const [showBurnButton, setShowBurnButton] = useState<boolean>(true);
   const [showMintButton, setShowMintButton] = useState<boolean>(true);
 
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState("");
   const [supply, setSupply] = useState<string>("0");
   const [denom, setDenom] = useState<string>("");
 
