@@ -152,7 +152,8 @@ function CallToActionBox({props}: {props: CallToActionBoxProps}) {
   }, []);
 
   return (
-    <DefaultBorderedBox ml='$6' mb={{desktop: '$0', mobile: '$6'}}>
+    <Box ml='$6' mb={{desktop: '$0', mobile: '$6'}}>
+      <DefaultBorderedBox>
         <Box display={'flex'} flexDirection={'column'} alignItems='center'>
           <Box p='$6' mt='$6'>
             <Text fontSize={'$md'} fontWeight={'$bold'} color='$primary200'>Unleash Your Creativity with BZE Blockchain's Token Factory!</Text>
@@ -175,6 +176,7 @@ function CallToActionBox({props}: {props: CallToActionBoxProps}) {
           }
         </Box>
       </DefaultBorderedBox>
+    </Box>
   );
 }
 
