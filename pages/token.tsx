@@ -616,7 +616,7 @@ export default function Token() {
     <Layout>
       <Box display='block' flexDirection={'row'}>
         <Box marginBottom={'$12'} ml='$6'>
-          <Text as="h1" fontSize={'$2xl'}>Token details</Text>
+          <Text as="h1" fontSize={'$2xl'}>Token Details {chainMetadata?.name ? "/" : ""}<Text fontSize={'$2xl'} color={'$primary300'} as="span"> {chainMetadata?.name}</Text></Text>
         </Box>
       </Box>
       {!loading && chainMetadata &&
