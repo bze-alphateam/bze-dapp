@@ -23,7 +23,7 @@ export async function getStakingRewards(reverse: boolean = true): Promise<QueryA
     }
 
     const client = await getRestClient();
-    let response = await client.bze.v1.rewards.stakingRewardAll(QueryAllStakingRewardRequestFromPartial({pagination: {reverse: reverse}}));
+    let response = await client.bze.v1.rewards.stakingRewardAll(QueryAllStakingRewardRequestFromPartial({pagination: {reverse: reverse, limit: 1000}}));
     let cacheData = {
         params: {...response},
         expiresAt: new Date().getTime() + SR_TTL,

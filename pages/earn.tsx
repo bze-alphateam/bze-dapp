@@ -428,12 +428,14 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
 function StakingRewards() {
   const [loading, setLoading] = useState(true);
   const [rewards, setRewards] = useState<StakingRewardSDKType[]>([]);
+  const [filteredRewards, setFilteredRewards] = useState<StakingRewardSDKType[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [allAssets, setAllAssets] = useState<Map<string, Token>>(new Map());
 
   const fetchStakingRewards = async () => {
     const all = await getStakingRewards();
     setRewards(all.list);
+    setFilteredRewards(all.list);
   }
   
   const fetchTokens = async () => {
@@ -446,6 +448,34 @@ function StakingRewards() {
     await resetStakingRewardsCache();
     await fetchStakingRewards();
   };
+
+  const onSearchSubmit = async (query: string) => {
+    if (query === "") {
+      setFilteredRewards(rewards);
+      return;
+    }
+
+    let lowerQuery = query.toLowerCase();
+    const tokensSearch = Array.from(allAssets.values()).filter((token: Token) => {
+      return token.metadata.base.toLowerCase().includes(lowerQuery) ||
+        token.metadata.display.toLowerCase().includes(lowerQuery) ||
+        token.metadata.name.toLowerCase().includes(lowerQuery) ||
+        token.metadata.symbol.toLowerCase().includes(lowerQuery)
+    });
+
+    if (tokensSearch.length === 0) {
+      setFilteredRewards([]);
+      return;
+    }
+
+    const result = rewards.filter((item: StakingRewardSDKType) => {
+      let rewardAsset = tokensSearch.find((token: Token) => token.metadata.base === item.staking_denom || token.metadata.base === item.prize_denom);
+      
+      return rewardAsset !== undefined;
+    });
+
+    setFilteredRewards(result);
+  }
 
   useEffect(() => {
     const initialLoad = async () => {
@@ -468,7 +498,7 @@ function StakingRewards() {
             {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
           </Box>
           <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
-            <SearchInput placeholder='Search by asset' width={20} onSubmit={() => {}}/>
+            <SearchInput placeholder='Search by asset' width={20} onSubmit={onSearchSubmit}/>
           </Box>
         </Box>
         {showAddForm &&
@@ -486,7 +516,7 @@ function StakingRewards() {
         {loading ? 
           <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>
           :
-          rewards.map((rew, index) => (
+          filteredRewards.map((rew, index) => (
             <StakingRewardDetail props={{reward: rew, tokens: allAssets}} key={index}/>
           ))  
         } 
