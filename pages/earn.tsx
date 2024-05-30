@@ -283,7 +283,7 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
                   intent="info"
                   title="Summary"
                 >
-                    You are creating a staking reward that will distribute {prizeAmount} {selectedPrizeDenom?.metadata.display} every day, for a period of {duration} days, to all the users that stake {minStake !== undefined ? minStake : 0} {selectedStakingDenom?.metadata.display} or more. The staked amounts will be locked for {lock ?? 0} days.
+                    You are creating a staking reward that will distribute {prettyAmount(prizeAmount)} {selectedPrizeDenom?.metadata.display} every day, for a period of {duration} days, to all the users that stake {minStake !== undefined ? prettyAmount(minStake) : 0} {selectedStakingDenom?.metadata.display} or more. The staked amounts will be locked for {lock ?? 0} days.
                 </Callout>
                 <Callout
                   attributes={{
@@ -465,7 +465,7 @@ function StakingRewards() {
       <DefaultBorderedBox p='$6' m='$6'>
         <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'}>
           <Box>
-            {showAddForm ? <></> : <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
+            {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
           </Box>
           <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
             <SearchInput placeholder='Search by asset' width={20} onSubmit={() => {}}/>
