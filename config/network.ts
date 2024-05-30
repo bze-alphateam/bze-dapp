@@ -1,6 +1,6 @@
 import { chains, assets } from 'chain-registry';
 
-const TESTNET_COIN_DENOM = "tbz";
+const TESTNET_COIN_DENOM = "TBZE";
 const TESTNET_COIN_MIN_DENOM = "utbz";
 const BZE_PREFIX_TESTNET = "testbz";
 
@@ -122,7 +122,8 @@ export const networks = {
             "display": TESTNET_COIN_DENOM,
             "symbol": TESTNET_COIN_DENOM,
             "logo_URIs": {
-              "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.svg"
+              "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.svg",
+              "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.png"
             },
             "coingecko_id": "bzedge"
           },
@@ -177,7 +178,29 @@ export const networks = {
             "display": "",
             "name": "",
             "symbol": ""
-          }
+          },
+          {
+            "description": "An IBC token",
+            "denom_units": [
+              {
+                "denom": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
+                "exponent": 0,
+                "aliases": []
+              },
+              {
+                "denom": "IBC1",
+                "exponent": 6,
+                "aliases": []
+              },
+            ],
+            "base": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
+            "display": "IBC1",
+            "name": "IBC ONE",
+            "symbol": "IBC1",
+            "logo_URIs": {
+              "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/vidulum/images/vdl.png"
+            },
+          },
         ]   
       }
     ]

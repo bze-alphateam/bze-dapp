@@ -1,5 +1,6 @@
 import "../styles/globals.css";
 import "@interchain-ui/react/styles";
+// import '@interchain-ui/react/globalStyles';
 
 import type { AppProps } from "next/app";
 import { SignerOptions } from "cosmos-kit";
@@ -13,7 +14,6 @@ import {
   Toaster,
 } from "@interchain-ui/react";
 import { ASSETS, CHAINS } from "@/config";
-import { GasPrice } from '@cosmjs/stargate';
 
 function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const { themeClass } = useTheme();

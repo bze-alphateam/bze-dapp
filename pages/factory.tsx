@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllTokens, getTokenFactoryParams } from "@/services";
+import { Token, getFactoryTokens, getTokenFactoryParams } from "@/services";
 import { getChainName, prettyFee } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
@@ -11,7 +11,6 @@ import WalletConnectCallout from "@/components/wallet/WalletCallout";
 import { useToast } from "@/hooks/useToast";
 import { useTx } from "@/hooks";
 import { bze } from '@bze/bzejs';
-import { CHAIN_NAME } from "@/config";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { useRouter } from "next/router";
 
@@ -213,7 +212,7 @@ function TokenList() {
   }
 
   const fetchList = async () => {
-    const tokens = await getAllTokens();
+    const tokens = await getFactoryTokens();
     setList(tokens);
     setFiltered(Array.from(tokens.values()));
     setLoading(false);

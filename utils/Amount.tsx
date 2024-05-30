@@ -1,20 +1,30 @@
 
 import { parseCoins } from "@cosmjs/stargate";
+import BigNumber from 'bignumber.js';
 
-export function uAmountToAmount(amount: string, noOfDecimals: number): number {
-  let parsed = parseInt(amount);
+export function uAmountToAmount(amount: string | number, noOfDecimals: number): string {
+  return new BigNumber(amount)
+    .shiftedBy((-1)*noOfDecimals)
+    .decimalPlaces(noOfDecimals || 6)
+    .toString();
+  // let parsed = parseInt(amount);
   
-  return parsed / Math.pow(10, noOfDecimals);
+  // return parsed / Math.pow(10, noOfDecimals);
 } 
 
-export function amountToUAmount(amount: string, noOfDecimals: number): number {
-  let parsed = parseFloat(amount);
+export function amountToUAmount(amount: string | number, noOfDecimals: number): string {
+  return new BigNumber(amount)
+    .shiftedBy(noOfDecimals)
+    .decimalPlaces(noOfDecimals || 6)
+    .toString();
+
+  // let parsed = parseFloat(amount);
   
-  return parsed * Math.pow(10, noOfDecimals);
+  // return parsed * Math.pow(10, noOfDecimals);
 } 
 
-export function prettyAmount(amount: number): string {
-  return Intl.NumberFormat('en', { notation: 'standard' }).format(amount);
+export function prettyAmount(amount: number | string): string {
+  return Intl.NumberFormat('en', { notation: 'standard' }).format(new BigNumber(amount).toNumber());
 }
 
 export function prettyFee(fee: string): string {
@@ -27,3 +37,22 @@ export function prettyFee(fee: string): string {
     return `${prettyCoin} BZE`;
   }
 }
+
+export const shiftDigits = (
+  num: string | number,
+  places: number,
+  decimalPlaces?: number
+) => {
+  return new BigNumber(num)
+    .shiftedBy(places)
+    .decimalPlaces(decimalPlaces || 6)
+    .toString();
+}
+
+export const isGreaterThanZero = (val: number | string | undefined) => {
+  return new BigNumber(val || 0).gt(0);
+};
+
+export const isGreaterOrEqualToZero = (val: number | string | undefined) => {
+  return new BigNumber(val || 0).gte(0);
+};

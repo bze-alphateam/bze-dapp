@@ -15,9 +15,10 @@ export interface Token {
   coingekoId?: string,
 }
 
-let cachedTokens: Map<string, Token>;
+let cachedFactoryTokens: Map<string, Token>;
 let cachedChainMetadata: MetadataSDKType[] = [];
 let allDenomsSupply: CoinSDKType[] = [];
+let allSupplyTokens: Map<string, Token>;
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
   if (cachedChainMetadata.length !== 0) {
@@ -36,12 +37,12 @@ async function getChainMetadatas(): Promise<MetadataSDKType[]> {
   return cachedChainMetadata;
 }
 
-export async function getAllTokens(): Promise<Map<string, Token>> {
-  if (cachedTokens !== undefined) {
-    // return cachedTokens;
+export async function getFactoryTokens(): Promise<Map<string, Token>> {
+  if (cachedFactoryTokens !== undefined) {
+    return cachedFactoryTokens;
   }
 
-  cachedTokens = new Map();
+  cachedFactoryTokens = new Map();
 
   try {
     let metadatas = await getChainMetadatas();
@@ -64,15 +65,15 @@ export async function getAllTokens(): Promise<Map<string, Token>> {
         meta.metadata.name = meta.metadata.base;
       }
 
-      cachedTokens.set(metadatas[i].base, meta)
+      cachedFactoryTokens.set(metadatas[i].base, meta)
     }
 
      //override metadata with details from chain registry
     let chain = getChain();
     for (let i = 0; i < chain.assets; i++) {
-      for (let j = 0; j < 0; j++) {
+      for (let j = 0; j < chain.assets[i].assets.length; j++) {
         let chainAsset = chain.assets[i].assets[j];
-        let meta = cachedTokens.get(chainAsset.base)
+        let meta = cachedFactoryTokens.get(chainAsset.base)
         if (meta === undefined) {
           continue;
         }
@@ -93,11 +94,11 @@ export async function getAllTokens(): Promise<Map<string, Token>> {
           meta.coingekoId = chainAsset.coingecko_id;
         }
         
-        cachedTokens.set(chainAsset.base, meta)
+        cachedFactoryTokens.set(chainAsset.base, meta)
       }
     }
 
-    return cachedTokens;
+    return cachedFactoryTokens;
   } catch(e) {
     console.error(e);
     return new Map();
@@ -155,15 +156,18 @@ export async function getTokenSupply(denom: string): Promise<string> {
   return filtered.length > 0 ? filtered[0].amount : "0";
 }
 
-export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKType> {
-  const all = await getAllTokens();
-  const details = all.get(denom);
+export async function getTokenDisplayDenom(denom: string, token?: Token): Promise<DenomUnitSDKType> {
+  let details = token;
   if (details === undefined) {
-    return {
-      denom: denom,
-      exponent: 0,
-      aliases: [],
-    };
+    const all = await getAllSupplyTokens();
+    details = all.get(denom);
+    if (details === undefined) {
+      return {
+        denom: denom,
+        exponent: 0,
+        aliases: [],
+      };
+    }
   }
   
   if (details.metadata.display === "") {
@@ -174,8 +178,8 @@ export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKT
     };
   }
 
-  const filtered = details.metadata.denom_units.filter((item) => item.denom === details.metadata.display);
-  if (filtered.length === 0) {
+  const filtered = details.metadata.denom_units.find((item) => item.denom === details.metadata.display);
+  if (filtered === undefined) {
     //should never happen
     return {
       denom: details.metadata.base,
@@ -184,5 +188,72 @@ export async function getTokenDisplayDenom(denom: string): Promise<DenomUnitSDKT
     };
   }
 
-  return filtered[0];
+  return filtered;
 }
+
+export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
+  if (allSupplyTokens !== undefined) {
+    return allSupplyTokens;
+  }
+
+  allSupplyTokens = new Map();
+
+  const [factoryTokens, fetchedSupply] = await Promise.all([getFactoryTokens(), getSupply()]);
+  //override metadata with details from chain registry
+  let chain = getChain();
+  for (let a = 0; a < fetchedSupply.length; a++) {
+    let current = fetchedSupply[a];
+    let foundInFactory = factoryTokens.get(current.denom)
+    if (foundInFactory !== undefined) {
+      allSupplyTokens.set(current.denom, foundInFactory)
+      continue;
+    }
+
+    for (let i = 0; i < chain.assets.length; i++) {
+      for (let j = 0; j < chain.assets[i].assets.length; j++) {
+        let chainAsset = chain.assets[i].assets[j];
+        if (chainAsset.base !== current.denom) {
+          continue;
+        }
+
+        
+        let meta = {
+          metadata: {
+            base: current.denom,
+            denom_units: [],
+            display: '',
+            symbol: '',
+            name: '',
+            description: '',
+            uri: '',
+            uri_hash: '',
+          },
+          logo: TOKEN_IMG_DEFAULT,
+          verified: VERIFIED_TOKENS[current.denom] ?? false,
+          coingekoId: '',
+        }
+        
+        meta.metadata.denom_units = chainAsset.denom_units;
+        meta.metadata.display = chainAsset.display;
+        meta.metadata.symbol = chainAsset.symbol;
+        meta.metadata.name = chainAsset.name;
+        if (chainAsset.description === undefined) {
+          meta.metadata.description = chainAsset.description;
+        }
+        
+        if (chainAsset.logo_URIs?.png) {
+          meta.logo = chainAsset.logo_URIs.png;
+        }
+
+        if (chainAsset.coingecko_id !== '') {
+          meta.coingekoId = chainAsset.coingecko_id;
+        }
+        
+        allSupplyTokens.set(chainAsset.base, meta)
+      }
+    }
+  }
+  
+  return allSupplyTokens;
+}
+
