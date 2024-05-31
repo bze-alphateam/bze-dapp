@@ -18,7 +18,7 @@ function prettyDestination(dest: string) {
 
 function ChainParamItem({ children, name, value }: { children: React.ReactNode, name: string, value: string }) {
   return (
-      <DefaultBorderedBox mr='$6'>
+      <DefaultBorderedBox mr='$6' mt={{desktop: "$0", mobile: '$6'}}>
         <Box display={'flex'} flexDirection={'column'} alignItems='center'>
           <Box p='$6'>
             <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>{name}</Text>
