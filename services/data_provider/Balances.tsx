@@ -1,7 +1,6 @@
 import { QuerySpendableBalancesResponseSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/query";
 import { getRestClient } from "../Client";
 
-
 const BALANCES_KEY = 'bank:balances:';
 
 const BALANCES_CACHE_TTL = 1000 * 60 * 15; //15 minutes

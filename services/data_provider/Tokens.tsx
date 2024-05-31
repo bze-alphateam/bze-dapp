@@ -70,7 +70,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
 
      //override metadata with details from chain registry
     let chain = getChain();
-    for (let i = 0; i < chain.assets; i++) {
+    for (let i = 0; i < chain.assets.length; i++) {
       for (let j = 0; j < chain.assets[i].assets.length; j++) {
         let chainAsset = chain.assets[i].assets[j];
         let meta = cachedFactoryTokens.get(chainAsset.base)

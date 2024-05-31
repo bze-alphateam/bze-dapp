@@ -421,6 +421,7 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
       <StakingRewardDetailRow props={{name: 'Lock:', value: lock}} />
       <StakingRewardDetailRow props={{name: 'Remaining:', value: remainingPeriod}} />
       <StakingRewardDetailRow props={{name: 'Staked:', value: totalStaked}} />
+      <StakingRewardDetailRow props={{name: 'Verified:', value: prizeToken.verified && stakingToken.verified ? '✅ YES' : '❌ NO'}} />
     </DefaultBorderedBox>  
   );
 }

@@ -180,7 +180,7 @@ export const networks = {
             "symbol": ""
           },
           {
-            "description": "An IBC token",
+            "description": "Celestia",
             "denom_units": [
               {
                 "denom": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
@@ -188,15 +188,37 @@ export const networks = {
                 "aliases": []
               },
               {
-                "denom": "IBC1",
+                "denom": "TIA",
                 "exponent": 6,
                 "aliases": []
               },
             ],
             "base": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
-            "display": "IBC1",
-            "name": "IBC ONE",
-            "symbol": "IBC1",
+            "display": "TIA",
+            "name": "Celestia",
+            "symbol": "TIA",
+            "logo_URIs": {
+              "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/celestia/images/celestia.png"
+            }
+          },
+          {
+            "description": "Vidulum token",
+            "denom_units": [
+              {
+                "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
+                "exponent": 0,
+                "aliases": []
+              },
+              {
+                "denom": "VDL",
+                "exponent": 6,
+                "aliases": []
+              },
+            ],
+            "base": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
+            "display": "VDL",
+            "name": "Vidulum",
+            "symbol": "VDL",
             "logo_URIs": {
               "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/vidulum/images/vdl.png"
             },
