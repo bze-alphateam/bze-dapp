@@ -56,3 +56,7 @@ export const isGreaterThanZero = (val: number | string | undefined) => {
 export const isGreaterOrEqualToZero = (val: number | string | undefined) => {
   return new BigNumber(val || 0).gte(0);
 };
+
+export const isGreaterOrEqualThan = (val: number | string | undefined, compare: number | string | undefined) => {
+  return new BigNumber(val || 0).gte(compare || 0);
+};

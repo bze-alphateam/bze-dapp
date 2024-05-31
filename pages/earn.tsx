@@ -6,7 +6,7 @@ import { Token, getAllSupplyTokens, getRewardsParams, getTokenDisplayDenom } fro
 import { SearchInput } from "@/components/common/Input";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import { useDisclosure, useToast, useTx } from "@/hooks";
-import { amountToUAmount, getChainName, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee, uAmountToAmount } from "@/utils";
+import { amountToUAmount, getChainName, isGreaterOrEqualThan, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee, uAmountToAmount } from "@/utils";
 import BigNumber from "bignumber.js";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { bze } from '@bze/bzejs';
@@ -20,7 +20,7 @@ interface AddStakingRewardFormProps {
   onSuccess: () => void,
 }
 
-const { createStakingReward } = bze.v1.rewards.MessageComposer.withTypeUrl;
+const { createStakingReward, joinStaking } = bze.v1.rewards.MessageComposer.withTypeUrl;
 
 function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
   //this state
@@ -297,7 +297,7 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
                   You will pay {createFee} fee for creating the staking reward and {calculateAmountToPay()} will be captured from your wallet by the blockchain in order to pay for the rewards. This action can NOT be undone and the staking reward can NOT be edited or refunded.
                 </Callout>
               </Box>
-              <Button intent="secondary" size='sm' onClick={() => {setValidForm(false)}} isLoading={submitPending}>Cancel</Button>
+              <Button intent="secondary" size='sm' onClick={() => {setValidForm(false)}} disabled={submitPending}>Cancel</Button>
               <Button intent="primary" size='sm' onClick={() => {submitTransaction()}} isLoading={submitPending}>Confirm</Button>
             </>
             : 
@@ -334,6 +334,7 @@ interface StakingRewardDetailProps {
   reward: StakingRewardSDKType;
   tokens: Map<string, Token>;
   prices?: Prices;
+  refreshList?: () => void;
 }
 
 interface StakingRewardDetailMemoData {
@@ -344,20 +345,34 @@ interface StakingRewardDetailMemoData {
   lock: string;
   remainingPeriod: string;
   totalStaked: string;
+  minStaking: string;
 }
 
 function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
-  const {prizeToken, stakingToken, apr, dailyRewards, lock, remainingPeriod, totalStaked } = useMemo((): StakingRewardDetailMemoData => {
+  const [showForm, setShowForm] = useState(false);
+  const [amount, setAmount] = useState();
+  const [submitPending, setSubmitPending] = useState(false);
+
+  const { toast } = useToast();
+  const { tx } = useTx();
+  const { address } = useChain(getChainName());
+
+  const cancelForm = () => {
+    setShowForm(false);
+    setAmount(undefined);
+  }
+
+  const {prizeToken, stakingToken, apr, dailyRewards, lock, remainingPeriod, totalStaked, minStaking } = useMemo((): StakingRewardDetailMemoData => {
     const pToken = props.tokens.get(props.reward.prize_denom);
     const sToken = props.tokens.get(props.reward.staking_denom);
-    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: ""}
+    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: "", minStaking: ""}
     if (pToken === undefined || sToken === undefined) {
       return result;
     }
 
     let staked =  new BigNumber(props.reward.staked_amount);
     if (pToken.metadata.base === sToken.metadata.base && staked.gt(0)) {
-      let computedApr = new BigNumber(props.reward.prize_amount).multipliedBy(365).dividedBy(staked).decimalPlaces(2);
+      let computedApr = new BigNumber(props.reward.prize_amount).dividedBy(staked).multipliedBy(365).multipliedBy(100);
       result.apr = `~${computedApr.toString()}%`;
     }
 
@@ -376,9 +391,49 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
       return result;
     }
     result.totalStaked = `${prettyAmount(uAmountToAmount(props.reward.staked_amount, sDisplay.exponent))} ${sDisplay.denom}`;
+    result.minStaking = `${prettyAmount(uAmountToAmount(props.reward.min_stake.toString(), sDisplay.exponent))} ${sDisplay.denom}`;
 
     return result;
   }, [props]);
+
+  const submitStake = async () => {
+    if (stakingToken === undefined || amount === undefined) {
+      return;
+    }
+
+    setSubmitPending(true);
+    if (!isGreaterThanZero(amount)) {
+      toast({
+        title: 'Invalid staking amount',
+        description: 'Please insert positive amount',
+        type: 'error'
+      });
+
+      setSubmitPending(false);
+
+      return;
+    }
+
+    const stakingDenomUnit = await getTokenDisplayDenom(stakingToken.metadata.base, stakingToken);
+    const convertedAmount = amountToUAmount(amount, stakingDenomUnit.exponent);
+    const msg = joinStaking({
+      amount: convertedAmount,
+      creator: address ?? "",
+      rewardId: props.reward.reward_id,
+    });
+
+    await tx([msg], {
+      toast: {
+        description: 'Successfully joined staking reward',
+      },
+      onSuccess: () => {
+        props.refreshList ? props.refreshList() : null;
+        setShowForm(false);
+      }
+    });
+    
+    setSubmitPending(false);
+  };
 
   if (prizeToken === undefined || stakingToken === undefined) {
     return <></>
@@ -418,11 +473,34 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
       {apr !== "" ? <StakingRewardDetailRow props={{name: 'APR:', value: apr}} /> : null}
       <StakingRewardDetailRow props={{name: 'Reward:', value: prizeToken.metadata.display}} />
       <StakingRewardDetailRow props={{name: 'Daily distribution:', value: dailyRewards}} />
+      <StakingRewardDetailRow props={{name: 'Min stake:', value: minStaking}} />
       <StakingRewardDetailRow props={{name: 'Lock:', value: lock}} />
       <StakingRewardDetailRow props={{name: 'Remaining:', value: remainingPeriod}} />
       <StakingRewardDetailRow props={{name: 'Staked:', value: totalStaked}} />
       <StakingRewardDetailRow props={{name: 'Verified:', value: prizeToken.verified && stakingToken.verified ? '✅ YES' : '❌ NO'}} />
-    </DefaultBorderedBox>  
+      {!showForm ? 
+        <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'} justifyContent={'center'} mt={'$6'} flexWrap={'wrap'}>
+          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}}>Stake</Button>
+        </Box>
+        :
+        <Box mt={'$6'}>
+          <TextField
+            size='sm'
+            id="stake_amount"
+            label={"Stake " + stakingToken.metadata.display}
+            onChange={(e) => {setAmount(e.target.value)}}
+            placeholder="Amount"
+            value={amount ?? ""}
+            type="number"
+            disabled={submitPending}
+          />
+          <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
+            <Button size='sm' intent="secondary" onClick={cancelForm} disabled={submitPending}>Cancel</Button>
+            <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending} >Stake</Button>
+          </Box>
+        </Box>  
+    }
+    </DefaultBorderedBox>
   );
 }
 
@@ -478,17 +556,23 @@ function StakingRewards() {
     setFilteredRewards(result);
   }
 
-  useEffect(() => {
-    const initialLoad = async () => {
-      setLoading(true);
-      await Promise.all([
-        fetchStakingRewards(),
-        fetchTokens()
-      ]);
-      setLoading(false);
-    }
+  const initialLoad = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchStakingRewards(),
+      fetchTokens()
+    ]);
+    setLoading(false);
+  }
 
+  const forceListRefresh = async () => {
+    await resetStakingRewardsCache();
     initialLoad();
+  }
+
+  useEffect(() => {
+    initialLoad();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -518,7 +602,104 @@ function StakingRewards() {
           <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>
           :
           filteredRewards.map((rew, index) => (
-            <StakingRewardDetail props={{reward: rew, tokens: allAssets}} key={index}/>
+            <StakingRewardDetail props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh}} key={index}/>
+          ))  
+        } 
+      </Box>
+    </Box>
+  );
+}
+
+function MyRewards() {
+  const [loading, setLoading] = useState(true);
+  const [rewards, setRewards] = useState<StakingRewardSDKType[]>([]);
+  const [filteredRewards, setFilteredRewards] = useState<StakingRewardSDKType[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [allAssets, setAllAssets] = useState<Map<string, Token>>(new Map());
+
+  const fetchStakingRewards = async () => {
+    const all = await getStakingRewards();
+    setRewards(all.list);
+    setFilteredRewards(all.list);
+  }
+  
+  const fetchTokens = async () => {
+    const all = await getAllSupplyTokens();
+    setAllAssets(all);
+  }
+
+  const onNewStakingReward = async () => {
+    setShowAddForm(false);
+    await resetStakingRewardsCache();
+    await fetchStakingRewards();
+  };
+
+  const onSearchSubmit = async (query: string) => {
+    if (query === "") {
+      setFilteredRewards(rewards);
+      return;
+    }
+
+    let lowerQuery = query.toLowerCase();
+    const tokensSearch = Array.from(allAssets.values()).filter((token: Token) => {
+      return token.metadata.base.toLowerCase().includes(lowerQuery) ||
+        token.metadata.display.toLowerCase().includes(lowerQuery) ||
+        token.metadata.name.toLowerCase().includes(lowerQuery) ||
+        token.metadata.symbol.toLowerCase().includes(lowerQuery)
+    });
+
+    if (tokensSearch.length === 0) {
+      setFilteredRewards([]);
+      return;
+    }
+
+    const result = rewards.filter((item: StakingRewardSDKType) => {
+      let rewardAsset = tokensSearch.find((token: Token) => token.metadata.base === item.staking_denom || token.metadata.base === item.prize_denom);
+      
+      return rewardAsset !== undefined;
+    });
+
+    setFilteredRewards(result);
+  }
+
+  const initialLoad = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchStakingRewards(),
+      fetchTokens()
+    ]);
+    setLoading(false);
+  }
+
+  const forceListRefresh = async () => {
+    await resetStakingRewardsCache();
+    initialLoad();
+  }
+
+  useEffect(() => {
+    initialLoad();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Box>
+      <DefaultBorderedBox p='$6' m='$6'>
+        <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'}>
+          <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
+            <SearchInput placeholder='Search by asset' width={20} onSubmit={onSearchSubmit}/>
+          </Box>
+        </Box>
+      </DefaultBorderedBox>
+      <Box 
+        flexDirection={{desktop: 'row', mobile: 'column'}} 
+        display={'flex'}
+        flexWrap={'wrap'}
+        >
+        {loading ? 
+          <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>
+          :
+          filteredRewards.map((rew, index) => (
+            <StakingRewardDetail props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh}} key={index}/>
           ))  
         } 
       </Box>
@@ -578,7 +759,7 @@ export default function Earn() {
               label: 'Trading rewards'
             },
             {
-              content: <h1>Tab3</h1>,
+              content: <MyRewards/>,
               label: 'My rewards'
             }
           ]}
