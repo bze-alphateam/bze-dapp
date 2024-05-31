@@ -38,7 +38,7 @@ async function getChainMetadatas(): Promise<MetadataSDKType[]> {
 }
 
 export async function getFactoryTokens(): Promise<Map<string, Token>> {
-  if (cachedFactoryTokens !== undefined) {
+  if (cachedFactoryTokens !== undefined && cachedFactoryTokens.size > 0) {
     return cachedFactoryTokens;
   }
 
@@ -77,7 +77,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
         if (meta === undefined) {
           continue;
         }
-        
+
         meta.metadata.denom_units = chainAsset.denom_units;
         meta.metadata.display = chainAsset.display;
         meta.metadata.symbol = chainAsset.symbol;
@@ -192,7 +192,7 @@ export async function getTokenDisplayDenom(denom: string, token?: Token): Promis
 }
 
 export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
-  if (allSupplyTokens !== undefined) {
+  if (allSupplyTokens !== undefined && allSupplyTokens.size !== 0) {
     return allSupplyTokens;
   }
 
