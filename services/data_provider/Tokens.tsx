@@ -178,7 +178,7 @@ export async function getTokenDisplayDenom(denom: string, token?: Token): Promis
     };
   }
 
-  const filtered = details.metadata.denom_units.find((item) => item.denom === details.metadata.display);
+  const filtered = details.metadata.denom_units.find((item) => item.denom === details?.metadata.display);
   if (filtered === undefined) {
     //should never happen
     return {
