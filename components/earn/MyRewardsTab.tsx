@@ -134,6 +134,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   useEffect(() => {
     setPrizeToken(props.tokens.get(props.reward.prize_denom));
     let sToken = props.tokens.get(props.reward.staking_denom);
+    setStakingToken(sToken);
     if (sToken !== undefined && props.participant !== undefined) {
       setStakingDisplayDenom(sToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === sToken?.metadata.display));
       let distr = new BigNumber(props.reward.distributed_stake);
@@ -147,7 +148,6 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
       let rewardsToClaim = deposited.multipliedBy(distr.minus(joinedAt)).decimalPlaces(0);
       setClaimable(rewardsToClaim);
     }
-    setStakingToken(sToken);
   }, [props]);
 
   if (prizeToken === undefined || stakingToken === undefined) {
