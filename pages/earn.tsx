@@ -526,6 +526,7 @@ function StakingRewards() {
         flexDirection={{desktop: 'row', mobile: 'column'}} 
         display={'flex'}
         flexWrap={'wrap'}
+        justifyContent={'center'}
         >
         {loading ? 
           <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>
@@ -821,6 +822,7 @@ function MyRewards() {
         flexDirection={{desktop: 'row', mobile: 'column'}} 
         display={'flex'}
         flexWrap={'wrap'}
+        justifyContent={'center'}
         >
         {loading ? 
           <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>

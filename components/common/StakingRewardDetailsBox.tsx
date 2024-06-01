@@ -55,7 +55,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
     let staked =  new BigNumber(props.reward.staked_amount);
     result.apr = "?";
     if (pToken.metadata.base === sToken.metadata.base && staked.gt(0)) {
-      let computedApr = new BigNumber(props.reward.prize_amount).dividedBy(staked).multipliedBy(365).multipliedBy(100);
+      let computedApr = new BigNumber(props.reward.prize_amount).dividedBy(staked).multipliedBy(365).multipliedBy(100).decimalPlaces(2);
       result.apr = `~${computedApr.toString()}%`;
     }
 
