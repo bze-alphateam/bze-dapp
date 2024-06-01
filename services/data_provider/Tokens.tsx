@@ -22,7 +22,7 @@ let allSupplyTokens: Map<string, Token>;
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
   if (cachedChainMetadata.length !== 0) {
-    // return cachedChainMetadata;
+    return cachedChainMetadata;
   }
 
   try {
@@ -149,6 +149,17 @@ export function resetSupplyCache() {
   allDenomsSupply = [];
 }
 
+export function resetMetadataCache() {
+  cachedChainMetadata = [];
+}
+
+export function resetAllTokensCache() {
+  resetMetadataCache();
+  resetSupplyCache();
+  allSupplyTokens = new Map();
+  cachedFactoryTokens = new Map();
+}
+
 export async function getTokenSupply(denom: string): Promise<string> {
   let all = await getSupply();
   let filtered = all.filter((item) => item.denom === denom);
@@ -196,16 +207,14 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
     return allSupplyTokens;
   }
 
-  allSupplyTokens = new Map();
-
   const [factoryTokens, fetchedSupply] = await Promise.all([getFactoryTokens(), getSupply()]);
+  allSupplyTokens = factoryTokens;
   //override metadata with details from chain registry
   let chain = getChain();
   for (let a = 0; a < fetchedSupply.length; a++) {
     let current = fetchedSupply[a];
     let foundInFactory = factoryTokens.get(current.denom)
     if (foundInFactory !== undefined) {
-      allSupplyTokens.set(current.denom, foundInFactory)
       continue;
     }
 

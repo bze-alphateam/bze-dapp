@@ -1,6 +1,6 @@
 import { DefaultBorderedBox, Layout } from "@/components";
-import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, resetSupplyCache } from "@/services";
-import { Box, Button, Divider, Spinner, Text, TextField, Tooltip } from "@interchain-ui/react";
+import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, resetAllTokensCache } from "@/services";
+import { Box, Button, Divider, Text, TextField, Tooltip } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
@@ -232,7 +232,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
         description: 'Mint successful'
       },
       onSuccess: () => {
-        resetSupplyCache();
+        resetAllTokensCache();
         fetchSupply();
         onCancelClick();
       }
@@ -268,7 +268,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
         description: 'Burn successful'
       },
       onSuccess: () => {
-        resetSupplyCache();
+        resetAllTokensCache();
         fetchSupply();
         onCancelClick();
       }
@@ -330,6 +330,7 @@ const { setDenomMetadata } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
 interface TokenMetadataProps {
   chainMetadata: MetadataSDKType,
   admin: string,
+  onUpdate: () => void,
 }
 
 function TokenMetadata({props}: {props: TokenMetadataProps}) {
@@ -427,6 +428,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       },
       onSuccess: () => {
         setDisabled(true);
+        props.onUpdate();
       },
     });
 
@@ -601,6 +603,12 @@ export default function Token() {
     setAdmin(admin);
   }
 
+  const onMetadataUpdate = async (denom: string) => {
+    setLoading(true);
+    resetAllTokensCache();
+    fetchChainMetadata(denom);
+  }
+
   useEffect(() => {
     if (typeof query.denom !== 'string') {
       return;
@@ -621,11 +629,11 @@ export default function Token() {
       </Box>
       {!loading && chainMetadata &&
         <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}} flex={1}>
-          <TokenMetadata props={{chainMetadata: chainMetadata, admin: admin}} />
+          <TokenMetadata props={{chainMetadata: chainMetadata, admin: admin, onUpdate: () => {onMetadataUpdate(chainMetadata?.base)}}} />
           <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
             <Box flexDirection={'row'} flex={1}>
-              <TokenSupply props={{chainMetadata: chainMetadata, admin: admin}} />
-              <TokenOwnership props={{chainMetadata: chainMetadata, admin: admin}}/>
+              <TokenSupply props={{chainMetadata: chainMetadata, admin: admin, onUpdate: () => {}}} />
+              <TokenOwnership props={{chainMetadata: chainMetadata, admin: admin, onUpdate: () => {}}}/>
             </Box>
           </Box>
         </Box>
