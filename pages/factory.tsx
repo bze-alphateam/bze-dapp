@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getFactoryTokens, getTokenFactoryParams } from "@/services";
+import { Token, getFactoryTokens, getTokenFactoryParams, resetAllTokensCache } from "@/services";
 import { getChainName, prettyFee } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
@@ -16,8 +16,6 @@ import { useRouter } from "next/router";
 
 const minDenomLength = 2;
 const { createDenom } = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
-const decodeResponse = bze.tokenfactory.v1.MsgCreateDenomResponse.decode
-
 
 interface CreateTokenFormProps {
   onCancel: () => void,
@@ -292,6 +290,7 @@ export default function Factory() {
   const [listId, setListId] = useState<number>(0);
 
   const onTokenCreate = () => {
+    resetAllTokensCache();
     setListId(listId + 1);
   }
 
