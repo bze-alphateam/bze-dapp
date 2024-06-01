@@ -546,14 +546,17 @@ interface MyRewardDetailProps extends StakingRewardDetailProps {
 function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   const [confirmUnstake, setConfirmUnstake] = useState(false);
   const [submitPending, setSubmitPending] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const [stakingToken, setStakingToken] = useState<Token>();
   const [prizeToken, setPrizeToken] = useState<Token>();
   const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
   const [claimable, setClaimable] = useState(new BigNumber(0));
+  const [amount, setAmount] = useState();
 
   const { tx } = useTx();
   const { address } = useChain(getChainName());
+  const { toast } = useToast();
 
   const cancelUnstake = () => {
     setConfirmUnstake(false);
@@ -607,6 +610,50 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
     setSubmitPending(false);
   };
 
+  const cancelForm = () => {
+    setShowForm(false);
+    setAmount(undefined);
+  }
+
+  const submitStake = async () => {
+    if (stakingToken === undefined || amount === undefined) {
+      return;
+    }
+
+    setSubmitPending(true);
+    if (!isGreaterThanZero(amount)) {
+      toast({
+        title: 'Invalid staking amount',
+        description: 'Please insert positive amount',
+        type: 'error'
+      });
+
+      setSubmitPending(false);
+
+      return;
+    }
+
+    const stakingDenomUnit = await getTokenDisplayDenom(stakingToken.metadata.base, stakingToken);
+    const convertedAmount = amountToUAmount(amount, stakingDenomUnit.exponent);
+    const msg = joinStaking({
+      amount: convertedAmount,
+      creator: address ?? "",
+      rewardId: props.reward.reward_id,
+    });
+
+    await tx([msg], {
+      toast: {
+        description: 'Stake successfully added',
+      },
+      onSuccess: () => {
+        props.refreshList ? props.refreshList() : null;
+        setShowForm(false);
+      }
+    });
+    
+    setSubmitPending(false);
+  };
+
   useEffect(() => {
     setPrizeToken(props.tokens.get(props.reward.prize_denom));
     let sToken = props.tokens.get(props.reward.staking_denom);
@@ -636,12 +683,14 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
       <StakingRewardDetailsBoxRow props={{name: 'Your stake:', value: `${prettyAmount(uAmountToAmount(props.participant?.amount ?? 0, stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom}`}} />
       <StakingRewardDetailsBoxRow props={{name: 'Pending rewards', value: `${prettyAmount(uAmountToAmount(claimable.toString(), stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom}`}}/>
       <Box mt={'$6'} display={'flex'} flexDirection={'column'}>
-        {!confirmUnstake ? 
-          <Box display='flex' flexDirection={'row'} justifyContent={'space-around'}>
-            <Button size='sm' intent="primary" onClick={() => {setConfirmUnstake(true)}} disabled={submitPending}>Unstake</Button>
-            <Button size='sm' intent="primary" onClick={() => {claim()}} isLoading={submitPending}>Claim</Button>
-          </Box>
-          :
+        {!confirmUnstake && !showForm &&
+        <Box display='flex' flexDirection={'row'} justifyContent={'space-around'}>
+          <Button size='sm' intent="primary" onClick={() => {setConfirmUnstake(true)}} disabled={submitPending}>Unstake</Button>
+          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}} disabled={submitPending}>Stake</Button>
+          <Button size='sm' intent="primary" onClick={() => {claim()}} isLoading={submitPending}>Claim</Button>
+        </Box>
+        }
+        {confirmUnstake &&
           <Box>
             {props.reward.lock > 0 &&
               <Box display={'flex'} flex={1} textAlign={"center"} justifyContent={'center'}>
@@ -664,6 +713,24 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
             </Box>
           </Box>  
         }
+        {showForm &&
+        <Box mt={'$6'}>
+          <TextField
+            size='sm'
+            id="stake_amount"
+            label={"Stake " + stakingToken.metadata.display}
+            onChange={(e) => {setAmount(e.target.value)}}
+            placeholder="Amount"
+            value={amount ?? ""}
+            type="number"
+            disabled={submitPending}
+          />
+          <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
+            <Button size='sm' intent="secondary" onClick={cancelForm} disabled={submitPending}>Cancel</Button>
+            <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending} >Stake</Button>
+          </Box>
+        </Box>  
+      }
       </Box>
     </StakingRewardDetailsBox>
   );

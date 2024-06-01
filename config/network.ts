@@ -210,15 +210,15 @@ export const networks = {
                 "aliases": []
               },
               {
-                "denom": "VDL",
+                "denom": "TVDL",
                 "exponent": 6,
                 "aliases": []
               },
             ],
             "base": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
-            "display": "VDL",
+            "display": "TVDL",
             "name": "Vidulum",
-            "symbol": "VDL",
+            "symbol": "TVDL",
             "logo_URIs": {
               "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/vidulum/images/vdl.png"
             },
