@@ -509,9 +509,13 @@ export function StakingRewards() {
         {loading ? 
           <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>Loading ...</Text></Box>
           :
-          filteredRewards.map((rew, index) => (
-            <StakingRewardDetail props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh}} key={index}/>
-          ))  
+          ( filteredRewards.length > 0 ?
+            filteredRewards.map((rew, index) => (
+              <StakingRewardDetail props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh}} key={index}/>
+            ))
+            :
+            <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>No rewards found...</Text></Box>
+          )
         } 
       </Box>
     </Box>

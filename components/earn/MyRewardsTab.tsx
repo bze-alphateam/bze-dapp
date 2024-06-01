@@ -305,9 +305,13 @@ export function MyRewards() {
           :
           (
             address ?
-            filteredRewards.map((rew, index) => (
-              <MyRewardDetail props={{reward: rew, tokens: allAssets, participant: stakingParticipations.get(rew.reward_id), refreshList: forceListRefresh}} key={index}/>
-            )) 
+            (filteredRewards.length > 0 ?
+              filteredRewards.map((rew, index) => (
+                <MyRewardDetail props={{reward: rew, tokens: allAssets, participant: stakingParticipations.get(rew.reward_id), refreshList: forceListRefresh}} key={index}/>
+              )) 
+              :
+              <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}><Text>No rewards found...</Text></Box>
+            )
             :
             <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}>
               <WalletConnectCallout props={{text: 'Please connect your wallet to view your rewards'}}/>
