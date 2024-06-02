@@ -211,6 +211,7 @@ function TokenList() {
 
   const fetchList = async () => {
     const tokens = await getFactoryTokens();
+
     setList(tokens);
     setFiltered(Array.from(tokens.values()));
     setLoading(false);

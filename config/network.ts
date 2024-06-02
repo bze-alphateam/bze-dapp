@@ -166,7 +166,7 @@ export const networks = {
             "symbol": "BETA"
           },
           {
-            "description": "",
+            "description": "Stefan's token",
             "denom_units": [
               {
                 "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku3",
@@ -175,9 +175,9 @@ export const networks = {
               }
             ],
             "base": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku3",
-            "display": "",
-            "name": "",
-            "symbol": ""
+            "display": "STF",
+            "name": "STeF",
+            "symbol": "STF"
           },
           {
             "description": "Celestia",

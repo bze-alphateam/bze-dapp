@@ -15,34 +15,21 @@ export interface Token {
   coingekoId?: string,
 }
 
-let cachedFactoryTokens: Map<string, Token>;
-let cachedChainMetadata: MetadataSDKType[] = [];
-let allDenomsSupply: CoinSDKType[] = [];
-let allSupplyTokens: Map<string, Token>;
-
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
-  if (cachedChainMetadata.length !== 0) {
-    return cachedChainMetadata;
-  }
-
   try {
     const client = await getRestClient();
     {/* @ts-ignore */}
     let response = await client.cosmos.bank.v1beta1.denomsMetadata({pagination: {limit: Long.ZERO.add(DENOM_METADATA_LIMIT)}});
-    cachedChainMetadata = response.metadatas;
+    return response.metadatas;
   } catch (e) {
     console.error(e);
   }
 
-  return cachedChainMetadata;
+  return [];
 }
 
 export async function getFactoryTokens(): Promise<Map<string, Token>> {
-  if (cachedFactoryTokens !== undefined && cachedFactoryTokens.size > 0) {
-    return cachedFactoryTokens;
-  }
-
-  cachedFactoryTokens = new Map();
+  let cachedFactoryTokens = new Map();
 
   try {
     let metadatas = await getChainMetadatas();
@@ -126,16 +113,12 @@ export async function getTokenAdminAddress(denom: string): Promise<string> {
 }
 
 async function getSupply() {
-  if (allDenomsSupply.length > 0) {
-    return allDenomsSupply;
-  }
-
   try {
     const client = await getRestClient();
      {/* @ts-ignore */}
     let res = await client.cosmos.bank.v1beta1.totalSupply({pagination: {limit: Long.fromNumber(DENOM_METADATA_LIMIT)}})
 
-    allDenomsSupply = res.supply;
+    let allDenomsSupply = res.supply;
 
     return allDenomsSupply;
   } catch (e) {
@@ -146,18 +129,16 @@ async function getSupply() {
 }
 
 export function resetSupplyCache() {
-  allDenomsSupply = [];
+
 }
 
 export function resetMetadataCache() {
-  cachedChainMetadata = [];
+
 }
 
 export function resetAllTokensCache() {
   resetMetadataCache();
   resetSupplyCache();
-  allSupplyTokens = new Map();
-  cachedFactoryTokens = new Map();
 }
 
 export async function getTokenSupply(denom: string): Promise<string> {
@@ -203,12 +184,8 @@ export async function getTokenDisplayDenom(denom: string, token?: Token): Promis
 }
 
 export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
-  if (allSupplyTokens !== undefined && allSupplyTokens.size !== 0) {
-    return allSupplyTokens;
-  }
-
   const [factoryTokens, fetchedSupply] = await Promise.all([getFactoryTokens(), getSupply()]);
-  allSupplyTokens = factoryTokens;
+  let allSupplyTokens = factoryTokens;
   //override metadata with details from chain registry
   let chain = getChain();
   for (let a = 0; a < fetchedSupply.length; a++) {
