@@ -51,7 +51,7 @@ export default function Earn() {
               label: 'Staking rewards'
             },
             {
-              content: <h1>Tab2</h1>,
+              content: <h1>Coming soon</h1>,
               label: 'Trading rewards'
             },
             {

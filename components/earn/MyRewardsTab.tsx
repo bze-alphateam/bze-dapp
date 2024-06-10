@@ -28,6 +28,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   const [stakingToken, setStakingToken] = useState<Token>();
   const [prizeToken, setPrizeToken] = useState<Token>();
   const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
+  const [prizeDisplayDenom, setPrizeDisplayDenom] = useState<DenomUnitSDKType>();
   const [claimable, setClaimable] = useState(new BigNumber(0));
   const [amount, setAmount] = useState();
 
@@ -93,7 +94,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   }
 
   const submitStake = async () => {
-    if (stakingToken === undefined || amount === undefined) {
+    if (stakingToken === undefined || amount === undefined || stakingDisplayDenom === undefined) {
       return;
     }
 
@@ -110,8 +111,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
       return;
     }
 
-    const stakingDenomUnit = await getTokenDisplayDenom(stakingToken.metadata.base, stakingToken);
-    const convertedAmount = amountToUAmount(amount, stakingDenomUnit.exponent);
+    const convertedAmount = amountToUAmount(amount, stakingDisplayDenom.exponent);
     const msg = joinStaking({
       amount: convertedAmount,
       creator: address ?? "",
@@ -132,11 +132,13 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   };
 
   useEffect(() => {
-    setPrizeToken(props.tokens.get(props.reward.prize_denom));
+    let pToken = props.tokens.get(props.reward.prize_denom);
+    setPrizeToken(pToken);
     let sToken = props.tokens.get(props.reward.staking_denom);
     setStakingToken(sToken);
-    if (sToken !== undefined && props.participant !== undefined) {
+    if (sToken !== undefined && pToken !== undefined && props.participant !== undefined) {
       setStakingDisplayDenom(sToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === sToken?.metadata.display));
+      setPrizeDisplayDenom(pToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === pToken?.metadata.display));
       let distr = new BigNumber(props.reward.distributed_stake);
       let joinedAt = new BigNumber(props.participant.joined_at);
       if (distr.isEqualTo(joinedAt)) {
@@ -158,7 +160,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
     <StakingRewardDetailsBox prizeToken={prizeToken} stakingToken={stakingToken} reward={props.reward}>
       <Divider mt='$6' mb='$6'/>
       <StakingRewardDetailsBoxRow props={{name: 'Your stake:', value: `${prettyAmount(uAmountToAmount(props.participant?.amount ?? 0, stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom}`}} />
-      <StakingRewardDetailsBoxRow props={{name: 'Pending rewards', value: `${prettyAmount(uAmountToAmount(claimable.toString(), stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom}`}}/>
+      <StakingRewardDetailsBoxRow props={{name: 'Pending rewards', value: `${prettyAmount(uAmountToAmount(claimable.toString(), prizeDisplayDenom?.exponent ?? 0))} ${prizeDisplayDenom?.denom}`}}/>
       <Box mt={'$6'} display={'flex'} flexDirection={'column'}>
         {!confirmUnstake && !showForm &&
         <Box display='flex' flexDirection={'row'} justifyContent={'space-around'}>
