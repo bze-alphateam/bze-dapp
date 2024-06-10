@@ -32,6 +32,7 @@ function CreateTokenForm({props}: {props: CreateTokenFormProps}) {
 
   const { toast } = useToast();
   const { tx } = useTx();
+  const router = useRouter();
 
   const onFormDenomChange = (text: string) => {
     setFormDenom(text);
@@ -78,7 +79,14 @@ function CreateTokenForm({props}: {props: CreateTokenFormProps}) {
         description: 'Your token has been created!'
       },
       onSuccess: (res: DeliverTxResponse) => {
-        props.onSuccess ? props.onSuccess(res) : null;
+        //disabled because we will redirect the user to token details instead
+        //props.onSuccess ? props.onSuccess(res) : null;
+        router.push({
+          pathname: '/token',
+          query: {
+            denom: `factory/${address}/${formDenom}`
+          }
+        });
       },
     });
 

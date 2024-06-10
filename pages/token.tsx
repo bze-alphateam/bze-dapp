@@ -1,6 +1,6 @@
 import { DefaultBorderedBox, Layout } from "@/components";
 import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, resetAllTokensCache } from "@/services";
-import { Box, Button, Divider, Text, TextField, Tooltip } from "@interchain-ui/react";
+import { Box, Button, Callout, Divider, Text, TextField, Tooltip } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
@@ -464,6 +464,20 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
 
   return (
     <DefaultBorderedBox mx='$6' width={{desktop: '$containerMd', mobile: '$auto'}}>
+      {address === props.admin && 
+        props.chainMetadata.display === "" &&
+      <Callout
+        attributes={{
+          width: '$auto',
+          margin: '$2'
+        }}
+        iconName="informationLine"
+        intent="success"
+        title="Add token details"
+      >
+        It is recommended to add full metadata to your token. The metadata is used to display token&apos;s human readable details throughout the application. 
+      </Callout>
+      }
       <Box p='$6'>
         <Text as="h3" fontSize={'xl'} color='$primary200'>Metadata</Text>
       </Box>
@@ -512,7 +526,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
         <TextField
           id="display"
           label={
-            <Tooltip placement="right" title={<Text color="$textInverse">The largest denomination of the token. Take bitcoin for example: sats is the smallest denomination while BTC is the largest one with 8 decimals.</Text>}>Display denom (ex: bze)</Tooltip>
+            <Tooltip placement="right" title={<Text color="$textInverse">The largest denomination of the token. Take bitcoin for example: sats is the smallest denomination while BTC is the largest one with 8 decimals.</Text>}>Display denom (ex: BZE)</Tooltip>
           }
           size="sm"
           onChange={(e) => {setDisplay(e.target.value)}}
