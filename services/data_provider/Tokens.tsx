@@ -1,7 +1,7 @@
 import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { getRestClient } from "../Client";
 import Long from 'long';
-import { getChain, getLastCharsAfterSlash } from "@/utils";
+import { MAINNET_UDENOM, TESTNET_UDENOM, getChain, getLastCharsAfterSlash } from "@/utils";
 import { EXCLUDED_TOKENS, VERIFIED_TOKENS } from "@/config/verified";
 import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 
@@ -12,6 +12,7 @@ export interface Token {
   metadata: MetadataSDKType,
   logo: string,
   verified: boolean,
+  type: string,
   coingekoId?: string,
 }
 
@@ -42,6 +43,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
         metadata: metadatas[i],
         logo: TOKEN_IMG_DEFAULT,
         verified: VERIFIED_TOKENS[metadatas[i].base] ?? false,
+        type: getDenomType(metadatas[i].base),
       }
 
       if (meta.metadata.symbol === "") {
@@ -201,7 +203,6 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
         if (chainAsset.base !== current.denom) {
           continue;
         }
-
         
         let meta = {
           metadata: {
@@ -217,6 +218,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
           logo: TOKEN_IMG_DEFAULT,
           verified: VERIFIED_TOKENS[current.denom] ?? false,
           coingekoId: '',
+          type: getDenomType(current.denom),
         }
         
         meta.metadata.denom_units = chainAsset.denom_units;
@@ -243,3 +245,18 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
   return allSupplyTokens;
 }
 
+function getDenomType(denom: string): string {
+  if (denom.startsWith('ibc/')) {
+    return 'IBC';
+  }
+
+  if (denom.startsWith('factory/')) {
+    return 'Factory';
+  }
+
+  if (denom === TESTNET_UDENOM || denom === MAINNET_UDENOM) {
+    return 'Native';
+  }
+
+  return 'Unknown';
+}
