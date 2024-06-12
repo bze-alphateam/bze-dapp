@@ -2,8 +2,6 @@ import {
   Box,
   Button,
   Icon,
-  Link,
-  Text,
   useColorModeValue,
   useTheme,
 } from "@interchain-ui/react";

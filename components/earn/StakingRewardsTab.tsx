@@ -321,7 +321,7 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
             />
           </Box>
           <Box p='$2'>
-            <FieldLabel htmlFor="pick-denom-1" label={"Reward coin"} attributes={{marginBottom: '10px'}}></FieldLabel>
+            <FieldLabel htmlFor="pick-denom-1" label={"Reward coin"} attributes={{marginBottom: '12px'}}></FieldLabel>
             <Button intent="text" key={"pick-denom-1"} disabled={validForm} size='sm' leftIcon={selectedPrizeDenom === undefined ? "add": undefined} onClick={prizeDenomDisclosure.onOpen}>{selectedPrizeDenom === undefined ? "Pick coin" : selectedPrizeDenom.metadata.name}</Button>
           </Box>
           <Box>
@@ -337,7 +337,7 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
             />
           </Box>
           <Box p='$2'>
-            <FieldLabel htmlFor="pick-denom-2" label={"Staking coin"} attributes={{marginBottom: '10px'}}></FieldLabel>
+            <FieldLabel htmlFor="pick-denom-2" label={"Staking coin"} attributes={{marginBottom: '12px'}}></FieldLabel>
             <Button intent="text" key={"pick-denom-2"} disabled={validForm} size='sm' leftIcon={selectedStakingDenom === undefined ? "add": undefined} onClick={stakingDenomDisclosure.onOpen}>{selectedStakingDenom === undefined ? "Pick coin" : selectedStakingDenom.metadata.name}</Button>
           </Box>
           <Box>

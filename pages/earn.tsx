@@ -45,6 +45,7 @@ export default function Earn() {
           }}
           isLazy={true}
           onActiveTabChange={onActiveTabChange}
+          activeTab={currentTab}
           tabs={[
             {
               content: <StakingRewards/>,

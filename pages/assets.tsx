@@ -1,17 +1,9 @@
-import { Divider, Box, Text, Button, TextField, Callout, Spinner } from "@interchain-ui/react";
+import { Divider, Box, Text } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllSupplyTokens, getFactoryTokens, getTokenFactoryParams, resetAllTokensCache } from "@/services";
-import { getChainName, prettyFee } from "@/utils";
-import { useChain, useWallet } from "@cosmos-kit/react";
-import { WalletStatus } from "cosmos-kit";
-import WalletConnectCallout from "@/components/wallet/WalletCallout";
-import { useToast } from "@/hooks/useToast";
-import { useTx } from "@/hooks";
-import { bze } from '@bze/bzejs';
-import { DeliverTxResponse } from "@cosmjs/stargate";
+import { Token, getAllSupplyTokens } from "@/services";
 import { useRouter } from "next/router";
 
 function TokenList() {

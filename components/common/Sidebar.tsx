@@ -77,6 +77,7 @@ export function Topbar() {
           mb='$6'
         >
           <SidebarItem icon="trade" text="Trade" path="/"/>
+          <SidebarItem icon="assets" text="Assets" path="/assets"/>
           <SidebarItem icon="rewards" text="Earn" path="/earn"/>
           <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
           <SidebarItem icon="burner" text="Burner" path="/burner"/>

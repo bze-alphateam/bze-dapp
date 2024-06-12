@@ -3,7 +3,6 @@ import { getRestClient } from "../Client";
 import Long from 'long';
 import { MAINNET_UDENOM, TESTNET_UDENOM, getChain, getLastCharsAfterSlash } from "@/utils";
 import { EXCLUDED_TOKENS, VERIFIED_TOKENS } from "@/config/verified";
-import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
