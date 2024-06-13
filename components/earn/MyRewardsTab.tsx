@@ -291,7 +291,7 @@ export function MyRewards() {
     <Box>
       <DefaultBorderedBox p='$6' m='$6'>
         <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'}>
-          <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
+          <Box display={'flex'} justifyContent={{desktop: 'flex-end', mobile: 'center'}} flex={1}>
             <SearchInput placeholder='Search by asset' width={20} onSubmit={onSearchSubmit}/>
           </Box>
         </Box>

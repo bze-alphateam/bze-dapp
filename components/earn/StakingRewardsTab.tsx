@@ -485,7 +485,7 @@ export function StakingRewards() {
   return (
     <Box>
       <DefaultBorderedBox p='$6' m='$6'>
-        <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'}>
+        <Box display={'flex'} flex={1} flexDirection={{desktop: 'row', mobile: 'column'}} alignItems={'center'} gap={'$2'}>
           <Box>
             {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
           </Box>

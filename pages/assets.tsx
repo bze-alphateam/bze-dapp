@@ -61,16 +61,17 @@ function TokenList() {
        <Box
         display='flex'
         flex={1}
-        justifyContent={'space-between'}
-        flexDirection={'row'}
+        justifyContent={{desktop: 'space-between', mobile: 'center'}}
+        flexDirection={{desktop: 'row', mobile: 'column'}}
         p='$2'
         m='$4'
+        gap={'$2'}
        >
-        <Box mt='$6'>
-          <Text fontSize={'$md'}>All Assets</Text>    
+          <Box mt='$6'>
+            <Text fontSize={'$md'}>All Assets</Text>    
+          </Box>
+          <SearchInput placeholder='Search asset' width={20} onSubmit={handleSearch}/>
         </Box>
-        <SearchInput placeholder='Search token' width={20} onSubmit={handleSearch}/>
-      </Box>
       <Divider mb='$2'/>
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
       {loading ? 
