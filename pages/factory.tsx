@@ -257,13 +257,13 @@ function TokenList() {
         <AssetList
           needChainSpace={true}
           isOtherChains={false}
-          titles={['Asset', 'Verified']}
+          titles={['Token', 'Verified']}
           list={[]}
           /> :
         <AssetList
           needChainSpace={true}
           isOtherChains={false}
-          titles={['Asset', 'Verified']}
+          titles={['Token', 'Verified']}
           list={
             filtered.map((token, i) => {
               return {
