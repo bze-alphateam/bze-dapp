@@ -41,7 +41,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
       let meta = {
         metadata: metadatas[i],
         logo: TOKEN_IMG_DEFAULT,
-        verified: VERIFIED_TOKENS[metadatas[i].base] ?? false,
+        verified: isVerified(metadatas[i].base),
         type: getDenomType(metadatas[i].base),
       }
 
@@ -215,7 +215,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
             uri_hash: '',
           },
           logo: TOKEN_IMG_DEFAULT,
-          verified: VERIFIED_TOKENS[current.denom] ?? false,
+          verified: isVerified(current.denom),
           coingekoId: '',
           type: getDenomType(current.denom),
         }
@@ -242,6 +242,10 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
   }
   
   return allSupplyTokens;
+}
+
+export function isVerified(denom: string): boolean {
+  return VERIFIED_TOKENS[denom] ?? false
 }
 
 function getDenomType(denom: string): string {

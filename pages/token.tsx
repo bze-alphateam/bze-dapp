@@ -1,5 +1,5 @@
 import { DefaultBorderedBox, Layout, TooltippedText } from "@/components";
-import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, resetAllTokensCache } from "@/services";
+import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, isVerified, resetAllTokensCache } from "@/services";
 import { Box, Button, Callout, Divider, Icon, Text, TextField, Tooltip } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -166,6 +166,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
   const [showBurnButton, setShowBurnButton] = useState<boolean>(true);
   const [showMintButton, setShowMintButton] = useState<boolean>(true);
   const [submitPending, setSubmitPending] = useState(false);
+  const [canMint, setCanMint] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [supply, setSupply] = useState<string>("0");
@@ -285,6 +286,9 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
 
   useEffect(() => {
     fetchSupply();
+    if (props.chainMetadata.display !== "") {
+      setCanMint(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -300,6 +304,19 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
       {address === props.admin &&
         <>
           <Divider />
+          {!canMint && 
+          <Callout
+            attributes={{
+              width: '$auto',
+              margin: '$2'
+            }}
+            iconName="errorWarningLine"
+            intent="warning"
+            title="Metadata needed"
+          >
+            You can mint or burn tokens after metadata is complete.
+          </Callout>
+          }
           <Box p='$6' flexDirection={'row'} display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
             {showForm && 
               <TextField
@@ -316,8 +333,8 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
               />
             }
             {(!showBurnButton || !showMintButton) && <Button size="sm" intent="secondary" onClick={() => {onCancelClick()}} disabled={submitPending}>Cancel</Button>}
-            {showBurnButton && <Button size="sm" intent="primary" onClick={() => {onBurnClick()}} isLoading={submitPending}>Burn</Button>}
-            {showMintButton && <Button size="sm" intent="primary" onClick={() => {onMintClick()}} isLoading={submitPending}>Mint</Button>}
+            {showBurnButton && <Button size="sm" intent="primary" onClick={() => {onBurnClick()}} isLoading={submitPending} disabled={!canMint}>Burn</Button>}
+            {showMintButton && <Button size="sm" intent="primary" onClick={() => {onMintClick()}} isLoading={submitPending} disabled={!canMint}>Mint</Button>}
           </Box>
         </>
       }
@@ -343,6 +360,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
   const [display, setDisplay] = useState<string>('');
   const [decimals, setDecimals] = useState("6");
   const [description, setDescription] = useState(props.chainMetadata.description);
+  const [verified, setVerified] = useState(false);
 
   //hooks
   const { tx } = useTx();
@@ -455,6 +473,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
     }
     setDisplay(metaDenoms[0].denom);
     setDecimals(`${metaDenoms[0].exponent}`);
+    setVerified(isVerified(props.chainMetadata.base));
   }
 
   useEffect(() => {
@@ -480,6 +499,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       }
       <Box p='$6'>
         <Text as="h3" fontSize={'xl'} color='$primary200'>Metadata</Text>
+        <Text fontSize={'sm'} color='$primary100'>{verified ? '✅ Verified' : '❌ Not verified'}</Text>
       </Box>
       <Box p='$6'>
         <TextField
