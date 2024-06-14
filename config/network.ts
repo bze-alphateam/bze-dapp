@@ -128,6 +128,28 @@ export const networks = {
             "coingecko_id": "bzedge"
           },
           {
+            "description": "BitcoinZ wrapped on BZE network",
+            "denom_units": [
+              {
+                "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/bitcoinz",
+                "exponent": 0
+              },
+              {
+                "denom": "BTCZ",
+                "exponent": 8
+              }
+            ],
+            "base": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/bitcoinz",
+            "name": "BitcoinZ",
+            "display": "BTCZ",
+            "symbol": "BTCZ",
+            "logo_URIs": {
+              "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.svg",
+              "png": "https://getbtcz.com/wp-content/uploads/2020/05/BTCZ-LOGO-fresh.png"
+            },
+            "coingecko_id": "bitcoinz"
+          },
+          {
             "description": "A test denomination created by Faneatiku",
             "denom_units": [
               {
