@@ -275,3 +275,21 @@ export function isFactoryType(denom: string): boolean {
 export function isIBCType(denom: string): boolean {
   return denom.startsWith('ibc/');
 }
+
+export function sortAssets(assets: Token[]): Token[] {
+  return assets.sort((token1, token2) => {
+    if (isNativeType(token1.metadata.base)) {
+      return -1;
+    }
+
+    if (token1.verified && !token2.verified) {
+      return -1;
+    }
+
+    if (token2.verified && !token1.verified) {
+      return 1;
+    }
+
+    return token1.metadata.name > token2.metadata.name ? 1 : -1;
+  });
+}

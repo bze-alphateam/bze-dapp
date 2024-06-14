@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getFactoryTokens, getTokenFactoryParams, resetAllTokensCache } from "@/services";
+import { Token, getFactoryTokens, getTokenFactoryParams, resetAllTokensCache, sortAssets } from "@/services";
 import { getChainName, prettyFee } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
@@ -195,7 +195,7 @@ function TokenList() {
   const handleSearch = (query: string) => {
     setLoading(true);
     if (query.length === 0) {
-      setFiltered(Array.from(list.values()));
+      setFiltered(sortAssets(Array.from(list.values())));
       setLoading(false);
       return;
     }
@@ -213,7 +213,7 @@ function TokenList() {
       }
     });
 
-    setFiltered(res);
+    setFiltered(sortAssets(res));
     setLoading(false);
   }
 
@@ -221,7 +221,7 @@ function TokenList() {
     const tokens = await getFactoryTokens();
 
     setList(tokens);
-    setFiltered(Array.from(tokens.values()));
+    setFiltered(sortAssets(Array.from(tokens.values())));
     setLoading(false);
   }
 

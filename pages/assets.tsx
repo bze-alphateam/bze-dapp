@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllSupplyTokens, isNativeType } from "@/services";
+import { Token, getAllSupplyTokens, isNativeType, sortAssets } from "@/services";
 import { useRouter } from "next/router";
 
 function TokenList() {
@@ -16,7 +16,7 @@ function TokenList() {
   const handleSearch = (query: string) => {
     setLoading(true);
     if (query.length === 0) {
-      setFiltered(Array.from(list.values()));
+      setFiltered(sortAssets(Array.from(list.values())));
       setLoading(false);
       return;
     }
@@ -34,7 +34,7 @@ function TokenList() {
       }
     });
 
-    setFiltered(res);
+    setFiltered(sortAssets(res));
     setLoading(false);
   }
 
@@ -42,21 +42,7 @@ function TokenList() {
     const tokens = await getAllSupplyTokens();
 
     setList(tokens);
-    setFiltered(Array.from(tokens.values()).sort((token1, token2) => {
-      if (isNativeType(token1.metadata.base)) {
-        return -1;
-      }
-
-      if (token1.verified && !token2.verified) {
-        return -1;
-      }
-
-      if (token2.verified && !token1.verified) {
-        return 1;
-      }
-
-      return token1.metadata.name > token2.metadata.name ? 1 : -1;
-    }));
+    setFiltered(sortAssets(Array.from(tokens.values())));
     setLoading(false);
   }
 
