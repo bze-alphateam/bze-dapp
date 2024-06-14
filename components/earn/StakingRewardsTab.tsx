@@ -82,7 +82,7 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
     setStakingToken(props.tokens.get(props.reward.staking_denom));
   }, [props]);
 
-  if (prizeToken === undefined || stakingToken === undefined) {
+  if (prizeToken === undefined || stakingToken === undefined || prizeToken.metadata.display === "" || stakingToken.metadata.display === "") {
     return <></>
   }
 
