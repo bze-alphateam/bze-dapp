@@ -249,17 +249,29 @@ export function isVerified(denom: string): boolean {
 }
 
 function getDenomType(denom: string): string {
-  if (denom.startsWith('ibc/')) {
+  if (isIBCType(denom)) {
     return 'IBC';
   }
 
-  if (denom.startsWith('factory/')) {
+  if (isFactoryType(denom)) {
     return 'Factory';
   }
 
-  if (denom === TESTNET_UDENOM || denom === MAINNET_UDENOM) {
+  if (isNativeType(denom)) {
     return 'Native';
   }
 
   return 'Unknown';
+}
+
+export function isNativeType(denom: string): boolean {
+  return denom === TESTNET_UDENOM || denom === MAINNET_UDENOM;
+}
+
+export function isFactoryType(denom: string): boolean {
+  return denom.startsWith('factory/');
+}
+
+export function isIBCType(denom: string): boolean {
+  return denom.startsWith('ibc/');
 }

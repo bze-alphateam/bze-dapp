@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllSupplyTokens } from "@/services";
+import { Token, getAllSupplyTokens, isNativeType } from "@/services";
 import { useRouter } from "next/router";
 
 function TokenList() {
@@ -42,7 +42,21 @@ function TokenList() {
     const tokens = await getAllSupplyTokens();
 
     setList(tokens);
-    setFiltered(Array.from(tokens.values()));
+    setFiltered(Array.from(tokens.values()).sort((token1, token2) => {
+      if (isNativeType(token1.metadata.base)) {
+        return -1;
+      }
+
+      if (token1.verified && !token2.verified) {
+        return -1;
+      }
+
+      if (token2.verified && !token1.verified) {
+        return 1;
+      }
+
+      return token1.metadata.name > token2.metadata.name ? 1 : -1;
+    }));
     setLoading(false);
   }
 
@@ -78,13 +92,11 @@ function TokenList() {
         <AssetList
           needChainSpace={true}
           isOtherChains={false}
-          titles={['Asset', 'Verified']}
           list={[]}
           /> :
         <AssetList
           needChainSpace={true}
           isOtherChains={false}
-          titles={['Asset', 'Type']}
           list={
             filtered.map((token, i) => {
               return {
