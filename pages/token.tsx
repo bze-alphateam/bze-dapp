@@ -528,28 +528,14 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
           disabled={disabled || pendingSubmit}
         />
       </Box>
-      <Box p='$6'>
-        <TextField
-          id="symbol"
-          label={
-            <TooltippedText text="Ticker/Symbol (ex: BZE)" tooltip="The ticker is usually the short name of the token."/>
-          }
-          size="sm"
-          onChange={(e) => {setSymbol(e.target.value)}}
-          placeholder="Token's symbol"
-          value={symbol}
-          intent={'default'}
-          disabled={disabled || pendingSubmit}
-        />
-      </Box>
       <Box p='$6' flexDirection={{desktop: 'row', mobile: 'column'}} display={'flex'} justifyContent={'space-between'} width={'$auto'}>
         <TextField
           id="display"
           label={
-            <TooltippedText text="Display denom (ex: BZE)" tooltip="The largest denomination of the token. Take bitcoin for example: sats is the smallest denomination while BTC is the largest one with 8 decimals"/>
+            <TooltippedText text="Ticker/Symbol (ex: BZE)" tooltip="The ticker is usually the short name of the token."/>
           }
           size="sm"
-          onChange={(e) => {setDisplay(e.target.value)}}
+          onChange={(e) => {setDisplay(e.target.value); setSymbol(e.target.value)}}
           placeholder="Token's display denomination"
           value={display}
           intent={'default'}

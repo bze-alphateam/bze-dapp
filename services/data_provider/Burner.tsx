@@ -8,7 +8,7 @@ import { getCurrentuDenom } from "@/utils";
 export interface NextBurning {
   amount: string,
   denom: string,
-  time: Date,
+  time: Date|undefined,
 }
 
 const FAILOVER_DATA = {
@@ -82,25 +82,6 @@ export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSD
 }
 
 export async function getNextBurning(): Promise<NextBurning|undefined> {
-  const proposals = await getActiveProposals();
-  if (proposals.proposals.length === 0) {
-    return undefined;
-  }
-
-  {/* @ts-ignore */}
-  const filtered = proposals.proposals.filter((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
-  if (filtered.length === 0 || filtered[0].voting_end_time === undefined) {
-    return undefined;
-  }
-
-  //check the date
-  let checkDate = new Date(filtered[0].voting_end_time);
-  //if we have a proposal that will burn coins, set the TTL for all burned coins listing response at voting time end.
-  //this way the cache is available until that moment and we are sure it will reset right after the voting period ended
-  if (checkDate.getTime() !== cacheExpireAt) {
-    resetBurnedCoinsCache(checkDate);
-  }
-
   let address = await getModuleAddress(BURNER);
   if (address === '') {
     return undefined;
@@ -115,6 +96,33 @@ export async function getNextBurning(): Promise<NextBurning|undefined> {
   let bzeBalance = balances.balances.filter(item => item.denom === curentUDenom);
   if (bzeBalance.length === 0) {
     return undefined;
+  }
+
+  const proposals = await getActiveProposals();
+  if (proposals.proposals.length === 0) {
+    return {
+      amount: bzeBalance[0].amount,
+      denom: bzeBalance[0].denom,
+      time: undefined,
+    }
+  }
+
+  {/* @ts-ignore */}
+  const filtered = proposals.proposals.filter((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
+  if (filtered.length === 0 || filtered[0].voting_end_time === undefined) {
+    return {
+      amount: bzeBalance[0].amount,
+      denom: bzeBalance[0].denom,
+      time: undefined,
+    }
+  }
+
+  //check the date
+  let checkDate = new Date(filtered[0].voting_end_time);
+  //if we have a proposal that will burn coins, set the TTL for all burned coins listing response at voting time end.
+  //this way the cache is available until that moment and we are sure it will reset right after the voting period ended
+  if (checkDate.getTime() !== cacheExpireAt) {
+    resetBurnedCoinsCache(checkDate);
   }
 
   return {

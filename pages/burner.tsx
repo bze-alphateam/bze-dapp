@@ -114,9 +114,13 @@ function NextBurning() {
     if (next === undefined) {
       return;
     }
-    let burnDate = new Date(next.time);
-
+    
     setAmount(`${prettyAmount(uAmountToAmount(next.amount, 6))} ${toPrettyDenom(next.denom)} 🔥`);
+    if (next.time === undefined) {
+      return;
+    }
+
+    let burnDate = new Date(next.time);
     setDate(prettyDateTime(burnDate));
     let until = hoursUntil(burnDate);
     setWhen(`In ${until} hours if vote passes.`);
