@@ -2,7 +2,7 @@ import { Box, Button, Divider, Icon, Stack, Text, TextField } from "@interchain-
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Token, getAllSupplyTokens, getMarketBuyOrders, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
+import { Token, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
 import BigNumber from "bignumber.js";
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, marketIdFromDenoms, priceToUPrice, uAmountToAmount, uPriceToPrice } from "@/utils";
@@ -10,8 +10,8 @@ import { bze } from '@bze/bzejs';
 import { useToast, useTx } from "@/hooks";
 import { useChain } from "@cosmos-kit/react";
 import { MarketSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/market";
-import { AggregatedOrderSDKType, HistoryOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import { ActiveOrderStack, ActiveOrdersList, AmountHeaderLine, AmountLine, OrderHistoryList, PriceHeaderLine, PriceLine, TotalHeaderLine, TotalLine } from "@/components/trade";
+import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import { ActiveOrderStack, ActiveOrdersList, AmountHeaderLine, AmountLine, MyOrdersList, OrderHistoryList, PriceHeaderLine, PriceLine, TotalHeaderLine, TotalLine } from "@/components/trade";
 import { OrderForms } from "@/components/trade/OrderForms";
 
 function MarketChart() {
@@ -72,6 +72,30 @@ function OrderHistory(props: OrderHistoryProps) {
   );
 }
 
+interface MyOrdersProps {
+  baseToken: Token;
+  quoteToken: Token;  
+  baseTokenDisplayDenom: DenomUnitSDKType;
+  quoteTokenDisplayDenom: DenomUnitSDKType;
+  loading: boolean;
+  orders: OrderReferenceSDKType[];
+  onOrderCancelled: () => void;
+}
+
+function MyOrders(props: MyOrdersProps) {  
+  return (
+    <DefaultBorderedBox p={'$2'} mx='$6' minHeight={'20vh'} display={'flex'} flex={1} flexDirection={'column'}>
+      <Box maxHeight={'$6'} display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'} >
+        <Text as="h4">My orders</Text>
+      </Box>
+      <Divider my={'$2'}/>
+      <Box>
+        <MyOrdersList {...props} />
+      </Box>
+    </DefaultBorderedBox>
+  );
+}
+
 export default function MarketPair() {
   const [marketId, setMarketId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -87,6 +111,8 @@ export default function MarketPair() {
   const [buyOrders, setBuyOrders] = useState<AggregatedOrderSDKType[]>([]);
   const [activeOrdersLoaded, setActiveOrdersLoaded] = useState(false);
 
+  const [myOrders, setMyOrders] = useState<OrderReferenceSDKType[]>([]);
+  const [myOrdersLoaded, setMyOrdersLoaded] = useState(false);
 
   const [orderFormPrice, setOrderFormPrice] = useState("");
   const [orderFormAmount, setOrderFormAmount] = useState("");
@@ -94,6 +120,7 @@ export default function MarketPair() {
 
   const router = useRouter();
   const { query } = router;
+  const { address } = useChain(getChainName());
 
   const onOrderClick = (order: AggregatedOrderSDKType) => {
     if (quoteTokenDisplayDenom === undefined || baseTokenDisplayDenom === undefined) {
@@ -122,6 +149,19 @@ export default function MarketPair() {
     setHistoryLoaded(true);
   }
 
+  const fetchMyOrders = async (marketId: string, address: string|undefined) => {
+    setMyOrdersLoaded(false);
+    if (address === undefined) {
+      setMyOrders([]);
+      setMyOrdersLoaded(true);
+      return;
+    }
+
+    const ord = await getAddressMarketOrders(marketId, address);
+    setMyOrders(ord.list);
+    setMyOrdersLoaded(true);
+  }
+
   const onOrderPlaced = async () => {
     setActiveOrdersLoaded(false);
     setOrderFormPrice("");
@@ -129,6 +169,7 @@ export default function MarketPair() {
     setOrderFormTotal("");
     fetchActiveOrders(marketId);
     fetchMarketHistory(marketId);
+    fetchMyOrders(marketId, address);
   }
 
   useEffect(() => {
@@ -169,7 +210,8 @@ export default function MarketPair() {
     fetchTokens(query.base, query.quote);
     fetchActiveOrders(mId);
     fetchMarketHistory(mId);
-  }, [query, router]);
+    fetchMyOrders(mId, address);
+  }, [query, router, address]);
 
   return (
     <Layout>
@@ -216,6 +258,17 @@ export default function MarketPair() {
                 sellOrders={sellOrders}
                 buyOrders={buyOrders}
                 loading={!activeOrdersLoaded}
+              />
+            </Box>
+            <Box mt={'$12'} display='flex' flex={1}>
+              <MyOrders 
+                baseToken={baseToken} 
+                quoteToken={quoteToken}
+                loading={!myOrdersLoaded}
+                orders={myOrders}
+                baseTokenDisplayDenom={baseTokenDisplayDenom}
+                quoteTokenDisplayDenom={quoteTokenDisplayDenom}
+                onOrderCancelled={onOrderPlaced}
               />
             </Box>
           </Box>

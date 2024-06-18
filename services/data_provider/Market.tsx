@@ -1,4 +1,4 @@
-import { QueryAllMarketResponseSDKType, QueryMarketAggregatedOrdersResponseSDKType, QueryMarketHistoryResponseSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
+import { QueryAllMarketResponseSDKType, QueryMarketAggregatedOrdersResponseSDKType, QueryMarketHistoryResponseSDKType, QueryMarketOrderResponseSDKType, QueryUserMarketOrdersResponseSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
 import { getRestClient } from "../Client";
 import { bze } from '@bze/bzejs';
 
@@ -11,6 +11,8 @@ const ORDER_TYPE_SELL = 'sell';
 const { fromPartial: QueryMarketsFromPartial } = bze.tradebin.v1.QueryAllMarketRequest;
 const { fromPartial: QueryMarketAggregatedOrdersRequestFromPartyal } = bze.tradebin.v1.QueryMarketAggregatedOrdersRequest;
 const { fromPartial: QueryMarketHistoryRequestFromPartial } = bze.tradebin.v1.QueryMarketHistoryRequest;
+const { fromPartial: QueryUserMarketOrdersRequestFromPartial } = bze.tradebin.v1.QueryUserMarketOrdersRequest;
+const { fromPartial: QueryMarketOrderRequestFromPartial } = bze.tradebin.v1.QueryMarketOrderRequest;
 
 export async function getMarketBuyOrders(marketId: string): Promise<QueryMarketAggregatedOrdersResponseSDKType> {
   return getMarketOrders(marketId, ORDER_TYPE_BUY);
@@ -81,4 +83,28 @@ export async function getAllMarkets(): Promise<QueryAllMarketResponseSDKType> {
 
 export async function removeAllMarketsCache() {
   localStorage.removeItem(ALL_MARKETS_KEY);
+}
+
+export async function getAddressMarketOrders(marketId: string, address: string): Promise<QueryUserMarketOrdersResponseSDKType> {
+  try {
+    const client = await getRestClient();
+    
+    return client.bze.tradebin.v1.userMarketOrders(QueryUserMarketOrdersRequestFromPartial({market: marketId, address: address, pagination: {limit: 100, reverse: true}}));
+  } catch(e) {
+    console.error(e);
+
+    return {list: []};
+  }
+}
+
+export async function getMarketOrder(marketId: string, orderType: string, orderId: string): Promise<QueryMarketOrderResponseSDKType> {
+  try {
+    const client = await getRestClient();
+    
+    return client.bze.tradebin.v1.marketOrder(QueryMarketOrderRequestFromPartial({market: marketId, orderType: orderType, orderId: orderId}));
+  } catch(e) {
+    console.error(e);
+
+    return {order: undefined};
+  }
 }
