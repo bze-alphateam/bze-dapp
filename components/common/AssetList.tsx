@@ -24,7 +24,6 @@ export default function AssetList(props: AssetListProps) {
               <Box width="25%">
                 {props.isOtherChains && 
                   <Text color="$textSecondary">Chain</Text>
-                
                 }
               </Box>
             }

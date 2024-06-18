@@ -38,3 +38,8 @@ export async function getAddressBalances(address: string): Promise<QuerySpendabl
     return {balances: []};
   }
 }
+
+export async function removeBalanncesCache(address: string) {
+  const cacheKey = `${BALANCES_KEY}${address}`;
+  localStorage.removeItem(cacheKey);
+}

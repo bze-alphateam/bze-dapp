@@ -1,10 +1,9 @@
-import { Divider, Box, Text, Button, TextField, Callout, Spinner, FieldLabel } from "@interchain-ui/react";
+import { Divider, Box, Text, Button, Callout, FieldLabel } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout, TooltippedText } from "@/components";
 import { SearchInput } from "@/components/common/Input";
-import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllMarkets, getAllSupplyTokens, getFactoryTokens, getTokenFactoryParams, getTradebinParams, removeAllMarketsCache, resetAllTokensCache } from "@/services";
-import { getChainName, prettyFee, stringTruncateFromCenter, truncateDenom } from "@/utils";
+import { Token, getAllMarkets, getAllSupplyTokens, getTradebinParams, removeAllMarketsCache } from "@/services";
+import { getChainName, prettyFee, truncateDenom } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -307,12 +306,13 @@ function MarketsListing(props: MarketListProps) {
             filtered.map((market, i) => {
               return {
                 onWithdraw: () => {
-                  // router.push({
-                  //   pathname: '/token',
-                  //   query: {
-                  //     denom: token.metadata.base
-                  //   }
-                  // });
+                  router.push({
+                    pathname: '/trade/market',
+                    query: {
+                      base: market.base,
+                      quote: market.quote,
+                    }
+                  });
                 },
                 showWithdraw: true,
                 withdrawLabel: "Trade",
