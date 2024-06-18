@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { DefaultBorderedBox } from "../common";
 import { Box, Button, Divider, Text, TextField } from "@interchain-ui/react";
 import { bze } from '@bze/bzejs';
-import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import { getAddressBalances, removeBalanncesCache } from "@/services/data_provider/Balances";
+import { AggregatedOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 
 interface OrderFormsProps {
   price: string;
@@ -20,9 +20,86 @@ interface OrderFormsProps {
   baseToken: Token;
   quoteToken: Token;
   onOrderPlaced?: () => void;
+  buyOrders: AggregatedOrderSDKType[];
+  sellOrders: AggregatedOrderSDKType[];
+  loading: boolean;
 }
 
 const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+
+function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, amount: string, price: string) {
+  const marketId = marketIdFromDenoms(props.baseToken.metadata.base, props.quoteToken.metadata.base);
+  const uAmount = amountToUAmount(amount, props.baseTokenDisplayDenom.exponent);
+  const priceNum = new BigNumber(price);
+  const uPrice = priceToUPrice(priceNum, props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
+  const orderType = isBuy ? 'buy' : 'sell';
+
+  const uPriceNum = new BigNumber(uPrice);
+  const ordersFilter = (order: AggregatedOrderSDKType) => {
+    const orderuPriceNum = new BigNumber(order.price);
+    if (isBuy) {
+      return uPriceNum.gt(orderuPriceNum);
+    } else {
+      return uPriceNum.lt(orderuPriceNum);
+    }
+  }
+  const ordersToSearch = isBuy ? props.sellOrders.filter(ordersFilter) : props.buyOrders.filter(ordersFilter);
+
+  //if we have no opposite orders we can create 1 message
+  if (ordersToSearch.length === 0) {
+    return [
+      createOrder({
+        creator: address,
+        marketId: marketId,
+        orderType: orderType,
+        amount: uAmount,
+        price: uPrice,
+      })
+    ];
+  }
+  
+  const msgs = [];
+  let uAmountNum = new BigNumber(uAmount);
+  let lastUPrice = uPrice;
+  //check active orders prices and fill them one by one if needed
+  for (let i = 0; i < ordersToSearch.length; i++) {
+    const orderUAmountNum = new BigNumber(ordersToSearch[i].amount);
+    let msgAmount = ordersToSearch[i].amount;
+    if (orderUAmountNum.gt(uAmountNum)) {
+      msgAmount = uAmountNum.toString();
+    }
+    
+    msgs.push(
+      createOrder({
+        creator: address,
+        marketId: marketId,
+        orderType: orderType,
+        amount: msgAmount,
+        price: ordersToSearch[i].price,
+      })
+    )
+    lastUPrice = ordersToSearch[i].price;
+
+    uAmountNum = uAmountNum.minus(msgAmount);
+    if (uAmountNum.eq(0)) {
+      break;
+    }
+  }
+
+  if (uAmountNum.gt(0)) {
+    msgs.push(
+      createOrder({
+        creator: address,
+        marketId: marketId,
+        orderType: orderType,
+        amount: uAmountNum.toString(),
+        price: lastUPrice,
+      })
+    )
+  }
+
+  return msgs;
+}
 
 export function OrderForms(props: OrderFormsProps) {
   const [isBuy, setIsBuy] = useState(true);
@@ -115,16 +192,9 @@ export function OrderForms(props: OrderFormsProps) {
     }
 
     setIsPendingSubmit(true);
-    //price needs to be calculated as the report of the smallest denominations
-    const msg = createOrder({
-      creator: address,
-      marketId: marketIdFromDenoms(props.baseToken.metadata.base, props.quoteToken.metadata.base),
-      orderType: isBuy ? 'buy' : 'sell',
-      amount: amountToUAmount(amount, props.baseTokenDisplayDenom.exponent),
-      price: priceToUPrice(priceNum, props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent),
-    })
+    const msgs = getOrderTxMessages(props, address, isBuy, amount, price);
 
-    await tx([msg], {
+    await tx(msgs, {
       toast: {
         description: 'Order successful placed'
       },
@@ -203,9 +273,9 @@ export function OrderForms(props: OrderFormsProps) {
       <Box display={'flex'} flexDirection={'column'} p={'$2'} m={'$6'} gap={'$2'}>
         <TextField
             id="price"
-            type="number"
+            type="text"
             size="sm"
-            onChange={(e) => {onPriceChange(e.target.value)}}
+            onChange={(e) => {onPriceChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={price}
             inputMode='numeric'
@@ -216,9 +286,9 @@ export function OrderForms(props: OrderFormsProps) {
           />
           <TextField
             id="amount"
-            type="number"
+            type="text"
             size="sm"
-            onChange={(e) => {onAmountChange(e.target.value)}}
+            onChange={(e) => {onAmountChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={amount}
             inputMode='numeric'
@@ -230,9 +300,9 @@ export function OrderForms(props: OrderFormsProps) {
           <Divider my={'$2'} />
           <TextField
             id="total"
-            type="number"
+            type="text"
             size="sm"
-            onChange={(e) => {onTotalChange(e.target.value)}}
+            onChange={(e) => {onTotalChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={total}
             inputMode='numeric'
@@ -242,7 +312,7 @@ export function OrderForms(props: OrderFormsProps) {
             endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.quoteToken.metadata.display}</Text></Box>}
           />
           <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
-            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues}>{isBuy ? "Buy" : "Sell"} {props.baseToken.metadata.display}</Button>
+            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.baseToken.metadata.display}</Button>
           </Box>
       </Box>
     </DefaultBorderedBox>

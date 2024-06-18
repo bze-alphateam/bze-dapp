@@ -124,6 +124,9 @@ export default function MarketPair() {
 
   const onOrderPlaced = async () => {
     setActiveOrdersLoaded(false);
+    setOrderFormPrice("");
+    setOrderFormAmount("");
+    setOrderFormTotal("");
     fetchActiveOrders(marketId);
     fetchMarketHistory(marketId);
   }
@@ -210,6 +213,9 @@ export default function MarketPair() {
                 baseToken={baseToken}
                 quoteToken={quoteToken}
                 onOrderPlaced={onOrderPlaced}
+                sellOrders={sellOrders}
+                buyOrders={buyOrders}
+                loading={!activeOrdersLoaded}
               />
             </Box>
           </Box>

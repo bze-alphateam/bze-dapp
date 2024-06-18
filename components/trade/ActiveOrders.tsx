@@ -74,7 +74,7 @@ export function ActiveOrderStack(props: ActiveOrderStackProps) {
     setAmount(a);
     const priceNum = new BigNumber(p);
     const amountNum = new BigNumber(a);
-    setTotal(priceNum.multipliedBy(amountNum).toString());
+    setTotal(priceNum.multipliedBy(amountNum).decimalPlaces(props.quoteTokenDisplayDenom.exponent).toString());
   }, [props])
 
   return (
