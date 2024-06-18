@@ -248,7 +248,7 @@ export function OrderForms(props: OrderFormsProps) {
 
 
   return (
-    <DefaultBorderedBox p={'$2'} mx='$6' width={{desktop: '$auto', mobile: '$auto'}} minHeight={'10vh'} flex={1}>
+    <DefaultBorderedBox p={'$2'} width={{desktop: '$auto', mobile: '$auto'}} minHeight={'10vh'} flex={1}>
       <Box display={'flex'} flex={1}>
         <Box display={'flex'} flex={1}><Button intent={isBuy ? "tertiary" : "secondary"} size={isBuy ? "lg": "sm"} fluid onClick={() => {!isBuy ? setIsBuy(true) : null}} disabled={isPendingSubmit}>Buy</Button></Box>
         <Box display={'flex'} flex={1}><Button intent={!isBuy ? "tertiary" : "secondary"} size={!isBuy ? "lg": "sm"} fluid onClick={() => {isBuy ? setIsBuy(false) : null}} disabled={isPendingSubmit}>Sell</Button></Box>

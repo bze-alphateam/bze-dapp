@@ -16,7 +16,7 @@ import { OrderForms } from "@/components/trade/OrderForms";
 
 function MarketChart() {
   return (
-    <DefaultBorderedBox mx='$6' width={{desktop: '$containerMd', mobile: '$auto'}}>
+    <DefaultBorderedBox width={{desktop: '$containerMd', mobile: '$auto'}}>
       <Text>chart</Text>
     </DefaultBorderedBox>
   );
@@ -37,7 +37,7 @@ interface ActiveOrdersProps {
 function ActiveOrders(props: ActiveOrdersProps) {
   
   return (
-    <DefaultBorderedBox p={'$2'} mx='$6' width={{desktop: '$auto', mobile: '$auto'}} minHeight={'50vh'} flex={1}>
+    <DefaultBorderedBox p={'$2'} width={{desktop: '$auto', mobile: '$auto'}} minHeight={'50vh'} flex={1}>
       <Box display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'}>
         <Text as="h4">Order book</Text>
       </Box>
@@ -60,7 +60,7 @@ interface OrderHistoryProps {
 
 function OrderHistory(props: OrderHistoryProps) {  
   return (
-    <DefaultBorderedBox p={'$2'} mx='$6' width={{desktop: '$containerMd', mobile: '$auto'}} minHeight={'20vh'} >
+    <DefaultBorderedBox p={'$2'} width={{desktop: '$containerMd', mobile: '$auto'}} minHeight={'20vh'} >
       <Box display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'} >
         <Text as="h4">History</Text>
       </Box>
@@ -84,7 +84,7 @@ interface MyOrdersProps {
 
 function MyOrders(props: MyOrdersProps) {  
   return (
-    <DefaultBorderedBox p={'$2'} mx='$6' minHeight={'20vh'} display={'flex'} flex={1} flexDirection={'column'}>
+    <DefaultBorderedBox p={'$2'} minHeight={'20vh'} display={'flex'} flex={1} flexDirection={'column'}>
       <Box maxHeight={'$6'} display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'} >
         <Text as="h4">My orders</Text>
       </Box>
@@ -228,10 +228,10 @@ export default function MarketPair() {
           }
         </Box>
       </Box >
-      <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}}>
+      <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}}  mx='$6'>
         {!loading && baseToken !== undefined && quoteToken !== undefined && baseTokenDisplayDenom !== undefined && quoteTokenDisplayDenom !== undefined &&
           <Box display='flex' flex={1} flexDirection={'column'}>
-            <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1}>
+            <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1} gap={'$6'}>
               <MarketChart/>
               <ActiveOrders 
                 baseToken={baseToken}
@@ -245,7 +245,7 @@ export default function MarketPair() {
                 onOrderClick={onOrderClick}
               />
             </Box>
-            <Box mt={'$12'} display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1}>
+            <Box mt={'$6'} display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}} flex={1} gap={'$6'}>
               <OrderHistory 
                 baseToken={baseToken} 
                 quoteToken={quoteToken}
@@ -268,7 +268,7 @@ export default function MarketPair() {
                 loading={!activeOrdersLoaded}
               />
             </Box>
-            <Box mt={'$12'} display='flex' flex={1}>
+            <Box mt={'$6'} display='flex' flex={1} gap={'$6'}>
               <MyOrders 
                 baseToken={baseToken} 
                 quoteToken={quoteToken}
