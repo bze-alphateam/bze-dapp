@@ -1,23 +1,105 @@
-import { Box, Button, Divider, Icon, Stack, Text, TextField } from "@interchain-ui/react";
+import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Token, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
+import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, Token, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
 import BigNumber from "bignumber.js";
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
-import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, marketIdFromDenoms, priceToUPrice, uAmountToAmount, uPriceToPrice } from "@/utils";
-import { bze } from '@bze/bzejs';
-import { useToast, useTx } from "@/hooks";
+import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToPrice } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
-import { MarketSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/market";
 import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import { ActiveOrderStack, ActiveOrdersList, AmountHeaderLine, AmountLine, MyOrdersList, OrderHistoryList, PriceHeaderLine, PriceLine, TotalHeaderLine, TotalLine } from "@/components/trade";
+import { ActiveOrdersList, MyOrdersList, OrderHistoryList } from "@/components/trade";
 import { OrderForms } from "@/components/trade/OrderForms";
+import Chart from "@/components/trade/Chart";
 
-function MarketChart() {
+interface MarketChartProps {
+  baseToken: Token;
+  quoteToken: Token;  
+  baseTokenDisplayDenom: DenomUnitSDKType;
+  quoteTokenDisplayDenom: DenomUnitSDKType;
+}
+
+const DEFAULT_CHART = CHART_7D;
+
+function MarketChart(props: MarketChartProps) {
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [selectedChart, setSelectedChart] = useState<string>(DEFAULT_CHART);
+
+  const loadChart = async (chartType: string) => {
+    setLoading(true);
+    const chart = await getMarketChart(
+      marketIdFromDenoms(props.baseToken.metadata.base, props.quoteToken.metadata.base),
+      chartType,
+      props.quoteTokenDisplayDenom.exponent,
+      props.baseTokenDisplayDenom.exponent
+    );
+
+    setChartData(chart);
+    setLoading(false);
+  }
+
+  const getChartButtonIntent = (buttonChartType: string) => {
+    if (selectedChart === buttonChartType) {
+      return "tertiary";
+    }
+
+    return "secondary";
+  }
+
+  const selectChart = (chartType: string) => {
+    setSelectedChart(chartType);
+    loadChart(chartType);
+  }
+
+  useEffect(() => {
+    loadChart(selectedChart);
+  }, [props]);
+
   return (
-    <DefaultBorderedBox width={{desktop: '$containerMd', mobile: '$auto'}}>
-      <Text>chart</Text>
+    <DefaultBorderedBox 
+      width={{desktop: '$containerMd', mobile: '$auto'}}
+      justifyContent={'center'} 
+      alignItems={'center'}
+    >
+      {!loading ? 
+        <Box
+          display={'flex'}
+          flexDirection={'column'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          m={'$6'}
+        >
+          <Box display={'flex'} width={'$full'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
+            <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
+            <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
+            <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
+            <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+          </Box>
+          <Box display={'flex'} flex={1}>
+            <Chart 
+              height={500} 
+              width={window.innerWidth > 769 ? 700 : 350} 
+              margin={{
+                top: 20,
+                left: 0,
+                bottom: 10,
+                right: 0,
+              }}
+              chartData={chartData}
+              quoteTokenDisplayDenom={props.quoteTokenDisplayDenom}
+            />
+          </Box>
+        </Box>
+        :
+        <Skeleton 
+          display={'flex'}
+          flex={1}
+          borderRadius="$lg"
+          height="$full"
+          width="$full"
+        />
+      }
     </DefaultBorderedBox>
   );
 }
@@ -232,7 +314,12 @@ export default function MarketPair() {
         {!loading && baseToken !== undefined && quoteToken !== undefined && baseTokenDisplayDenom !== undefined && quoteTokenDisplayDenom !== undefined &&
           <Box display='flex' flex={1} flexDirection={'column'}>
             <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1} gap={'$6'}>
-              <MarketChart/>
+              <MarketChart
+                baseToken={baseToken}
+                quoteToken={quoteToken}
+                baseTokenDisplayDenom={baseTokenDisplayDenom}
+                quoteTokenDisplayDenom={quoteTokenDisplayDenom}
+              />
               <ActiveOrders 
                 baseToken={baseToken}
                 quoteToken={quoteToken}
