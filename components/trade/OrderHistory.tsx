@@ -6,16 +6,14 @@ import { useChain } from "@cosmos-kit/react";
 import { Box, Button, Skeleton, Stack, Text } from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import { DenomUnitSDKType } from "interchain-query/cosmos/bank/v1beta1/bank";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { bze } from '@bze/bzejs';
+import { MarketPairTokens } from "./ActiveOrders";
 
 interface OrderHistoryProps {
-  baseToken: Token;
-  quoteToken: Token;  
+  tokens: MarketPairTokens; 
   loading: boolean;
   orders: HistoryOrderSDKType[];
-  baseTokenDisplayDenom: DenomUnitSDKType;
-  quoteTokenDisplayDenom: DenomUnitSDKType;
 }
 
 interface OrderHistoryListRowProps {
@@ -68,10 +66,10 @@ export function OrderHistoryList(props: OrderHistoryProps) {
     <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
         <Box width={'33%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-          <Text color={'$primary200'}>Price({props.quoteToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display})</Text>
         </Box>
         <Box width={'33%'} display={'flex'} flex={1} justifyContent={'center'}>
-          <Text color={'$primary200'}>Amount({props.baseToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display})</Text>
         </Box>
         <Box width={'34%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
           <Text color={'$primary200'}>Time</Text>
@@ -81,8 +79,8 @@ export function OrderHistoryList(props: OrderHistoryProps) {
         (props.orders.length > 0 ?
           props.orders.map((order, index) => (
             <OrderHistoryListRow 
-              baseTokenDisplayDenom={props.baseTokenDisplayDenom}
-              quoteTokenDisplayDenom={props.quoteTokenDisplayDenom}
+              baseTokenDisplayDenom={props.tokens.baseTokenDisplayDenom}
+              quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
               order={order}
               key={index}
             />
@@ -106,7 +104,7 @@ interface MyOrdersListRowProps {
 
 const {cancelOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
-function MyOrdersListRow(props: MyOrdersListRowProps) {
+const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
   const [loading, setLoading] = useState(true);
   const [fullOrder, setFullOrder] = useState<OrderSDKType|undefined>();
   const [price, setPrice] = useState("");
@@ -193,12 +191,11 @@ function MyOrdersListRow(props: MyOrdersListRowProps) {
       }
     </Stack>
   );
-}
+});
+MyOrdersListRow.displayName = 'MyOrdersListRow';
+
 interface MyOrdersProps {
-  baseToken: Token;
-  quoteToken: Token;  
-  baseTokenDisplayDenom: DenomUnitSDKType;
-  quoteTokenDisplayDenom: DenomUnitSDKType;
+  tokens: MarketPairTokens;
   loading: boolean;
   orders: OrderReferenceSDKType[];
   onOrderCancelled: () => void;
@@ -210,10 +207,10 @@ export function MyOrdersList(props: MyOrdersProps) {
     <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-          <Text color={'$primary200'}>Price({props.quoteToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display})</Text>
         </Box>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'center'}>
-          <Text color={'$primary200'}>Amount({props.baseToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display})</Text>
         </Box>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'center'}>
           <Text color={'$primary200'}>Type</Text>
@@ -226,10 +223,10 @@ export function MyOrdersList(props: MyOrdersProps) {
         (props.orders.length > 0 ?
           props.orders.map((order, index) => (
             <MyOrdersListRow 
-              baseTokenDisplayDenom={props.baseTokenDisplayDenom}
-              quoteTokenDisplayDenom={props.quoteTokenDisplayDenom}
+              baseTokenDisplayDenom={props.tokens.baseTokenDisplayDenom}
+              quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
               order={order}
-              key={index}
+              key={order.id}
               onOrderCancel={props.onOrderCancelled}
             />
           ))

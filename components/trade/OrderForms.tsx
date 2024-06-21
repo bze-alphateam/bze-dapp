@@ -10,28 +10,29 @@ import { Box, Button, Divider, Text, TextField } from "@interchain-ui/react";
 import { bze } from '@bze/bzejs';
 import { getAddressBalances, removeBalanncesCache } from "@/services/data_provider/Balances";
 import { AggregatedOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import { ActiveOrders, MarketPairTokens } from "./ActiveOrders";
 
-interface OrderFormsProps {
+export interface OrderFormData {
   price: string;
   amount: string;
   total: string;
-  baseTokenDisplayDenom: DenomUnitSDKType;
-  quoteTokenDisplayDenom: DenomUnitSDKType;
-  baseToken: Token;
-  quoteToken: Token;
+}
+
+interface OrderFormsProps {
+  data: OrderFormData;
+  tokens: MarketPairTokens;
   onOrderPlaced?: () => void;
-  buyOrders: AggregatedOrderSDKType[];
-  sellOrders: AggregatedOrderSDKType[];
+  activeOrders: ActiveOrders;
   loading: boolean;
 }
 
 const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
 function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, amount: string, price: string) {
-  const marketId = marketIdFromDenoms(props.baseToken.metadata.base, props.quoteToken.metadata.base);
-  const uAmount = amountToUAmount(amount, props.baseTokenDisplayDenom.exponent);
+  const marketId = marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base);
+  const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
   const priceNum = new BigNumber(price);
-  const uPrice = priceToUPrice(priceNum, props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
+  const uPrice = priceToUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
   const orderType = isBuy ? 'buy' : 'sell';
 
   const uPriceNum = new BigNumber(uPrice);
@@ -43,7 +44,7 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
       return uPriceNum.lt(orderuPriceNum);
     }
   }
-  const ordersToSearch = isBuy ? props.sellOrders.filter(ordersFilter) : props.buyOrders.filter(ordersFilter);
+  const ordersToSearch = isBuy ? props.activeOrders.sellOrders.filter(ordersFilter) : props.activeOrders.buyOrders.filter(ordersFilter);
 
   //if we have no opposite orders we can create 1 message
   if (ordersToSearch.length === 0) {
@@ -111,9 +112,9 @@ export function OrderForms(props: OrderFormsProps) {
   const [baseBalance, setBasebalance] = useState<string>("0");
   const [quoteBalance, setQuoteBalance] = useState<string>("0");
 
-  const [price, setPrice] = useState<string>(props.price);
-  const [amount, setAmount] = useState<string>(props.amount);
-  const [total, setTotal] = useState<string>(props.total);
+  const [price, setPrice] = useState<string>(props.data.price);
+  const [amount, setAmount] = useState<string>(props.data.amount);
+  const [total, setTotal] = useState<string>(props.data.total);
 
   const { toast } = useToast();
   const { address } = useChain(getChainName());
@@ -124,11 +125,12 @@ export function OrderForms(props: OrderFormsProps) {
     if (price === "") {
       return;
     }
+
     setIsLoadingValues(true);
     if (amount !== "") {
-      setTotal(calculateTotalAmount(price, amount, props.quoteTokenDisplayDenom.exponent));
+      setTotal(calculateTotalAmount(price, amount, props.tokens.quoteTokenDisplayDenom.exponent));
     } else if (total !== "") {
-      setAmount(calculateAmountFromPrice(price, total, props.baseTokenDisplayDenom.exponent));
+      setAmount(calculateAmountFromPrice(price, total, props.tokens.baseTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
   }
@@ -140,9 +142,9 @@ export function OrderForms(props: OrderFormsProps) {
     }
     setIsLoadingValues(true);
     if (price !== "") {
-      setTotal(calculateTotalAmount(price, amount, props.quoteTokenDisplayDenom.exponent));
+      setTotal(calculateTotalAmount(price, amount, props.tokens.quoteTokenDisplayDenom.exponent));
     } else if (total !== "") {
-      setPrice(calculatePricePerUnit(amount, total, props.quoteTokenDisplayDenom.exponent));
+      setPrice(calculatePricePerUnit(amount, total, props.tokens.quoteTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
   }
@@ -154,9 +156,9 @@ export function OrderForms(props: OrderFormsProps) {
     }
     setIsLoadingValues(true);
     if (price !== "") {
-      setAmount(calculateAmountFromPrice(price, total, props.baseTokenDisplayDenom.exponent));
+      setAmount(calculateAmountFromPrice(price, total, props.tokens.baseTokenDisplayDenom.exponent));
     } else if (amount !== "") {
-      setPrice(calculatePricePerUnit(amount, total, props.quoteTokenDisplayDenom.exponent));
+      setPrice(calculatePricePerUnit(amount, total, props.tokens.quoteTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
   }
@@ -223,14 +225,14 @@ export function OrderForms(props: OrderFormsProps) {
     }
 
     const allBalances = await getAddressBalances(address);
-    const bBal = allBalances.balances.find((bal) => bal.denom === props.baseToken.metadata.base);
+    const bBal = allBalances.balances.find((bal) => bal.denom === props.tokens.baseToken.metadata.base);
     if (bBal !== undefined) {
-      setBasebalance(uAmountToAmount(bBal.amount, props.baseTokenDisplayDenom.exponent));
+      setBasebalance(uAmountToAmount(bBal.amount, props.tokens.baseTokenDisplayDenom.exponent));
     }
 
-    const qBal = allBalances.balances.find((bal) => bal.denom === props.quoteToken.metadata.base);
+    const qBal = allBalances.balances.find((bal) => bal.denom === props.tokens.quoteToken.metadata.base);
     if (qBal !== undefined) {
-      setQuoteBalance(uAmountToAmount(qBal.amount, props.quoteTokenDisplayDenom.exponent));
+      setQuoteBalance(uAmountToAmount(qBal.amount, props.tokens.quoteTokenDisplayDenom.exponent));
     }
 
     setIsLoadingBalances(false);
@@ -238,10 +240,10 @@ export function OrderForms(props: OrderFormsProps) {
 
   useEffect(() => {
     fetchBalances(false);
-    setPrice(props.price);
-    setAmount(props.amount);
-    if (props.price !== "" && props.amount !== "" && props.quoteTokenDisplayDenom !== undefined) {
-      setTotal(calculateTotalAmount(props.price, props.amount, props.quoteTokenDisplayDenom.exponent));
+    setPrice(props.data.price);
+    setAmount(props.data.amount);
+    if (props.data.price !== "" && props.data.amount !== "" && props.tokens.quoteTokenDisplayDenom !== undefined) {
+      setTotal(calculateTotalAmount(props.data.price, props.data.amount, props.tokens.quoteTokenDisplayDenom.exponent));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, address])
@@ -266,7 +268,7 @@ export function OrderForms(props: OrderFormsProps) {
             onClick: () => {isBuy ? onTotalChange(quoteBalance) : onAmountChange(baseBalance)}
           }}
           >
-            <Text color={'$primary200'} fontWeight={'$semibold'}>{prettyAmount(isBuy ? quoteBalance : baseBalance)} {isBuy ? props.quoteTokenDisplayDenom.denom : props.baseTokenDisplayDenom.denom}</Text>
+            <Text color={'$primary200'} fontWeight={'$semibold'}>{prettyAmount(isBuy ? quoteBalance : baseBalance)} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom : props.tokens.baseTokenDisplayDenom.denom}</Text>
           </Box>
         }
       </Box>
@@ -282,7 +284,7 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'}  pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.quoteToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
           />
           <TextField
             id="amount"
@@ -295,7 +297,7 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Amount</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.baseToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.baseToken.metadata.display}</Text></Box>}
           />
           <Divider my={'$2'} />
           <TextField
@@ -309,10 +311,10 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Total</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.quoteToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
           />
           <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
-            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.baseToken.metadata.display}</Button>
+            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display}</Button>
           </Box>
       </Box>
     </DefaultBorderedBox>

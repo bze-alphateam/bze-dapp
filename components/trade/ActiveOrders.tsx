@@ -5,6 +5,14 @@ import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/b
 import { Box, Divider, Icon, Stack, Text } from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
+import { OrderFormData } from "./OrderForms";
+
+export interface MarketPairTokens {
+  baseToken: Token;
+  baseTokenDisplayDenom: DenomUnitSDKType;
+  quoteToken: Token;
+  quoteTokenDisplayDenom: DenomUnitSDKType;
+}
 
 export function PriceHeaderLine({ticker}: {ticker: string}) {
   return (
@@ -59,59 +67,60 @@ export interface ActiveOrderStackProps {
   order: AggregatedOrderSDKType;
   baseTokenDisplayDenom: DenomUnitSDKType;
   quoteTokenDisplayDenom: DenomUnitSDKType;
-  onClick: (order: AggregatedOrderSDKType) => void;
+  onClick: (order: OrderFormData) => void;
 }
 
 export function ActiveOrderStack(props: ActiveOrderStackProps) {
-  const [price, setPrice] = useState("");
-  const [amount, setAmount] = useState("");
-  const [total, setTotal] = useState("");
+  const [data, setData] = useState<OrderFormData>({price: "", amount: "", total: ""});
 
   useEffect(() =>{
     const p = uPriceToPrice(new BigNumber(props.order.price), props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
-    setPrice(p);
     const a = uAmountToAmount(props.order.amount, props.baseTokenDisplayDenom.exponent);
-    setAmount(a);
     const priceNum = new BigNumber(p);
     const amountNum = new BigNumber(a);
-    setTotal(priceNum.multipliedBy(amountNum).decimalPlaces(props.quoteTokenDisplayDenom.exponent).toString());
+    setData({
+      price: p,
+      amount: a,
+      total: priceNum.multipliedBy(amountNum).decimalPlaces(props.quoteTokenDisplayDenom.exponent).toString()
+    });
   }, [props])
 
   return (
     <Box
     as="a"
     attributes={{
-      onClick: () => {props.onClick(props.order)}
+      onClick: () => {data.price !== "" ? props.onClick(data) : null}
     }}
     >
       <Stack space={'$2'} attributes={{ marginBottom: "$0" }} >
-        <PriceLine price={price} orderType={props.orderType}/>
-        <AmountLine amount={amount} orderType={props.orderType}/>
-        <TotalLine total={total} orderType={props.orderType}/>
+        <PriceLine price={data.price} orderType={props.orderType}/>
+        <AmountLine amount={data.amount} orderType={props.orderType}/>
+        <TotalLine total={data.total} orderType={props.orderType}/>
       </Stack> 
     </Box>
   )
 }
 
-interface ActiveOrdersProps {
-  baseToken: Token;
-  quoteToken: Token;
-  baseTokenDisplayDenom: DenomUnitSDKType;
-  quoteTokenDisplayDenom: DenomUnitSDKType;
+export interface ActiveOrders {
   buyOrders: AggregatedOrderSDKType[];
   sellOrders: AggregatedOrderSDKType[];
+}
+
+export interface ActiveOrdersProps {
+  tokens: MarketPairTokens
+  orders: ActiveOrders;
   lastOrder: HistoryOrderSDKType|undefined;
   loading: boolean;
-  onOrderClick: (order: AggregatedOrderSDKType) => void
+  onOrderClick: (data: OrderFormData) => void
 }
 
 export function ActiveOrdersList(props: ActiveOrdersProps) {
   return (
     <Box display={'flex'} flex={1} flexDirection={'column'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
-        <PriceHeaderLine ticker={props.quoteToken.metadata.display}/>
-        <AmountHeaderLine ticker={props.baseToken.metadata.display}/>
-        <TotalHeaderLine ticker={props.quoteToken.metadata.display}/>
+        <PriceHeaderLine ticker={props.tokens.quoteToken.metadata.display}/>
+        <AmountHeaderLine ticker={props.tokens.baseToken.metadata.display}/>
+        <TotalHeaderLine ticker={props.tokens.quoteToken.metadata.display}/>
       </Stack>
       <Box display={'flex'} flex={1} flexDirection={'column'} justifyContent={'center'}>
         {!props.loading ?
@@ -123,11 +132,11 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
             flex={1}
           >
             <Box display={'flex'} flex={1} flexDirection={'column'}>
-              {props.sellOrders.length > 0 ?
-                props.sellOrders.map((order: AggregatedOrderSDKType, index: number) => (
+              {props.orders.sellOrders.length > 0 ?
+                props.orders.sellOrders.map((order: AggregatedOrderSDKType, index: number) => (
                   <ActiveOrderStack 
-                    baseTokenDisplayDenom={props.baseTokenDisplayDenom}
-                    quoteTokenDisplayDenom={props.quoteTokenDisplayDenom}
+                    baseTokenDisplayDenom={props.tokens.baseTokenDisplayDenom}
+                    quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                     order={order}
                     orderType="sell"
                     onClick={props.onOrderClick}
@@ -141,16 +150,16 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
           </Box>
           <Divider my={'$2'}/>
           <Box flex={1} display={'flex'} justifyContent={'center'}>
-            {props.lastOrder && <Text color={props.lastOrder.order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$md'}>{uPriceToPrice(new BigNumber(props.lastOrder.price), props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent)} {props.lastOrder.order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}</Text>}
+            {props.lastOrder && <Text color={props.lastOrder.order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$md'}>{uPriceToPrice(new BigNumber(props.lastOrder.price), props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent)} {props.lastOrder.order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}</Text>}
           </Box>
           <Divider my={'$2'}/>
           <Box minHeight={'150px'}>
-            {props.buyOrders.length > 0 ?
-                props.buyOrders.map((order: AggregatedOrderSDKType, index: number) => (
+            {props.orders.buyOrders.length > 0 ?
+                props.orders.buyOrders.map((order: AggregatedOrderSDKType, index: number) => (
                 <ActiveOrderStack 
                   key={index}
-                  baseTokenDisplayDenom={props.baseTokenDisplayDenom}
-                  quoteTokenDisplayDenom={props.quoteTokenDisplayDenom}
+                  baseTokenDisplayDenom={props.tokens.baseTokenDisplayDenom}
+                  quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                   order={order}
                   orderType="buy"
                   onClick={props.onOrderClick}

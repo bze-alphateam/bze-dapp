@@ -14,6 +14,14 @@ import { DenomUnitSDKType } from '@bze/bzejs/types/codegen/cosmos/bank/v1beta1/b
 
 type TooltipData = ChartPoint;
 
+const intl = new Intl.DateTimeFormat("en-US", {
+  year: "2-digit",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: false,    
+});
 export const background = '#e6e9f0';
 export const background2 = '#eef1f5';
 export const accentColor = '#929ce4';
@@ -24,9 +32,6 @@ const tooltipStyles = {
   border: '1px solid white',
   color: 'black',
 };
-
-// util
-const formatDate = timeFormat("%b %d, '%y");
 
 // accessors
 const getDate = (d: ChartPoint) => new Date(d.start);
@@ -184,7 +189,7 @@ export default withTooltip<AreaProps, TooltipData>(
                 transform: 'translateX(-50%)',
               }}
             >
-              {formatDate(getDate(tooltipData))}
+              {intl.format(getDate(tooltipData))}
             </Tooltip>
           </div>
         )}

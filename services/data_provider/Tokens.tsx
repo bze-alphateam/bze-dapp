@@ -13,6 +13,7 @@ export interface Token {
   verified: boolean,
   type: string,
   coingekoId?: string,
+  displayDenom: DenomUnitSDKType|undefined;
 }
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
