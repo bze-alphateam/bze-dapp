@@ -9,7 +9,7 @@ import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToPrice } from 
 import { useChain } from "@cosmos-kit/react";
 import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
-import { OrderFormData, OrderForms } from "@/components/trade/OrderForms";
+import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
 
 interface MarketChartProps {
@@ -171,7 +171,7 @@ export default function MarketPair() {
   const [activeOrders, setActiveOrders] = useState<ActiveOrders>();
   const [myOrders, setMyOrders] = useState<OrderReferenceSDKType[]>();
 
-  const [orderFormData, setOrderFormData] = useState<OrderFormData>({price: "", amount: "", total: ""});
+  const [orderFormData, setOrderFormData] = useState<OrderFormData>(EmptyOrderFormData);
 
   const router = useRouter();
   const { query } = router;
@@ -183,10 +183,11 @@ export default function MarketPair() {
     }
 
     const [buy, sell] = await Promise.all([getMarketBuyOrders(marketId), getMarketSellOrders(marketId)]);
+
     setActiveOrders(
       {
         buyOrders: buy.list,
-        sellOrders: sell.list,
+        sellOrders: sell.list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)),
       }
     );
   }
@@ -241,7 +242,13 @@ export default function MarketPair() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
-  const onOrderPlaced = useCallback(() => {setActiveOrders(undefined); setHistoryOrders(undefined); setMyOrders(undefined); setChartId(chartId + 1)}, [chartId]);
+  const onOrderPlaced = useCallback(() => {
+    setActiveOrders(undefined); 
+    setHistoryOrders(undefined); 
+    setMyOrders(undefined); 
+    setChartId(chartId + 1); 
+    setOrderFormData(EmptyOrderFormData)
+  }, [chartId]);
 
   const onOrderCancelled = useCallback(() => {setActiveOrders(undefined); setMyOrders(undefined)}, []);
 

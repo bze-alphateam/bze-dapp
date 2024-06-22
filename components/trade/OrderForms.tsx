@@ -18,6 +18,8 @@ export interface OrderFormData {
   total: string;
 }
 
+export const EmptyOrderFormData = {price: "", amount: "", total: ""};
+
 interface OrderFormsProps {
   data: OrderFormData;
   tokens: MarketPairTokens;
