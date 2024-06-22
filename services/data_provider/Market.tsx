@@ -25,7 +25,7 @@ export async function getMarketSellOrders(marketId: string): Promise<QueryMarket
 export async function getMarketOrders(marketId: string, orderType: string): Promise<QueryMarketAggregatedOrdersResponseSDKType> {
   try {
     const client = await getRestClient();
-    return client.bze.tradebin.v1.marketAggregatedOrders(QueryMarketAggregatedOrdersRequestFromPartyal({market: marketId, orderType: orderType, pagination: {limit: 20, reverse: true}}));
+    return client.bze.tradebin.v1.marketAggregatedOrders(QueryMarketAggregatedOrdersRequestFromPartyal({market: marketId, orderType: orderType, pagination: {limit: 15, reverse: true}}));
 
   } catch(e) {
     console.error(e);

@@ -84,9 +84,9 @@ export const calculateAmountFromPrice = (price: string, totalPrice: string, deci
 }
 
 export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent))).decimalPlaces(18).toString()
+  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent))).decimalPlaces(12).toString()
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.dividedBy(Math.pow(10, (quoteExponent - baseExponent))).decimalPlaces(18).toString()
+  return price.dividedBy(Math.pow(10, (quoteExponent - baseExponent))).decimalPlaces(12).toString()
 }

@@ -285,10 +285,15 @@ export default function MarketPair() {
           <Box><Text as="h1" fontSize={'$2xl'}>Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display}</Text></Text></Box>
           {historyOrders !== undefined && tokens !== undefined &&
             <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
-              <Text>Last price: </Text>
-              <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$md'} fontWeight={'$bold'}>
-                {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
-              </Text>
+              {
+                historyOrders.length > 0 && 
+                <>
+                  <Text>Last price: </Text>
+                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$md'} fontWeight={'$bold'}>
+                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
+                  </Text>
+                </>
+              }
             </Box>
           }
         </Box>
