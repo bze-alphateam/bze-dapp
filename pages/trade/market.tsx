@@ -22,6 +22,7 @@ interface MarketChartProps {
 
 const MarketChart = memo((props: MarketChartProps) =>  {
   const [chartId, setChartId] = useState<number>(0);
+  const [totalVolume, setTotalVolume] = useState("-");
 
   const getChartButtonIntent = (buttonChartType: string) => {
     if (props.chartType === buttonChartType) {
@@ -235,6 +236,20 @@ export default function MarketPair() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, historyOrders, myOrders, activeOrders]);
 
+  const getTotalVolume = useMemo(() => {
+    if (chartData === undefined) {
+      return "0";
+    }
+    
+    let vol = new BigNumber(0);
+    for (let i = 0; i < chartData.length; i++) {
+      vol = vol.plus(chartData[i].volume);
+    }
+
+    return vol.toString();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartData, chartType]);
+
   useEffect(() => {
     loadChart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -305,12 +320,20 @@ export default function MarketPair() {
               {
                 historyOrders.length > 0 && 
                 <>
-                  <Text>Last price: </Text>
-                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$md'} fontWeight={'$bold'}>
+                  <Text color={'$primary100'}>Last price: </Text>
+                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
                     {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
                   </Text>
                 </>
               }
+            </Box>
+          }
+          {chartData !== undefined && tokens !== undefined &&
+            <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
+              <Text color={'$primary100'}>{chartType} volume: </Text>
+              <Text color={'$primary200'} fontWeight={'$bold'}>
+                {uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} {tokens.baseTokenDisplayDenom.denom}
+              </Text>
             </Box>
           }
         </Box>
