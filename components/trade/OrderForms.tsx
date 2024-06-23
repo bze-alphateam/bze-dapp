@@ -63,7 +63,6 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
   
   const msgs = [];
   let uAmountNum = new BigNumber(uAmount);
-  let lastUPrice = uPrice;
   //check active orders prices and fill them one by one if needed
   for (let i = 0; i < ordersToSearch.length; i++) {
     const orderUAmountNum = new BigNumber(ordersToSearch[i].amount);
@@ -81,7 +80,6 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
         price: ordersToSearch[i].price,
       })
     )
-    lastUPrice = ordersToSearch[i].price;
 
     uAmountNum = uAmountNum.minus(msgAmount);
     if (uAmountNum.eq(0)) {
@@ -96,7 +94,7 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
         marketId: marketId,
         orderType: orderType,
         amount: uAmountNum.toString(),
-        price: lastUPrice,
+        price: uPrice,
       })
     )
   }
