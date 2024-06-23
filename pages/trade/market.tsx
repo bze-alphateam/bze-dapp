@@ -16,28 +16,15 @@ interface MarketChartProps {
   tokens: MarketPairTokens;
   chartType: string;
   onChartChange?: (chartType: string) => void;
+  chartData: ChartPoint[];
+  loading: boolean;
 }
 
 const MarketChart = memo((props: MarketChartProps) =>  {
-  const [loading, setLoading] = useState(true);
-  const [chartData, setChartData] = useState<ChartPoint[]>([]);
-  const [selectedChart, setSelectedChart] = useState<string>(props.chartType);
-
-  const loadChart = async () => {
-    setLoading(true);
-    const chart = await getMarketChart(
-      marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base),
-      selectedChart,
-      props.tokens.quoteTokenDisplayDenom.exponent,
-      props.tokens.baseTokenDisplayDenom.exponent
-    );
-
-    setChartData(chart);
-    setLoading(false);
-  }
+  const [chartId, setChartId] = useState<number>(0);
 
   const getChartButtonIntent = (buttonChartType: string) => {
-    if (selectedChart === buttonChartType) {
+    if (props.chartType === buttonChartType) {
       return "tertiary";
     }
 
@@ -45,13 +32,12 @@ const MarketChart = memo((props: MarketChartProps) =>  {
   }
 
   const selectChart = (chartType: string) => {
-    setSelectedChart(chartType);
     props.onChartChange ? props.onChartChange(chartType): undefined;
   }
 
   useEffect(() => {
-    loadChart();
-  }, [selectedChart]);
+    setChartId(chartId + 1);
+  }, [props.chartData, props.chartType]);
 
   return (
     <DefaultBorderedBox 
@@ -59,7 +45,7 @@ const MarketChart = memo((props: MarketChartProps) =>  {
       justifyContent={'center'} 
       alignItems={'center'}
     >
-      {!loading ? 
+      {!props.loading ? 
         <Box
           display={'flex'}
           flexDirection={'column'}
@@ -75,6 +61,7 @@ const MarketChart = memo((props: MarketChartProps) =>  {
           </Box>
           <Box display={'flex'} flex={1}>
             <Chart 
+              key={chartId}
               height={500} 
               width={window.innerWidth > 769 ? 700 : 350} 
               margin={{
@@ -83,7 +70,7 @@ const MarketChart = memo((props: MarketChartProps) =>  {
                 bottom: 10,
                 right: 0,
               }}
-              chartData={chartData}
+              chartData={props.chartData}
               quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
             />
           </Box>
@@ -164,7 +151,7 @@ export default function MarketPair() {
   const [marketId, setMarketId] = useState("");
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<MarketPairTokens>();
-  const [chartId, setChartId] = useState(0);
+  const [chartData, setChartData] = useState<ChartPoint[]>();
   const [chartType, setChartType] = useState(CHART_7D);
 
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
@@ -176,6 +163,21 @@ export default function MarketPair() {
   const router = useRouter();
   const { query } = router;
   const { address } = useChain(getChainName());
+
+  const loadChart = async () => {
+    if (tokens === undefined) {
+      return;
+    }
+
+    const chart = await getMarketChart(
+      marketIdFromDenoms(tokens.baseToken.metadata.base, tokens.quoteToken.metadata.base),
+      chartType,
+      tokens.quoteTokenDisplayDenom.exponent,
+      tokens.baseTokenDisplayDenom.exponent
+    );
+
+    setChartData(chart);
+  }
 
   const fetchActiveOrders = async () => {
     if (!marketId) {
@@ -234,6 +236,11 @@ export default function MarketPair() {
   }, [marketId, historyOrders, myOrders, activeOrders]);
 
   useEffect(() => {
+    loadChart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartType, tokens]);
+
+  useEffect(() => {
     if (marketId === "") {
       return;
     }
@@ -246,14 +253,14 @@ export default function MarketPair() {
     fetchActiveOrders();
     fetchMarketHistory();
     fetchMyOrders();
-    setChartId(chartId + 1); 
+    loadChart();
     setOrderFormData(EmptyOrderFormData)
-  }, [chartId]);
+  }, [chartType]);
 
   const onOrderCancelled = useCallback(() => {
     fetchActiveOrders();
     fetchMyOrders();
-  }, []);
+  }, [activeOrders, myOrders]);
 
   const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
 
@@ -313,8 +320,9 @@ export default function MarketPair() {
           <Box display='flex' flex={1} flexDirection={'column'}>
             <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}} flex={1} gap={'$6'}>
               <MarketChart
-                key={chartId}
                 chartType={chartType}
+                chartData={chartData !== undefined ? chartData : []}
+                loading={chartData === undefined}
                 tokens={tokens}
                 onChartChange={onChartChange}
               />
