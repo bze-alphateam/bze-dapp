@@ -5,7 +5,7 @@ function getRestURL(): string {
   return process.env.NEXT_PUBLIC_REST_URL !== undefined ? process.env.NEXT_PUBLIC_REST_URL : '';
 }
 
-function getRpcURL(): string {
+export function getRpcURL(): string {
   return process.env.NEXT_PUBLIC_RPC_URL !== undefined ? process.env.NEXT_PUBLIC_RPC_URL : '';
 }
 
