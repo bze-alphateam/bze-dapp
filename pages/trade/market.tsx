@@ -343,7 +343,7 @@ export default function MarketPair() {
     <Layout>
       <Box display='block' flexDirection={'row'}>
         <Box marginBottom={'$6'} ml='$6'>
-          <Box><Text as="h1" fontSize={'$2xl'}>Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display}</Text></Text></Box>
+          <Box><Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display}</Text></Text></Box>
           {historyOrders !== undefined && tokens !== undefined &&
             <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
               {

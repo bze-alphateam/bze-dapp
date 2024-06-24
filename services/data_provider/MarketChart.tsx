@@ -147,7 +147,34 @@ export async function getMarketChart(marketId: string, chart: string, quoteExpon
 
   intervalsToFill = await fillChartIntervals(marketHistory, intervalsToFill, limit, offset, marketId, quoteExponent, baseExponent);
 
-  return Array.from(intervalsToFill.values()).sort((a, b) => a.start - b.start);
+  const result = Array.from(intervalsToFill.values()).sort((a, b) => a.start - b.start);
+
+  //fill empty intervals with the next price found
+  for (let i = 0; i < result.length; i++) {
+    //save first non empty interval
+    //an empty interval is one that has price === 0 and volume === 0
+    const firstNonEmptyInerval = result[i];
+    //iterate until you find the first interval not empty
+    if (firstNonEmptyInerval.price === "0" || firstNonEmptyInerval.volume === "0") {
+      continue;
+    }
+
+    //check next intervals that are empty and need to be filled
+    for (let j = i + 1; j < result.length; j++) {
+      const nextIterval = result[j];
+      if (nextIterval.price !== "0") {
+        //stop this for when we find an interval with price
+        break;
+      }
+
+      //if we reach this it means this interval needs to have a price set
+      //we don't touch "volume" because we want to know this interval is filled manually just to make the chart look nicer
+      nextIterval.price = firstNonEmptyInerval.price;
+      result[j] = nextIterval;
+    }
+  }
+
+  return result
 }
 
 async function fillChartIntervals(
