@@ -3,7 +3,7 @@ import { Token, getMarketOrder } from "@/services";
 import { getChainName, uAmountToAmount, uPriceToPrice } from "@/utils";
 import { HistoryOrderSDKType, OrderReferenceSDKType, OrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { useChain } from "@cosmos-kit/react";
-import { Box, Button, Skeleton, Stack, Text } from "@interchain-ui/react";
+import { Box, Button, Skeleton, Stack, Text, useColorModeValue } from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import { DenomUnitSDKType } from "interchain-query/cosmos/bank/v1beta1/bank";
 import { memo, useEffect, useState } from "react";
@@ -109,10 +109,12 @@ const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
   const [fullOrder, setFullOrder] = useState<OrderSDKType|undefined>();
   const [price, setPrice] = useState("");
   const [amount, setAmount] = useState("");
+  const [background, setBackground] = useState<string|undefined>();
 
   const { toast } = useToast();
   const { address } = useChain(getChainName());
   const { tx } = useTx();
+  const backgroundColor = useColorModeValue('#ddd7d782', '#2b3039b0')
 
   const onOrderCancel = async () => {
     if (address === undefined || fullOrder === undefined) {
@@ -164,7 +166,11 @@ const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
   }, [props])
 
   return (
-    <Stack space={'$2'} attributes={{ marginBottom: "$2", flex: 1 }} justify={'center'}>
+    <Stack
+      space={'$2'}
+      attributes={{ marginBottom: "$2", flex: 1 }}
+      justify={'center'}
+      >
       {loading ?
         <Skeleton 
           display={'flex'}
@@ -174,7 +180,17 @@ const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
           width="$6"
         />
       :
-        <>
+        <Box
+          display={'flex'}
+          flexDirection={'row'}
+          flex={1}
+          backgroundColor={background}
+          alignItems={'center'}
+          attributes={{
+            onMouseOver: () => setBackground(backgroundColor),
+            onMouseLeave: () => setBackground(undefined)
+          }}
+        >
           <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
             <Text fontSize={'$sm'} color={props.order.order_type === 'buy' ? '$green200': '$red300'}>{price}</Text>
           </Box>
@@ -187,7 +203,7 @@ const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
           <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
             <Button size="xs" intent="secondary" isLoading={loading} onClick={onOrderCancel}>Cancel</Button>
           </Box>  
-        </>
+        </Box>
       }
     </Stack>
   );
