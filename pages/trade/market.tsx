@@ -12,6 +12,7 @@ import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, My
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
 import BlockListener from "@/services/listener/BlockListener";
+import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 
 interface MarketChartProps {
   tokens: MarketPairTokens;
@@ -154,7 +155,7 @@ export default function MarketPair() {
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<MarketPairTokens>();
   const [chartData, setChartData] = useState<ChartPoint[]>();
-  const [chartType, setChartType] = useState(CHART_7D);
+  const [chartType, setChartType] = useState(CHART_30D);
 
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
   const [activeOrders, setActiveOrders] = useState<ActiveOrders>();
@@ -263,17 +264,17 @@ export default function MarketPair() {
 
     BlockListener.removeAllCallbacks();
     BlockListener.listenMarket(marketId);
-    BlockListener.onOrderCanceled(() => {
+    BlockListener.onOrderCanceled((event: OrderCanceledEvent) => {
       fetchActiveOrders();
       fetchMyOrders();
     });
-    BlockListener.onOrderExecuted(() => {
+    BlockListener.onOrderExecuted((event: OrderExecutedEvent) => {
       fetchActiveOrders();
       fetchMarketHistory();
       fetchMyOrders();
       loadChart();
     });
-    BlockListener.onOrderSaved(() => {
+    BlockListener.onOrderSaved((event: OrderSavedEvent) => {
       fetchActiveOrders();
       fetchMarketHistory();
       fetchMyOrders();
