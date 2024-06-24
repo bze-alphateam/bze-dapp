@@ -11,6 +11,7 @@ import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } fr
 import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
+import BlockListener from "@/services/listener/BlockListener";
 
 interface MarketChartProps {
   tokens: MarketPairTokens;
@@ -260,21 +261,48 @@ export default function MarketPair() {
       return;
     }
 
+    BlockListener.removeAllCallbacks();
+    BlockListener.listenMarket(marketId);
+    BlockListener.onOrderCanceled(() => {
+      fetchActiveOrders();
+      fetchMyOrders();
+    });
+    BlockListener.onOrderExecuted(() => {
+      fetchActiveOrders();
+      fetchMarketHistory();
+      fetchMyOrders();
+      loadChart();
+    });
+    BlockListener.onOrderSaved(() => {
+      fetchActiveOrders();
+      fetchMarketHistory();
+      fetchMyOrders();
+      loadChart();
+    });
+    BlockListener.start();
+
     fetchMyOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address]);
+    if (address !== undefined) {
+      BlockListener.listenAddressBalance(address);
+      BlockListener.onBalanceChange(() => console.log("balance changed"));
+      BlockListener.start();
+    } else {
+      BlockListener.removeListenAddressBalance();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marketId, address])
 
   const onOrderPlaced = useCallback(() => {
-    fetchActiveOrders();
-    fetchMarketHistory();
-    fetchMyOrders();
-    loadChart();
+    // fetchActiveOrders();
+    // fetchMarketHistory();
+    // fetchMyOrders();
+    // loadChart();
     setOrderFormData(EmptyOrderFormData)
-  }, [chartType]);
+  }, []);
 
   const onOrderCancelled = useCallback(() => {
-    fetchActiveOrders();
-    fetchMyOrders();
+    // fetchActiveOrders();
+    // fetchMyOrders();
   }, [activeOrders, myOrders]);
 
   const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);

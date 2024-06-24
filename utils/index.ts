@@ -7,6 +7,7 @@ export * from './DateTime';
 export * from './Network';
 export * from './Functions';
 export * from './Market';
+export * from './Tendermint';
 
 export function getLogo(from: Asset | Chain) {
   return from.logo_URIs?.svg || from.logo_URIs?.png || from.logo_URIs?.jpeg;

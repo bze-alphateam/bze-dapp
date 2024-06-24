@@ -45,3 +45,12 @@ export function stringTruncateFromCenter(str: string, maxLength: number) {
 export function truncateDenom(denom: string) {
   return stringTruncateFromCenter(denom, MAX_DENOM_LEN);
 }
+
+// Utility function to decode Base64
+export function decodeBase64(str: string): string {
+  return Buffer.from(str, 'base64').toString('utf-8');
+}
+
+export function snakeToCamel(snake: string): string {
+  return snake.replace(/(_\w)/g, (matches) => matches[1].toUpperCase());
+}

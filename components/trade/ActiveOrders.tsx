@@ -140,7 +140,7 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
                     order={order}
                     orderType="sell"
                     onClick={props.onOrderClick}
-                    key={index}
+                    key={`${order.price}${order.amount}`}
                   />
                 ))
                 :
@@ -157,12 +157,12 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
             {props.orders.buyOrders.length > 0 ?
                 props.orders.buyOrders.map((order: AggregatedOrderSDKType, index: number) => (
                 <ActiveOrderStack 
-                  key={index}
                   baseTokenDisplayDenom={props.tokens.baseTokenDisplayDenom}
                   quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                   order={order}
                   orderType="buy"
                   onClick={props.onOrderClick}
+                  key={`${order.price}${order.amount}`}
                 />
               ))
               :
