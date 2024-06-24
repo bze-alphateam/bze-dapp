@@ -294,17 +294,10 @@ export default function MarketPair() {
   }, [marketId, address])
 
   const onOrderPlaced = useCallback(() => {
-    // fetchActiveOrders();
-    // fetchMarketHistory();
-    // fetchMyOrders();
-    // loadChart();
     setOrderFormData(EmptyOrderFormData)
   }, []);
 
-  const onOrderCancelled = useCallback(() => {
-    // fetchActiveOrders();
-    // fetchMyOrders();
-  }, [activeOrders, myOrders]);
+  const onOrderCancelled = useCallback(() => {}, []);
 
   const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
 

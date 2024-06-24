@@ -228,11 +228,15 @@ export function OrderForms(props: OrderFormsProps) {
     const bBal = allBalances.balances.find((bal) => bal.denom === props.tokens.baseToken.metadata.base);
     if (bBal !== undefined) {
       setBasebalance(uAmountToAmount(bBal.amount, props.tokens.baseTokenDisplayDenom.exponent));
+    } else {
+      setBasebalance("0");
     }
 
     const qBal = allBalances.balances.find((bal) => bal.denom === props.tokens.quoteToken.metadata.base);
     if (qBal !== undefined) {
       setQuoteBalance(uAmountToAmount(qBal.amount, props.tokens.quoteTokenDisplayDenom.exponent));
+    } else {
+      setQuoteBalance("0");
     }
 
     setIsLoadingBalances(false);
