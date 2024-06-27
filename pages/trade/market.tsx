@@ -2,12 +2,11 @@ import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, Token, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
+import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
 import BigNumber from "bignumber.js";
-import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToPrice } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
-import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import { HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
@@ -39,6 +38,7 @@ const MarketChart = memo((props: MarketChartProps) =>  {
 
   useEffect(() => {
     setChartId(chartId + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.chartData, props.chartType]);
 
   return (
