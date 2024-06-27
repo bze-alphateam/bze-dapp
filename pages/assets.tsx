@@ -8,7 +8,8 @@ import { useRouter } from "next/router";
 import { useChain } from "@cosmos-kit/react";
 import { getChainName } from "@/utils";
 import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
-import { getAddressBalances } from "@/services/data_provider/Balances";
+import { getAddressBalances, removeBalancesCache } from "@/services/data_provider/Balances";
+import AddressBalanceListener from "@/services/listener/BalanceListener";
 
 function TokenList() {
   const [loading, setLoading] = useState(true);
@@ -44,13 +45,7 @@ function TokenList() {
     setLoading(false);
   }
 
-  const fetchList = async () => {
-    const tokens = await getAllSupplyTokens();
-
-    setList(tokens);
-    setFiltered(sortAssets(Array.from(tokens.values())));
-    setLoading(false);
-
+  const fetchBalances = async () => {
     if (address !== undefined) {
       const balances = await getAddressBalances(address);
       if (balances.balances.length > 0) {
@@ -61,8 +56,29 @@ function TokenList() {
     }
   }
 
+  const fetchList = async () => {
+    const tokens = await getAllSupplyTokens();
+
+    setList(tokens);
+    setFiltered(sortAssets(Array.from(tokens.values())));
+    await fetchBalances();
+    setLoading(false);
+  }
+
   useEffect(() => {
     fetchList();
+    if (address !== undefined) {
+      fetchBalances();
+      AddressBalanceListener.clearCallbacks();
+      AddressBalanceListener.setAddress(address);
+      AddressBalanceListener.addOnSendAndReceiveCallback(async () => {
+        await removeBalancesCache(address);
+        fetchBalances();
+      });
+      AddressBalanceListener.start();
+    } else {
+      AddressBalanceListener.stop();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
