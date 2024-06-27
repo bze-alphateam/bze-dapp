@@ -100,9 +100,29 @@ export async function getAddressMarketOrders(marketId: string, address: string):
 
 export async function getMarketOrder(marketId: string, orderType: string, orderId: string): Promise<QueryMarketOrderResponseSDKType> {
   try {
+    const cacheKey = `${ALL_MARKETS_KEY}${marketId}:${orderType}:${orderId}`;
+    let localData = localStorage.getItem(cacheKey);
+    if (null !== localData) {
+        let parsed = JSON.parse(localData);
+        if (parsed) {
+            if (parsed.expiresAt > new Date().getTime()) {
+                
+                return new Promise<QueryMarketOrderResponseSDKType> ((resolve) => {
+                    resolve({...parsed.params});
+                })
+            }
+        }
+    }
+
     const client = await getRestClient();
+    const response = await client.bze.tradebin.v1.marketOrder(QueryMarketOrderRequestFromPartial({market: marketId, orderType: orderType, orderId: orderId}));
+    let cacheData = {
+      params: {...response},
+      expiresAt: new Date().getTime() + ALL_MARKETS_CACHE_TTL,
+    }
+    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
     
-    return client.bze.tradebin.v1.marketOrder(QueryMarketOrderRequestFromPartial({market: marketId, orderType: orderType, orderId: orderId}));
+    return response;
   } catch(e) {
     console.error(e);
 

@@ -11,8 +11,8 @@ import { AggregatedOrderSDKType, HistoryOrderSDKType, OrderReferenceSDKType } fr
 import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
-import BlockListener from "@/services/listener/BlockListener";
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
+import MarketPairListener from "@/services/listener/MarketPairListener";
 
 interface MarketChartProps {
   tokens: MarketPairTokens;
@@ -24,7 +24,6 @@ interface MarketChartProps {
 
 const MarketChart = memo((props: MarketChartProps) =>  {
   const [chartId, setChartId] = useState<number>(0);
-  const [totalVolume, setTotalVolume] = useState("-");
 
   const getChartButtonIntent = (buttonChartType: string) => {
     if (props.chartType === buttonChartType) {
@@ -262,34 +261,27 @@ export default function MarketPair() {
       return;
     }
 
-    BlockListener.removeAllCallbacks();
-    BlockListener.listenMarket(marketId);
-    BlockListener.onOrderCanceled((event: OrderCanceledEvent) => {
+    MarketPairListener.clearAllCallbacks();
+    MarketPairListener.setMarketId(marketId);
+    MarketPairListener.addOnOrderCanceledCallback((event: OrderCanceledEvent) => {
       fetchActiveOrders();
       fetchMyOrders();
     });
-    BlockListener.onOrderExecuted((event: OrderExecutedEvent) => {
-      fetchActiveOrders();
-      fetchMarketHistory();
-      fetchMyOrders();
-      loadChart();
-    });
-    BlockListener.onOrderSaved((event: OrderSavedEvent) => {
+    MarketPairListener.addOnOrderExecutedCallback((event: OrderExecutedEvent) => {
       fetchActiveOrders();
       fetchMarketHistory();
       fetchMyOrders();
       loadChart();
     });
-    BlockListener.start();
+    MarketPairListener.addOnOrderSavedCallback((event: OrderSavedEvent) => {
+      fetchActiveOrders();
+      fetchMarketHistory();
+      fetchMyOrders();
+      loadChart();
+    });
+    MarketPairListener.start();
 
     fetchMyOrders();
-    if (address !== undefined) {
-      BlockListener.listenAddressBalance(address);
-      BlockListener.onBalanceChange(() => console.log("balance changed"));
-      BlockListener.start();
-    } else {
-      BlockListener.removeListenAddressBalance();
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, address])
 

@@ -39,7 +39,7 @@ export async function getAddressBalances(address: string): Promise<QuerySpendabl
   }
 }
 
-export async function removeBalanncesCache(address: string) {
+export async function removeBalancesCache(address: string) {
   const cacheKey = `${BALANCES_KEY}${address}`;
   localStorage.removeItem(cacheKey);
 }

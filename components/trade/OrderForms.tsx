@@ -8,9 +8,10 @@ import { useEffect, useState } from "react";
 import { DefaultBorderedBox } from "../common";
 import { Box, Button, Divider, Text, TextField } from "@interchain-ui/react";
 import { bze } from '@bze/bzejs';
-import { getAddressBalances, removeBalanncesCache } from "@/services/data_provider/Balances";
+import { getAddressBalances, removeBalancesCache } from "@/services/data_provider/Balances";
 import { AggregatedOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { ActiveOrders, MarketPairTokens } from "./ActiveOrders";
+import AddressBalanceListener from "@/services/listener/BalanceListener";
 
 export interface OrderFormData {
   price: string;
@@ -205,14 +206,13 @@ export function OrderForms(props: OrderFormsProps) {
         setPrice("");
         setTotal("");
         props.onOrderPlaced ? props.onOrderPlaced() : null;
-        fetchBalances(true);
       }
     });
 
     setIsPendingSubmit(false);
   }
 
-  const fetchBalances = async (resetCache: boolean) => {
+  const fetchBalances = async () => {
     if (address === undefined) {
       setQuoteBalance("0");
       setBasebalance("0");
@@ -220,10 +220,6 @@ export function OrderForms(props: OrderFormsProps) {
     }
 
     setIsLoadingBalances(true);
-    if (resetCache) {
-      await removeBalanncesCache(address);
-    }
-
     const allBalances = await getAddressBalances(address);
     const bBal = allBalances.balances.find((bal) => bal.denom === props.tokens.baseToken.metadata.base);
     if (bBal !== undefined) {
@@ -243,11 +239,22 @@ export function OrderForms(props: OrderFormsProps) {
   }
 
   useEffect(() => {
-    fetchBalances(false);
     setPrice(props.data.price);
     setAmount(props.data.amount);
     if (props.data.price !== "" && props.data.amount !== "" && props.tokens.quoteTokenDisplayDenom !== undefined) {
       setTotal(calculateTotalAmount(props.data.price, props.data.amount, props.tokens.quoteTokenDisplayDenom.exponent));
+    }
+    if (address !== undefined) {
+      fetchBalances();
+      AddressBalanceListener.clearCallbacks();
+      AddressBalanceListener.setAddress(address);
+      AddressBalanceListener.addOnSendAndReceiveCallback(async () => {
+        await removeBalancesCache(address);
+        fetchBalances();
+      });
+      AddressBalanceListener.start();
+    } else {
+      AddressBalanceListener.stop();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, address])
