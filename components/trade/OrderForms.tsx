@@ -214,8 +214,6 @@ export function OrderForms(props: OrderFormsProps) {
 
   const fetchBalances = async () => {
     if (address === undefined) {
-      setQuoteBalance("0");
-      setBasebalance("0");
       return;
     }
 
@@ -255,6 +253,8 @@ export function OrderForms(props: OrderFormsProps) {
       AddressBalanceListener.start();
     } else {
       AddressBalanceListener.stop();
+      setQuoteBalance("0");
+      setBasebalance("0");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, address])
