@@ -255,25 +255,15 @@ function TokenList() {
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
       {loading ? 
         <AssetList
-          needChainSpace={true}
-          isOtherChains={false}
           titles={['Token', 'Verified']}
           list={[]}
           /> :
         <AssetList
-          needChainSpace={true}
-          isOtherChains={false}
           titles={['Token', 'Verified']}
           list={
             filtered.map((token, i) => {
               return {
-                isOtherChains: true,
-                needChainSpace: false,
-                imgSrc: token.logo,
-                symbol: token.metadata.symbol,
-                name:  token.metadata.name,
-                tokenAmount: token.verified ? '✅ YES' : '❌ NO',
-                tokenAmountPrice: token.verified ? 'Verified by BZE' : '❗ Proceed with caution',
+                token: token,
                 onWithdraw: () => {
                   router.push({
                     pathname: '/token',
@@ -284,7 +274,6 @@ function TokenList() {
                 },
                 showWithdraw: true,
                 withdrawLabel: "Details",
-                
               };
             })
           }

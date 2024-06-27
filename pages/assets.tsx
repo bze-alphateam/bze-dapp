@@ -5,13 +5,19 @@ import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
 import { Token, getAllSupplyTokens, isNativeType, sortAssets } from "@/services";
 import { useRouter } from "next/router";
+import { useChain } from "@cosmos-kit/react";
+import { getChainName } from "@/utils";
+import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import { getAddressBalances } from "@/services/data_provider/Balances";
 
 function TokenList() {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<Map<string, Token>>(new Map());
+  const [userBalances, setUserBalances] = useState<CoinSDKType[]>([]);
   const [filtered, setFiltered] = useState<Token[]>([]);
 
   const router = useRouter();
+  const { address } = useChain(getChainName());
 
   const handleSearch = (query: string) => {
     setLoading(true);
@@ -44,11 +50,21 @@ function TokenList() {
     setList(tokens);
     setFiltered(sortAssets(Array.from(tokens.values())));
     setLoading(false);
+
+    if (address !== undefined) {
+      const balances = await getAddressBalances(address);
+      if (balances.balances.length > 0) {
+        setUserBalances(balances.balances);
+      }
+    } else {
+      setUserBalances([]);
+    }
   }
 
   useEffect(() => {
     fetchList();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
 
   return (
     <DefaultBorderedBox 
@@ -76,23 +92,14 @@ function TokenList() {
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
       {loading ? 
         <AssetList
-          needChainSpace={true}
-          isOtherChains={false}
           list={[]}
           /> :
         <AssetList
-          needChainSpace={true}
-          isOtherChains={false}
+          balances={userBalances}
           list={
             filtered.map((token, i) => {
               return {
-                isOtherChains: true,
-                needChainSpace: false,
-                imgSrc: token.logo,
-                symbol: token.metadata.symbol,
-                name:  token.metadata.name,
-                tokenAmount: token.verified ? '✅ Verified' : '❌ Not Verified',
-                tokenAmountPrice: `${token.type} Token`,
+                token: token,
                 onWithdraw: () => {
                   router.push({
                     pathname: '/token',
@@ -103,8 +110,6 @@ function TokenList() {
                 },
                 showWithdraw: token.type.toLowerCase() === 'factory',
                 withdrawLabel: "Details",
-                // showDeposit: true,
-                // depositLabel: 'Other'
               };
             })
           }

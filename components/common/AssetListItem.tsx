@@ -1,7 +1,36 @@
 
-import { AssetListItemProps, Box, Button, Stack, Text } from "@interchain-ui/react";
+import { Token, getTokenDisplayDenom } from "@/services";
+import { prettyAmount, uAmountToAmount } from "@/utils";
+import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import { AssetListItemProps, BaseComponentProps, Box, Button, Stack, Text } from "@interchain-ui/react";
+import { useMemo } from "react";
 
-export default function AssetListItem(props: AssetListItemProps) {
+export interface CustomAssetListItemProps extends BaseComponentProps {
+  token: Token;
+  balance?: CoinSDKType|undefined;
+  depositLabel?: string;
+  withdrawLabel?: string;
+  showDeposit?: boolean;
+  showWithdraw?: boolean;
+  onDeposit?: (event?: any) => void;
+  onWithdraw?: (event?: any) => void;
+}
+
+export default function AssetListItem(props: CustomAssetListItemProps) {
+
+  const prettyDisplayBalance = useMemo(() => {
+    if (!props.balance) {
+      return "";
+    }
+
+    const tokenDisplayDenom = props.token.metadata.denom_units.find((unit) => unit.denom === props.token.metadata.display);
+    if (!tokenDisplayDenom) {
+      return "";
+    }
+
+    return `${prettyAmount(uAmountToAmount(props.balance.amount, tokenDisplayDenom.exponent))} ${tokenDisplayDenom.denom}`;
+
+  }, [props.balance])
 
   return (
     <Stack
@@ -15,10 +44,10 @@ export default function AssetListItem(props: AssetListItemProps) {
         <Box
           as="img"
           attributes={{
-            src: props.imgSrc,
+            src: props.token.logo,
           }}
-          width={props.isOtherChains ? "$10" : "$14"}
-          height={props.isOtherChains ? "$10" : "$14"}
+          width={"$14"}
+          height={"$14"}
         />
       </Box>
       <Stack attributes={{ alignItems: "center", flex: 1 }}>
@@ -34,25 +63,18 @@ export default function AssetListItem(props: AssetListItemProps) {
             fontWeight="$semibold"
             attributes={{ marginBottom: "$2" }}
           >
-            {props.symbol}
+            {props.token.metadata.symbol}
           </Text>
           <Text fontSize={'$sm'} color="$textSecondary">
-            {props.name}
+            {props.token.metadata.name}
           </Text>
         </Stack>
-        {props.needChainSpace &&
-          <Stack
-            attributes={{
-              width: "25%",
-            }}
-          >
-            {props.isOtherChains && 
-              <Text fontSize={'$sm'} color="$textSecondary">
-                {props.chainName}
-              </Text>
-            }
-          </Stack>
-        }
+        <Stack
+          attributes={{
+            width: "25%",
+          }}
+        >
+        </Stack>
         <Stack
           space="$0"
           direction="vertical"
@@ -65,21 +87,34 @@ export default function AssetListItem(props: AssetListItemProps) {
             fontWeight="$semibold"
             attributes={{ marginBottom: "$2" }}
           >
-            {props.tokenAmount}
+            {props.token.verified ? '✅ Verified' : '❌ Not Verified'}
           </Text>
           <Text fontSize={'$sm'} color="$textSecondary">
-            {props.tokenAmountPrice}
+            {props.token.type} Token
           </Text>
         </Stack>
-
-        {!props.needChainSpace && 
-          <Stack
-            attributes={{
-              width: "25%",
-            }}
-          ></Stack>
-        }
-
+        <Stack
+          space="$0"
+          direction="vertical"
+          attributes={{
+            width: "25%",
+          }}
+        >
+          {props.balance &&
+            <>
+              <Text
+                fontSize={'$sm'}
+                fontWeight="$semibold"
+                attributes={{ marginBottom: "$2" }}
+              >
+                {prettyDisplayBalance}
+              </Text>
+              <Text fontSize={'$sm'} color="$textSecondary">
+                Balance
+              </Text>
+            </>
+          }
+        </Stack>
         <Stack
           space="$5"
           attributes={{
