@@ -1,7 +1,5 @@
 import { useToast, useTx } from "@/hooks";
-import { Token } from "@/services";
 import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, marketIdFromDenoms, prettyAmount, priceToUPrice, uAmountToAmount } from "@/utils";
-import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { useChain } from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
@@ -12,6 +10,7 @@ import { getAddressBalances, removeBalancesCache } from "@/services/data_provide
 import { AggregatedOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { ActiveOrders, MarketPairTokens } from "./ActiveOrders";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
+import { useRouter } from "next/router";
 
 export interface OrderFormData {
   price: string;
@@ -120,6 +119,7 @@ export function OrderForms(props: OrderFormsProps) {
   const { toast } = useToast();
   const { address } = useChain(getChainName());
   const { tx } = useTx();
+  const router = useRouter();
 
   const onPriceChange = (price: string) => {
     setPrice(price);
@@ -259,6 +259,19 @@ export function OrderForms(props: OrderFormsProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, address])
 
+  useEffect(() => {
+    const onRouteChange = () => {
+      AddressBalanceListener.stop();
+    };
+
+    router.events.on('routeChangeStart', onRouteChange)
+ 
+    // If the component is unmounted, unsubscribe
+    // from the event with the `off` method:
+    return () => {
+      router.events.off('routeChangeStart', onRouteChange);
+    }
+  }, [router]);
 
   return (
     <DefaultBorderedBox p={'$2'} width={{desktop: '$auto', mobile: '$auto'}} minHeight={'10vh'} flex={1}>

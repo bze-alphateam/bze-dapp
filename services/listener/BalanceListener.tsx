@@ -38,6 +38,7 @@ class Listener {
 
   start(): void {
     if (this.isStarted) {
+      console.log("address listener: already started.");
       return;
     }
 
@@ -46,11 +47,13 @@ class Listener {
       TmWebSocket.subscribe(SUB_ID_SENDER, subscriptionQuerySender(this.address), (e: any) => {this.onSendAndReceiveEvent()});
 
       this.isStarted = true;
+      console.log("address listener: started");
     }
   }
 
   stop(): void {
     if (!this.isStarted) {
+      console.log("address listener: already stopped");
       return;
     }
 
@@ -58,6 +61,7 @@ class Listener {
     TmWebSocket.unsubscribe(SUB_ID_SENDER);
 
     this.isStarted = false;
+    console.log("address listener: stopped");
   }
 }
 const AddressBalanceListener = new Listener();

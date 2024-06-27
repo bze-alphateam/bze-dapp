@@ -96,6 +96,7 @@ class TendermintWebsocket {
   }
 
   subscribe(id: number, query: string, callback: (e: any) => void) {
+    
     const payload = buildSubscribePayload(id, query);
     if (this.subscriptions.has(id)) {
       this.unsubscribe(id);
@@ -115,16 +116,19 @@ class TendermintWebsocket {
   }
 
   unsubscribe(id: number) {
-    if (!this.subscriptions.has(id)) {
+    const subscription = this.subscriptions.get(id);
+    if (subscription === undefined) {
       return;
     }
-    const subscription = this.subscriptions.get(id);
+    
     //always set it before calling getWs()
     this.subscriptions.delete(id);
     const ws = this.getWs();
 
     if (ws.readyState === STATE_OPEN) {
-      ws.send(JSON.stringify(subscription?.payload));
+      const payload = subscription.payload;
+      payload.method = "unsubscribe";
+      ws.send(JSON.stringify(payload));
     }
   }
 }

@@ -251,6 +251,12 @@ export default function MarketPair() {
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartData, chartType]);
 
+  const onOrderCancelled = useCallback(() => {}, []);
+  const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
+  const onOrderPlaced = useCallback(() => {
+    setOrderFormData(EmptyOrderFormData)
+  }, []);
+
   useEffect(() => {
     loadChart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -285,14 +291,6 @@ export default function MarketPair() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, address])
 
-  const onOrderPlaced = useCallback(() => {
-    setOrderFormData(EmptyOrderFormData)
-  }, []);
-
-  const onOrderCancelled = useCallback(() => {}, []);
-
-  const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
-
   useEffect(() => {
     const fetchTokens = async (base: string, quote: string) => {
       const allTokens = await getAllSupplyTokens();
@@ -323,6 +321,20 @@ export default function MarketPair() {
 
     fetchTokens(query.base, query.quote);
   }, [query, router]);
+
+  useEffect(() => {
+    const onRouteChange = () => {
+      MarketPairListener.stop();
+    };
+
+    router.events.on('routeChangeStart', onRouteChange)
+ 
+    // If the component is unmounted, unsubscribe
+    // from the event with the `off` method:
+    return () => {
+      router.events.off('routeChangeStart', onRouteChange);
+    }
+  }, [router]);
 
   return (
     <Layout>

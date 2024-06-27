@@ -1,8 +1,8 @@
 
-import { Token, getTokenDisplayDenom } from "@/services";
+import { Token } from "@/services";
 import { prettyAmount, uAmountToAmount } from "@/utils";
 import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
-import { AssetListItemProps, BaseComponentProps, Box, Button, Stack, Text } from "@interchain-ui/react";
+import { BaseComponentProps, Box, Button, Stack, Text } from "@interchain-ui/react";
 import { useMemo } from "react";
 
 export interface CustomAssetListItemProps extends BaseComponentProps {

@@ -82,6 +82,20 @@ function TokenList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
+  useEffect(() => {
+    const onRouteChange = () => {
+      AddressBalanceListener.stop();
+    };
+
+    router.events.on('routeChangeStart', onRouteChange)
+ 
+    // If the component is unmounted, unsubscribe
+    // from the event with the `off` method:
+    return () => {
+      router.events.off('routeChangeStart', onRouteChange);
+    }
+  }, [router]);
+
   return (
     <DefaultBorderedBox 
       ml='$6' 
