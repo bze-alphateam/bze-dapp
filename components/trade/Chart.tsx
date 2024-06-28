@@ -74,6 +74,7 @@ export default withTooltip<AreaProps, TooltipData>(
           range: [0, xMax],
           domain: extent(chartData, getDate) as [Date, Date],
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       [xMax],
     );
     const stockValueScale = useMemo(
@@ -83,6 +84,7 @@ export default withTooltip<AreaProps, TooltipData>(
           domain: [min(chartData, getStockValue) || 0, (max(chartData, getStockValue) || 0) * 1.5],
           nice: true,
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       [yMax],
     );
 
@@ -104,6 +106,7 @@ export default withTooltip<AreaProps, TooltipData>(
           tooltipTop: stockValueScale(getStockValue(d)),
         });
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [showTooltip, stockValueScale, dateScale],
     );
 
@@ -114,7 +117,9 @@ export default withTooltip<AreaProps, TooltipData>(
           <LinearGradient id="area-gradient" from={accentColor} to={accentColor} toOpacity={0.1} />
           <AreaClosed<ChartPoint>
             data={chartData}
+            // @ts-ignore
             x={d => dateScale(getDate(d))}
+            // @ts-ignore
             y={d => stockValueScale(getStockValue(d))}
             yScale={stockValueScale}
             strokeWidth={1}
