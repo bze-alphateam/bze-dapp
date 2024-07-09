@@ -229,6 +229,24 @@ function MarketsListing(props: MarketListProps) {
 
   const router = useRouter();
 
+  const sortMarketsCallback = (a: MarketSDKType, b: MarketSDKType): number => {
+    const aBaseToken = tokens.get(a.base);
+    const aQuoteToken = tokens.get(a.quote);
+    const bBaseToken = tokens.get(b.base);
+    const bQuoteToken = tokens.get(b.quote);
+    if (aBaseToken === undefined || aQuoteToken === undefined || bBaseToken === undefined || bQuoteToken === undefined) {
+      return 0
+    }
+
+    const aVerified = aBaseToken.verified && aQuoteToken.verified;
+    const bVerified = bBaseToken.verified && bQuoteToken.verified;
+    if (aVerified && bVerified) {
+      return 0;
+    }
+
+    return aVerified ? -1 : 1;
+  }
+
   const handleSearch = (query: string) => {
     setLoading(true);
     if (query.length === 0) {
@@ -303,7 +321,7 @@ function MarketsListing(props: MarketListProps) {
         <MarketsList
           titles={['Market', 'Details']}
           list={
-            filtered.map((market, i) => {
+            filtered.sort(sortMarketsCallback).map((market, i) => {
               return {
                 onWithdraw: () => {
                   router.push({
