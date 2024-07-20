@@ -375,10 +375,13 @@ export default function Home() {
           <Text as="h1" fontSize={'$2xl'}>Trade</Text>
         </Box>
       </Box >
-      <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
+      <Box display='flex' flex={1} justifyContent={'center'} alignItems={'center'}>
+        <Text fontSize={'$2xl'} fontWeight={'$bold'}>Trading opens soon... 🚀</Text>
+      </Box>
+      {/* <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
         <MarketsListing loading={loading} list={list} tokens={allTokens}/>
         <CallToActionBox props={{onMarketCreated: reloadList}}/>
-      </Box>
+      </Box> */}
     </Layout>
   );
 }
