@@ -2,7 +2,7 @@
 import { useChain, useWallet } from '@cosmos-kit/react';
 import { coins, DeliverTxResponse, isDeliverTxSuccess, StdFee } from '@cosmjs/stargate';
 import { useToast, type CustomToast } from './useToast';
-import { CHAIN_NAME } from '@/config';
+import { keplrSuggestChain } from '@/config';
 import { getSigningClient } from '@/services';
 import { getChainName, getMinDenom } from '@/utils';
 
@@ -58,6 +58,7 @@ export const useTx = () => {
       return;
     }
 
+    keplrSuggestChain(getChainName());
     let client: Awaited<ReturnType<typeof getSigningClient>>;
 
     let fee: StdFee;
