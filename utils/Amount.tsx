@@ -88,5 +88,5 @@ export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExpon
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.dividedBy(Math.pow(10, (quoteExponent - baseExponent))).toFixed(quoteExponent).toString()
+  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent))).toFixed(12).toString()
 }
