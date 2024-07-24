@@ -7,6 +7,7 @@ export const VERIFIED_TOKENS: { [key: string]: boolean } = {
   "ubze": true,
   "utbz": true,
   "factory/bze13gzq40che93tgfm9kzmkpjamah5nj0j73pyhqk/uvdl": true,
+  "factory/bze15pqjgk4la0mfphwddce00d05n3th3u66n3ptcv/2MARS": true,
 }
 
 export const EXCLUDED_TOKENS: { [key: string]: boolean } = {
