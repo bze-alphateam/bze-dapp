@@ -215,7 +215,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
             uri_hash: '',
           },
           logo: TOKEN_IMG_DEFAULT,
-          verified: isVerified(current.denom),
+          verified: isVerified(current.denom) || isIBCType(current.denom),
           coingekoId: '',
           type: getDenomType(current.denom),
         }
