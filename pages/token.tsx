@@ -326,7 +326,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
                 label={""}
                 size="sm"
                 onChange={(e) => {setAmount(e.target.value)}}
-                placeholder="Amount to burn/mint"
+                placeholder={"Amount to " + (showBurnButton ? "burn" : "mint")}
                 value={amount}
                 intent={'default'}
                 disabled={submitPending}

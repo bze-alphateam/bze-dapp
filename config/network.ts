@@ -1,11 +1,12 @@
 import { chains, assets } from 'chain-registry';
 
+const TESTNET_CHAIN_ID = 'bzetestnet-2';
 const TESTNET_COIN_DENOM = "TBZE";
 const TESTNET_COIN_MIN_DENOM = "utbz";
 const BZE_PREFIX_TESTNET = "testbz";
 
 const BZE_TESTNET_2_SUGGEST_CHAIN = {
-  chain_id: "bzetestnet-2",
+  chain_id: TESTNET_CHAIN_ID,
   chain_name: "BeeZee Testnet",
   pretty_name: 'BeeZee Testnet',
   network_type: 'mainnet',
@@ -262,7 +263,7 @@ export const ASSETS = [
 ];
 
 export function getNetwork(chainId: string) {
-  if (chainId === 'bzetestnet-2') {
+  if (chainId === TESTNET_CHAIN_ID) {
     return networks.testnet;
   }
 

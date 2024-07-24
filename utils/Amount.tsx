@@ -2,6 +2,8 @@
 import { parseCoins } from "@cosmjs/stargate";
 import BigNumber from 'bignumber.js';
 
+const MAX_PRICE_DECIMALS = 14;
+
 export function uAmountToAmount(amount: string | number, noOfDecimals: number): string {
   return new BigNumber(amount)
     .shiftedBy((-1)*noOfDecimals)
@@ -84,9 +86,31 @@ export const calculateAmountFromPrice = (price: string, totalPrice: string, deci
 }
 
 export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent))).toFixed(12).toString()
+  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent))).toFixed(MAX_PRICE_DECIMALS).toString()
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.dividedBy(Math.pow(10, (quoteExponent - baseExponent))).toFixed(quoteExponent).toString()
+  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent))).toString()
+}
+
+//calculates min amount of an order just like tradebin module does
+export const getMinAmount = (uPrice: string, noOfDecimals: number): BigNumber => {
+  //taken from tradebin module
+  const uPriceDec = new BigNumber(uPrice);
+  if (uPriceDec.lte(0)) {
+    return new BigNumber(0);
+  }
+
+  //calculate minimum uAmount
+  const oneDec = new BigNumber(1);
+  let amtDec = oneDec.dividedBy(uPriceDec).decimalPlaces(0, BigNumber.ROUND_CEIL).multipliedBy(2);
+  
+  //transform uAmount to amount
+  return amtDec.shiftedBy((-1)*noOfDecimals).decimalPlaces(noOfDecimals || 6);
+}
+
+export const getMinPrice = (quoteExponent: number, baseExponent: number): BigNumber => {
+  const min = new BigNumber(1).dividedBy(Math.pow(10, MAX_PRICE_DECIMALS));
+
+  return new BigNumber(uPriceToPrice(min, quoteExponent, baseExponent));
 }
