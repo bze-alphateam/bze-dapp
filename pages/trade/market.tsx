@@ -322,6 +322,7 @@ export default function MarketPair() {
     fetchTokens(query.base, query.quote);
   }, [query, router]);
 
+  //unsubscribe from WS when user navigates to another page
   useEffect(() => {
     const onRouteChange = () => {
       MarketPairListener.stop();

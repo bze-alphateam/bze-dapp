@@ -1,5 +1,5 @@
 import { useToast, useTx } from "@/hooks";
-import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, marketIdFromDenoms, prettyAmount, priceToUPrice, uAmountToAmount } from "@/utils";
+import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, getMinAmount, getMinPrice, marketIdFromDenoms, prettyAmount, priceToUPrice, uAmountToAmount } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
@@ -30,11 +30,8 @@ interface OrderFormsProps {
 
 const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
-function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, amount: string, price: string) {
+function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, uAmount: string, uPrice: string) {
   const marketId = marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base);
-  const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
-  const priceNum = new BigNumber(price);
-  const uPrice = priceToUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
   const orderType = isBuy ? 'buy' : 'sell';
 
   const uPriceNum = new BigNumber(uPrice);
@@ -116,6 +113,8 @@ export function OrderForms(props: OrderFormsProps) {
   const [amount, setAmount] = useState<string>(props.data.amount);
   const [total, setTotal] = useState<string>(props.data.total);
 
+  const [minPrice, setMinPrice] = useState(new BigNumber(0));
+
   const { toast } = useToast();
   const { address } = useChain(getChainName());
   const { tx } = useTx();
@@ -126,11 +125,15 @@ export function OrderForms(props: OrderFormsProps) {
     if (price === "") {
       return;
     }
+    
+    if (!parseFloat(price)) {
+      return;
+    }
 
     setIsLoadingValues(true);
-    if (amount !== "") {
+    if (amount !== "" && parseFloat(amount)) {
       setTotal(calculateTotalAmount(price, amount, props.tokens.quoteTokenDisplayDenom.exponent));
-    } else if (total !== "") {
+    } else if (total !== "" && parseFloat(total)) {
       setAmount(calculateAmountFromPrice(price, total, props.tokens.baseTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
@@ -141,10 +144,15 @@ export function OrderForms(props: OrderFormsProps) {
     if (amount === "") {
       return;
     }
+
+    if (!parseFloat(amount)) {
+      return;
+    }
+
     setIsLoadingValues(true);
-    if (price !== "") {
+    if (price !== "" && parseFloat(price)) {
       setTotal(calculateTotalAmount(price, amount, props.tokens.quoteTokenDisplayDenom.exponent));
-    } else if (total !== "") {
+    } else if (total !== "" && parseFloat(total)) {
       setPrice(calculatePricePerUnit(amount, total, props.tokens.quoteTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
@@ -155,10 +163,15 @@ export function OrderForms(props: OrderFormsProps) {
     if (total === "") {
       return;
     }
+
+    if (!parseFloat(total)) {
+      return;
+    }
+
     setIsLoadingValues(true);
-    if (price !== "") {
+    if (price !== "" && parseFloat(price)) {
       setAmount(calculateAmountFromPrice(price, total, props.tokens.baseTokenDisplayDenom.exponent));
-    } else if (amount !== "") {
+    } else if (amount !== "" && parseFloat(amount)) {
       setPrice(calculatePricePerUnit(amount, total, props.tokens.quoteTokenDisplayDenom.exponent));
     }
     setIsLoadingValues(false);
@@ -185,6 +198,15 @@ export function OrderForms(props: OrderFormsProps) {
       return;
     }
 
+    if (!priceNum.gte(minPrice)) {
+      toast({
+        type: 'error',
+        title: `Price is too low. Min accepted value is: ${minPrice.toFixed(14).toString()}`,
+      });
+
+      return;
+    }
+
     if (!amountNum.gt(0)) {
       toast({
         type: 'error',
@@ -194,8 +216,20 @@ export function OrderForms(props: OrderFormsProps) {
       return;
     }
 
+    const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
+    const uPrice = priceToUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
+    const minAmount = getMinAmount(uPrice, props.tokens.baseTokenDisplayDenom.exponent);
+    if (amountNum.lt(minAmount)) {
+      toast({
+        type: 'error',
+        title: `Amount should be bigger than: ${minAmount.toString()} ${props.tokens.baseTokenDisplayDenom.denom}`,
+      });
+
+      return;
+    }
+
     setIsPendingSubmit(true);
-    const msgs = getOrderTxMessages(props, address, isBuy, amount, price);
+    const msgs = getOrderTxMessages(props, address, isBuy, uAmount, uPrice);
 
     await tx(msgs, {
       toast: {
@@ -242,6 +276,10 @@ export function OrderForms(props: OrderFormsProps) {
     if (props.data.price !== "" && props.data.amount !== "" && props.tokens.quoteTokenDisplayDenom !== undefined) {
       setTotal(calculateTotalAmount(props.data.price, props.data.amount, props.tokens.quoteTokenDisplayDenom.exponent));
     }
+    if (props.tokens.baseTokenDisplayDenom !== undefined && props.tokens.quoteTokenDisplayDenom !== undefined) {
+      setMinPrice(getMinPrice(props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent));
+    }
+
     if (address !== undefined) {
       fetchBalances();
       AddressBalanceListener.clearCallbacks();
