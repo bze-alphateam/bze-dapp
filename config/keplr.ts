@@ -198,5 +198,6 @@ async function getKeplrChainInfo(chainId: string) {
 }
 
 export async function keplrSuggestChain(chainId: string) {
+  {/* @ts-ignore */}
   return await window.keplr?.experimentalSuggestChain(await getKeplrChainInfo(chainId))
 }
