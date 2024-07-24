@@ -106,7 +106,9 @@ export const getMinAmount = (uPrice: string, noOfDecimals: number): BigNumber =>
   let amtDec = oneDec.dividedBy(uPriceDec).decimalPlaces(0, BigNumber.ROUND_CEIL).multipliedBy(2);
   
   //transform uAmount to amount
-  return amtDec.shiftedBy((-1)*noOfDecimals).decimalPlaces(noOfDecimals || 6);
+  //IMPORTANT: multiply by 2 to avoid the case when an order can not be filled and the amount is sent back to user
+  //making him lose trading fees without any feedback on why the order is failing. See Tradebin "getExecutedAmount" function
+  return amtDec.shiftedBy((-1)*noOfDecimals).decimalPlaces(noOfDecimals || 6).multipliedBy(2);
 }
 
 export const getMinPrice = (quoteExponent: number, baseExponent: number): BigNumber => {
