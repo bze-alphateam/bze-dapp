@@ -131,8 +131,8 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
             onChange={(e) => {onAmountChange(e.target.value)}}
             placeholder="Amount"
             value={amount ?? ""}
-            type="text"
-            inputMode="numeric"
+            type="number"
+            inputMode="text"
             disabled={submitPending}
           />
           {estimatedApr && <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected ARP ~{estimatedApr.toString()}%</Text>}
@@ -347,8 +347,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               onChange={(e) => {setPrizeAmount(e.target.value)}}
               placeholder="Amount"
               value={prizeAmount ?? ""}
-              type="text"
-              inputMode="numeric"
+              type="number"
+              inputMode="text"
               disabled={validForm}
             />
           </Box>
@@ -364,8 +364,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               onChange={(e) => {setDuration(e.target.value)}}
               placeholder="No. of days"
               value={duration ? `${duration}` : ""}
-              type="text"
-              inputMode="numeric"
+              type="number"
+              inputMode="text"
               disabled={validForm}
             />
           </Box>
@@ -381,8 +381,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               onChange={(e) => {setMinStake(e.target.value !== "" ? e.target.value : undefined)}}
               placeholder="Min stake amount"
               value={minStake ? `${minStake}` : ""}
-              type="text"
-              inputMode="numeric"
+              type="number"
+              inputMode="text"
               disabled={validForm}
             />
           </Box>
@@ -394,8 +394,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               onChange={(e) => {setLock(e.target.value !== "" ? e.target.value : undefined)}}
               placeholder="No. of days"
               value={lock ? `${lock}`: ""}
-              type="text"
-              inputMode="numeric"
+              type="number"
+              inputMode="text"
               disabled={validForm}
             />
           </Box>

@@ -321,8 +321,8 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
             {showForm && 
               <TextField
                 id="burn-mint-amount"
-                type="text"
-                inputMode="numeric"
+                type="number"
+                inputMode="text"
                 label={""}
                 size="sm"
                 onChange={(e) => {setAmount(e.target.value)}}
@@ -550,12 +550,12 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
           label={
             <TooltippedText text="Decimals/Exponent (ex: 6)" tooltip="The number of decimals for the largest denomination."/>
           }
-          type="text"
           size="sm"
           onChange={(e) => {setDecimals(e.target.value)}}
           placeholder="Number of decimals"
           value={decimals}
-          inputMode='numeric'
+          type="number"
+          inputMode="text"
           intent={'default'}
           disabled={disabled || pendingSubmit}
           attributes={{

@@ -216,8 +216,8 @@ function Contribute({onContributeSuccess}: ContributeProps) {
           <>
             <TextField
                 id="fund-burner-amount"
-                type="text"
-                inputMode="numeric"
+                type="number"
+                inputMode="text"
                 label={""}
                 size="sm"
                 onChange={(e) => {setAmount(e.target.value)}}

@@ -337,12 +337,12 @@ export function OrderForms(props: OrderFormsProps) {
       <Box display={'flex'} flexDirection={'column'} p={'$2'} m={'$6'} gap={'$2'}>
         <TextField
             id="price"
-            type="text"
             size="sm"
             onChange={(e) => {onPriceChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={price}
-            inputMode='numeric'
+            type="number"
+            inputMode="text"
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'}  pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
@@ -350,12 +350,12 @@ export function OrderForms(props: OrderFormsProps) {
           />
           <TextField
             id="amount"
-            type="text"
+            type="number"
+            inputMode="text"
             size="sm"
             onChange={(e) => {onAmountChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={amount}
-            inputMode='numeric'
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Amount</Text></Box>}
@@ -364,12 +364,12 @@ export function OrderForms(props: OrderFormsProps) {
           <Divider my={'$2'} />
           <TextField
             id="total"
-            type="text"
+            type="number"
+            inputMode="text"
             size="sm"
             onChange={(e) => {onTotalChange(e.target.value.replace(/[^\d.-]/g, ''))}}
             placeholder=""
             value={total}
-            inputMode='numeric'
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Total</Text></Box>}
