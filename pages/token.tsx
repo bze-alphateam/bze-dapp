@@ -1,6 +1,6 @@
 import { DefaultBorderedBox, Layout, TooltippedText } from "@/components";
 import { getTokenAdminAddress, getTokenChainMetadata, getTokenDisplayDenom, getTokenSupply, isVerified, resetAllTokensCache } from "@/services";
-import { Box, Button, Callout, Divider, Icon, Text, TextField, Tooltip } from "@interchain-ui/react";
+import { Box, Button, Callout, Divider, Text, TextField } from "@interchain-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
@@ -198,7 +198,7 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
       toast({
         type: 'error',
         title: 'Invalid amount',
-        description: 'Amount should be higher than 0'
+        description: 'Amount should be greater than 0'
       });
       return false;
     }
@@ -408,7 +408,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       toast({
         type: 'error',
         title: 'Invalid decimals',
-        description: 'Decimals should be higher than 0 and lower than 19',
+        description: 'Decimals should be greater than 0 and lower than 19',
       })
 
       return;

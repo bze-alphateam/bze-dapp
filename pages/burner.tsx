@@ -1,11 +1,15 @@
-import { Divider, Box, Text } from "@interchain-ui/react";
+import { Divider, Box, Text, Button, TextField, Callout } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState } from "react";
 import { BurnedCoinsSDKType } from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
-import { getAllBurnedCoins, getBlockTimeByHeight, getNextBurning } from "@/services";
-import { hoursUntil, minutesUntil, prettyAmount, prettyDate, prettyDateTime, toPrettyDenom, uAmountToAmount } from "@/utils";
+import { BURNER, getAllBurnedCoins, getBlockTimeByHeight, getModuleAddress, getNextBurning } from "@/services";
+import { amountToUAmount, getBzeDenomExponent, getChainName, getCurrentuDenom, getMinDenom, hoursUntil, minutesUntil, prettyAmount, prettyDate, prettyDateTime, toPrettyDenom, uAmountToAmount } from "@/utils";
 import Long from "long";
 import { parseCoins } from "@cosmjs/stargate";
+import { useChain } from "@cosmos-kit/react";
+import { useToast, useTx } from "@/hooks";
+import { bze } from '@bze/bzejs';
+import { removeBalancesCache } from "@/services/data_provider/Balances";
 
 function BurnCard({burned}: {burned: BurnedCoinsSDKType}) {
   const [amount, setAmount] = useState<string>('Loading...');
@@ -104,6 +108,135 @@ function BurnHistory() {
   );
 }
 
+const { fundBurner } = bze.burner.v1.MessageComposer.withTypeUrl;
+
+interface ContributeProps {
+  onContributeSuccess?: () => void;
+}
+
+function Contribute({onContributeSuccess}: ContributeProps) {
+  const [showForm, setShowForm] = useState(true);
+  const [amount, setAmount] = useState("");
+  const [submitPending, setSubmitPending] = useState(false);
+
+  const { address } = useChain(getChainName());
+  const { toast } = useToast();
+  const { tx } = useTx();
+
+  const validateAmount = (amt: string): boolean => {
+    let parsed = parseFloat(amt);
+    if (!parsed) {
+      toast({
+        type: 'error',
+        title: 'Invalid amount',
+      });
+      return false;
+    }
+
+    if (parsed <= 0) {
+      toast({
+        type: 'error',
+        title: 'Invalid amount',
+        description: 'Amount should be greater than 0'
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  const closeForm = () => {
+    setShowForm(false);
+    setAmount("");
+  }
+
+  const onSubmit = async () => {
+    if (!address) {
+      toast({
+        type: 'error',
+        title: 'Please connect your wallet',
+      });
+      return;
+    }
+
+    if (!validateAmount(amount)) {
+      return;
+    }
+
+    setSubmitPending(true);
+    let uAmount = amountToUAmount(amount, getBzeDenomExponent());
+    let msg = fundBurner({
+      creator: address,
+      amount: `${uAmount}${getCurrentuDenom()}`
+    })
+
+    await tx([msg], {
+      toast: {
+        description: 'Successfully funded burner'
+      },
+      onSuccess: async () => {
+        removeBalancesCache(address);
+        removeBalancesCache(await getModuleAddress(BURNER));
+        closeForm();
+        if (onContributeSuccess) {
+          onContributeSuccess();
+        }
+      }
+    });
+    setSubmitPending(false);
+  }
+
+  return (
+    <Box display={'flex'} flexDirection={'column'} alignItems='center'>
+      <Box p='$6'>
+        <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>Do you want to contribute ?</Text>
+      </Box>
+      <Box p='$6'>
+        <Text fontWeight={'$thin'} fontSize={'$sm'} color='$primary200'>You can fund the next burning event with any amount of BZE you want to see burned.</Text>
+      </Box>
+      {
+        showForm &&
+        <Box p='$6'>
+          <Callout
+              attributes={{
+                width: '$auto',
+                margin: '$2'
+              }}
+              iconName="errorWarningLine"
+              intent="error"
+              title="This can not be reversed"
+            >
+              This operation cannot be reversed, and coins you donate for burning cannot be recovered! Once the transaction is signed, the coins are lost forever.
+          </Callout>
+        </Box>
+      }
+      <Box p='$6' flexDirection={'row'} display={'flex'} flex={1} justifyContent={'space-evenly'} alignItems={'center'} width={'100%'}>
+        {
+          showForm ? 
+          <>
+            <TextField
+                id="fund-burner-amount"
+                type="number"
+                inputMode="numeric"
+                label={""}
+                size="sm"
+                onChange={(e) => {setAmount(e.target.value)}}
+                placeholder={"BZE amount"}
+                value={amount}
+                intent={'default'}
+                disabled={submitPending}
+              />
+            <Box><Button size="sm" intent="secondary" onClick={() => {closeForm()}} isLoading={submitPending}>Cancel</Button></Box>
+            <Box><Button size="sm" intent="primary" onClick={() => {onSubmit()}} isLoading={submitPending}>Burn</Button></Box>
+          </> :
+          <Button size="sm" intent="primary" onClick={() => {setShowForm(true)}}>Fund burner</Button>
+        }
+        
+      </Box>
+    </Box>
+  );
+}
+
 function NextBurning() {
   const [amount, setAmount] = useState<string>('A lot of BZE 🔥');
   const [date, setDate] = useState<string>('To Be Announced');
@@ -130,25 +263,32 @@ function NextBurning() {
     }
   }
 
+  const onContributeSuccess = () => {
+    fetchNextBurning();
+  }
+
   useEffect(() => {
     fetchNextBurning();
   },[])
 
   return (
     <BurnBox title='Next Burning'>
-      <DefaultBorderedBox p='$6' m='$6' maxWidth={{'desktop': '20vw', 'mobile': '$auto'}} flex='1'>
-      <Box display={'flex'} flexDirection={'column'} alignItems='center'>
-        <Box p='$6'>
-          <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>{amount}</Text>
+      <DefaultBorderedBox p='$6' m='$6' flex='1'>
+        <Box display={'flex'} flexDirection={'column'} alignItems='center'>
+          <Box p='$6'>
+            <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>{amount}</Text>
+          </Box>
+          <Box p='$6' fontWeight={'$bold'}>
+            <Text fontSize={'$md'} color='$primary200'> {date}</Text>
+          </Box>
+          <Box p='$6'>
+            <Text fontWeight={'$thin'} fontSize={'$sm'} color='$primary200'>{when}</Text>
+          </Box>
         </Box>
-        <Box p='$6' fontWeight={'$bold'}>
-          <Text fontSize={'$md'} color='$primary200'> {date}</Text>
-        </Box>
-        <Box p='$6'>
-          <Text fontWeight={'$thin'} fontSize={'$sm'} color='$primary200'>{when}</Text>
-        </Box>
-      </Box>
-    </DefaultBorderedBox>
+      </DefaultBorderedBox>
+      <DefaultBorderedBox p='$6' m='$6' flex='1'>
+        <Contribute onContributeSuccess={onContributeSuccess}/>
+      </DefaultBorderedBox>
     </BurnBox> 
   );
 }

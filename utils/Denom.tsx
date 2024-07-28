@@ -6,6 +6,8 @@ export const TESTNET_DENOM = 'TBZE';
 export const MAINNET_UDENOM = 'ubze';
 export const MAINNET_DENOM = 'BZE';
 
+const DEFAULT_EXPONENT = 6;
+
 export function toPrettyDenom(udenom: string): string {
   if (udenom === TESTNET_UDENOM) {
     return TESTNET_DENOM;
@@ -25,4 +27,8 @@ export function getCurrentuDenom(): string {
   }
 
   return TESTNET_UDENOM;
+}
+
+export function getBzeDenomExponent(): number {
+  return DEFAULT_EXPONENT;
 }
