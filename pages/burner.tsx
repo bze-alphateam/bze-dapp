@@ -216,7 +216,7 @@ function Contribute({onContributeSuccess}: ContributeProps) {
           <>
             <TextField
                 id="fund-burner-amount"
-                type="number"
+                type="text"
                 inputMode="numeric"
                 label={""}
                 size="sm"

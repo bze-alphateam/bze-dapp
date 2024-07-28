@@ -116,3 +116,10 @@ export const getMinPrice = (quoteExponent: number, baseExponent: number): BigNum
 
   return new BigNumber(uPriceToPrice(min, quoteExponent, baseExponent));
 }
+
+export const calculateApr = (dailyAmount: string|number|BigNumber, staked: string|number|BigNumber): BigNumber => {
+  const stakedNum = new BigNumber(staked);
+  let computedApr = new BigNumber(dailyAmount).dividedBy(stakedNum).multipliedBy(365).multipliedBy(100).decimalPlaces(2);
+
+  return computedApr;
+}

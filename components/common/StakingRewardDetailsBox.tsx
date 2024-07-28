@@ -7,7 +7,7 @@ import { DefaultBorderedBox } from "./Box";
 import { Box,Icon, Text } from "@interchain-ui/react";
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import BigNumber from "bignumber.js";
-import { prettyAmount, uAmountToAmount } from "@/utils";
+import { calculateApr, prettyAmount, uAmountToAmount } from "@/utils";
 
 export interface StakingRewardDetailsBoxRowProps {
   name: string,
@@ -55,7 +55,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
     let staked =  new BigNumber(props.reward.staked_amount);
     result.apr = "?";
     if (pToken.metadata.base === sToken.metadata.base && staked.gt(0)) {
-      let computedApr = new BigNumber(props.reward.prize_amount).dividedBy(staked).multipliedBy(365).multipliedBy(100).decimalPlaces(2);
+      let computedApr = calculateApr(props.reward.prize_amount, staked);
       result.apr = `~${computedApr.toString()}%`;
     }
 

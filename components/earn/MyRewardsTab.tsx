@@ -201,7 +201,8 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
             onChange={(e) => {setAmount(e.target.value)}}
             placeholder="Amount"
             value={amount ?? ""}
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={submitPending}
           />
           <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>

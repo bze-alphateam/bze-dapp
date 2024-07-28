@@ -6,12 +6,13 @@ import { Token, getAllSupplyTokens, getRewardsParams, getTokenDisplayDenom } fro
 import { SearchInput } from "@/components/common/Input";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import { useDisclosure, useToast, useTx } from "@/hooks";
-import { amountToUAmount, getChainName, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee } from "@/utils";
+import { amountToUAmount, calculateApr, getChainName, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee } from "@/utils";
 import BigNumber from "bignumber.js";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { bze } from '@bze/bzejs';
 import { useChain } from "@cosmos-kit/react";
 import { getStakingRewards, resetStakingRewardsCache } from "@/services/data_provider/StakingReward";
+import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 
 const { createStakingReward, joinStaking } = bze.v1.rewards.MessageComposer.withTypeUrl;
 
@@ -23,8 +24,11 @@ export interface StakingRewardDetailProps {
 
 function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
   const [showForm, setShowForm] = useState(false);
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState<string|undefined>();
   const [submitPending, setSubmitPending] = useState(false);
+
+  const [shouldEstimateApr, setShouldEstimateApr] = useState(false);
+  const [estimatedApr, setEstimatedApr] = useState<BigNumber|undefined>();
 
   const [stakingToken, setStakingToken] = useState<Token>();
   const [prizeToken, setPrizeToken] = useState<Token>();
@@ -32,6 +36,29 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
   const { toast } = useToast();
   const { tx } = useTx();
   const { address } = useChain(getChainName());
+
+  const onAmountChange = (amount: string) => {
+    setAmount(amount);
+    if (!shouldEstimateApr || !prizeToken) {
+      return;
+    }
+
+    const pDisplay = prizeToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === prizeToken.metadata.display);
+    if (!pDisplay) {
+      return;
+    }
+
+    const amountNum = new BigNumber(amountToUAmount(amount, pDisplay.exponent));
+    if (!amountNum.gt(0)) {
+      setEstimatedApr(undefined);
+      return;
+    }
+
+    const staked = new BigNumber(props.reward.staked_amount);
+    const apr = calculateApr(props.reward.prize_amount, staked.plus(amountNum));
+
+    setEstimatedApr(apr);
+  }
 
   const cancelForm = () => {
     setShowForm(false);
@@ -80,6 +107,9 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
   useEffect(() => {
     setPrizeToken(props.tokens.get(props.reward.prize_denom));
     setStakingToken(props.tokens.get(props.reward.staking_denom));
+    
+    setShouldEstimateApr(props.reward.prize_denom === props.reward.staking_denom);
+
   }, [props]);
 
   if (prizeToken === undefined || stakingToken === undefined || prizeToken.metadata.display === "" || stakingToken.metadata.display === "") {
@@ -93,17 +123,19 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
           <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}}>Stake</Button>
         </Box>
         :
-        <Box mt={'$6'}>
+        <Box mt={'$6'} justifyContent={'center'}>
           <TextField
             size='sm'
             id="stake_amount"
             label={"Stake " + stakingToken.metadata.display}
-            onChange={(e) => {setAmount(e.target.value)}}
+            onChange={(e) => {onAmountChange(e.target.value)}}
             placeholder="Amount"
             value={amount ?? ""}
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={submitPending}
           />
+          {estimatedApr && <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected ARP ~{estimatedApr.toString()}%</Text>}
           <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
             <Button size='sm' intent="secondary" onClick={cancelForm} disabled={submitPending}>Cancel</Button>
             <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending} >Stake</Button>
@@ -314,9 +346,9 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               label="Daily reward"
               onChange={(e) => {setPrizeAmount(e.target.value)}}
               placeholder="Amount"
-              value={prizeAmount}
-              type="number"
-              // intent={inputIntent}
+              value={prizeAmount ?? ""}
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -331,8 +363,9 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               label="Reward duration"
               onChange={(e) => {setDuration(e.target.value)}}
               placeholder="No. of days"
-              value={`${duration}`}
-              type="number"
+              value={duration ? `${duration}` : ""}
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -347,9 +380,9 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               label="Min stake"
               onChange={(e) => {setMinStake(e.target.value !== "" ? e.target.value : undefined)}}
               placeholder="Min stake amount"
-              value={`${minStake}`}
-              type="number"
-              inputMode="text"
+              value={minStake ? `${minStake}` : ""}
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -360,8 +393,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               label="Unstake lock"
               onChange={(e) => {setLock(e.target.value !== "" ? e.target.value : undefined)}}
               placeholder="No. of days"
-              value={`${lock}`}
-              type="number"
+              value={lock ? `${lock}`: ""}
+              type="text"
               inputMode="numeric"
               disabled={validForm}
             />
