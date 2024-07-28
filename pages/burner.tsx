@@ -115,7 +115,7 @@ interface ContributeProps {
 }
 
 function Contribute({onContributeSuccess}: ContributeProps) {
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   const [amount, setAmount] = useState("");
   const [submitPending, setSubmitPending] = useState(false);
 
