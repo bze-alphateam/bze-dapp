@@ -59,7 +59,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
     }
 
      //override metadata with details from chain registry
-    let chain = getChain();
+    let chain = await getChain();
     for (let i = 0; i < chain.assets.length; i++) {
       for (let j = 0; j < chain.assets[i].assets.length; j++) {
         let chainAsset = chain.assets[i].assets[j];
@@ -190,7 +190,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
   const [factoryTokens, fetchedSupply] = await Promise.all([getFactoryTokens(), getSupply()]);
   let allSupplyTokens = factoryTokens;
   //override metadata with details from chain registry
-  let chain = getChain();
+  let chain = await getChain();
   for (let a = 0; a < fetchedSupply.length; a++) {
     let current = fetchedSupply[a];
     let foundInFactory = factoryTokens.get(current.denom)
