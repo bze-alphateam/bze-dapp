@@ -90,7 +90,11 @@ export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExpon
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent))).toString()
+  return uPriceToBigNumberPrice(price, quoteExponent, baseExponent).toString()
+}
+
+export const uPriceToBigNumberPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): BigNumber => {
+  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent)));
 }
 
 //calculates min amount of an order just like tradebin module does

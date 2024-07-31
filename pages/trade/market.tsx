@@ -2,9 +2,9 @@ import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getTokenDisplayDenom } from "@/services";
+import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, MarketPrices, formatUsdAmount, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getMarketUsdPrices, getTokenDisplayDenom } from "@/services";
 import BigNumber from "bignumber.js";
-import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToPrice } from "@/utils";
+import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import { HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
@@ -155,6 +155,7 @@ export default function MarketPair() {
   const [tokens, setTokens] = useState<MarketPairTokens>();
   const [chartData, setChartData] = useState<ChartPoint[]>();
   const [chartType, setChartType] = useState(CHART_30D);
+  const [marketPrices, setMarketPrices] = useState<MarketPrices|undefined>();
 
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
   const [activeOrders, setActiveOrders] = useState<ActiveOrders>();
@@ -179,6 +180,11 @@ export default function MarketPair() {
     );
 
     setChartData(chart);
+    if (historyOrders?.length && tokens?.baseToken && tokens?.quoteToken) {
+      const lastPrice = uPriceToBigNumberPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent);
+      const prices = await getMarketUsdPrices(tokens.baseToken, tokens.quoteToken, lastPrice);
+      setMarketPrices(prices);
+    }
   }
 
   const fetchActiveOrders = async () => {
@@ -347,9 +353,21 @@ export default function MarketPair() {
               {
                 historyOrders.length > 0 && 
                 <>
-                  <Text color={'$primary100'}>Last price: </Text>
+                  <Text color={'$primary200'}>Last price: </Text>
                   <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
-                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
+                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {tokens.quoteTokenDisplayDenom.denom}
+                  </Text>
+                  {
+                    marketPrices && 
+                    marketPrices.base.gt(0) &&
+                    marketPrices.denom !== tokens.quoteTokenDisplayDenom.denom && 
+                    marketPrices.denom !== tokens.baseTokenDisplayDenom.denom &&
+                    <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$xs'} fontWeight={'$semibold'}>
+                     ({formatUsdAmount(marketPrices.base)} {marketPrices.denom})
+                    </Text>
+                  }
+                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
+                     {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
                   </Text>
                 </>
               }
@@ -357,10 +375,19 @@ export default function MarketPair() {
           }
           {chartData !== undefined && tokens !== undefined &&
             <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
-              <Text color={'$primary100'}>{chartType} volume: </Text>
+              <Text color={'$primary200'}>{chartType} volume: </Text>
               <Text color={'$primary200'} fontWeight={'$bold'}>
                 {uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} {tokens.baseTokenDisplayDenom.denom}
               </Text>
+              {
+                marketPrices && 
+                marketPrices.quote.gt(0) &&
+                new BigNumber(getTotalVolume).gt(0) &&
+                marketPrices.denom !== tokens.baseTokenDisplayDenom.denom &&
+                <Text color={'$primary200'} fontSize={'$xs'} fontWeight={'$semibold'}>
+                  ({formatUsdAmount(marketPrices.base.multipliedBy(uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)))} {marketPrices.denom})
+                </Text>
+              }
             </Box>
           }
         </Box>

@@ -13,3 +13,7 @@ export const VERIFIED_TOKENS: { [key: string]: boolean } = {
 export const EXCLUDED_TOKENS: { [key: string]: boolean } = {
   "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku1": false,
 }
+
+export const STABLE_COINS: { [key: string]: boolean } = {
+  "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/uusdt": true,
+}

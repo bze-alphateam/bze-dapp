@@ -2,7 +2,7 @@ import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosm
 import { getRestClient } from "../Client";
 import Long from 'long';
 import { MAINNET_UDENOM, TESTNET_UDENOM, getChain, getLastCharsAfterSlash } from "@/utils";
-import { EXCLUDED_TOKENS, VERIFIED_TOKENS } from "@/config/verified";
+import { EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS } from "@/config/verified";
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -13,6 +13,7 @@ export interface Token {
   verified: boolean,
   type: string,
   coingekoId?: string,
+  stableCoin?: boolean,
 }
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
@@ -43,6 +44,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
         logo: TOKEN_IMG_DEFAULT,
         verified: isVerified(metadatas[i].base),
         type: getDenomType(metadatas[i].base),
+        stableCoin: STABLE_COINS[metadatas[i].base] ?? false,
       }
 
       if (meta.metadata.symbol === "") {
@@ -218,13 +220,14 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
           verified: isVerified(current.denom) || isIBCType(current.denom),
           coingekoId: '',
           type: getDenomType(current.denom),
+          stableCoin: STABLE_COINS[current.denom] ?? false,
         }
         
         meta.metadata.denom_units = chainAsset.denom_units;
         meta.metadata.display = chainAsset.display;
         meta.metadata.symbol = chainAsset.symbol;
         meta.metadata.name = chainAsset.name;
-        if (chainAsset.description === undefined) {
+        if (chainAsset.description !== undefined) {
           meta.metadata.description = chainAsset.description;
         }
         
