@@ -25,7 +25,6 @@ interface CreateMarketFormProps {
 }
 
 function CreateMarketForm({props}: {props: CreateMarketFormProps}) {
-  const [formDenom, setFormDenom] = useState<string>("");
   const [allTokens, setAllTokens] = useState<Token[]>([]);
   const [baseCoin, setBaseCoin] = useState<Token|undefined>();
   const [quoteCoin, setQuoteCoin] = useState<Token|undefined>();
@@ -39,11 +38,6 @@ function CreateMarketForm({props}: {props: CreateMarketFormProps}) {
 
   const { toast } = useToast();
   const { tx } = useTx();
-  const router = useRouter();
-
-  const onFormDenomChange = (text: string) => {
-    setFormDenom(text);
-  }
 
   const validate = (): boolean => {
     if (address === undefined) {

@@ -3,6 +3,7 @@ import { getRestClient } from "../Client";
 import Long from 'long';
 import { MAINNET_UDENOM, TESTNET_UDENOM, getChain, getLastCharsAfterSlash } from "@/utils";
 import { EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS } from "@/config/verified";
+import { IBCTrace } from '@chain-registry/types';
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -14,6 +15,7 @@ export interface Token {
   type: string,
   coingekoId?: string,
   stableCoin?: boolean,
+  ibcTrace?: IBCTrace, 
 }
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
@@ -237,6 +239,15 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
 
         if (chainAsset.coingecko_id !== '') {
           meta.coingekoId = chainAsset.coingecko_id;
+        }
+
+        if (isIBCType(current.denom) && chainAsset.traces && Array.isArray(chainAsset.traces)) {
+          // @ts-ignore
+          const ibcTrace = chainAsset.traces.find(item => item.type === "ibc");
+          if (ibcTrace) {
+             // @ts-ignore
+            meta.ibcTrace = ibcTrace;
+          }
         }
         
         allSupplyTokens.set(chainAsset.base, meta)

@@ -97,7 +97,6 @@ export async function getChain() {
   data.assets = hardcodedAssets;
 
   cachedChain.set(currentChainId, data);
-  console.log(data);
 
   return data;
 }

@@ -5,6 +5,7 @@ import { useToast, type CustomToast } from './useToast';
 import { keplrSuggestChain } from '@/config';
 import { getSigningClient } from '@/services';
 import { getChainName, getMinDenom } from '@/utils';
+import { getSigningIbcClient } from '@bze/bzejs';
 
 interface Msg {
   typeUrl: string;
@@ -43,9 +44,10 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
   }
 }
 
-export const useTx = () => {
-  const { address, getOfflineSigner } = useChain(getChainName());
-
+export const useTx = (chainName?: string) => {
+  console.log("chainName", chainName);
+  const { address, getOfflineSigner, getRpcEndpoint } = useChain(chainName ?? getChainName());
+  console.log("address", address);
   const { toast } = useToast();
 
   const tx = async (msgs: Msg[], options: TxOptions) => {
@@ -63,7 +65,7 @@ export const useTx = () => {
 
     let fee: StdFee;
     try {
-      client = await getSigningClient(getOfflineSigner());
+      client = await getSigningClient(getOfflineSigner(), chainName);
       if (options?.fee) {
         fee = options.fee;
       } else {

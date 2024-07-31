@@ -15,7 +15,6 @@ interface SelectAssetModaLProps {
 
 export default function SelectAssetModal({props}: {props: SelectAssetModaLProps}) {
   const [filtered, setFiltered] = useState<Token[]>(props.list);
-  const [loading, setLoading] = useState(true);
 
   const onSearch = (query: string) => {
     if (query == "") {

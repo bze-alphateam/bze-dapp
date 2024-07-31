@@ -54,3 +54,11 @@ export function decodeBase64(str: string): string {
 export function snakeToCamel(snake: string): string {
   return snake.replace(/(_\w)/g, (matches) => matches[1].toUpperCase());
 }
+
+export function toUpperFirstLetter(str: string): string {
+  if (str.length === 0) {
+    return str;
+  }
+
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

@@ -3,22 +3,39 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import { useEffect, useState } from "react";
-import { Token, getAllSupplyTokens, isNativeType, sortAssets } from "@/services";
+import { Token, getAllSupplyTokens, getTokenDisplayDenom, isFactoryType, isIBCType, isNativeType, sortAssets } from "@/services";
 import { useRouter } from "next/router";
 import { useChain } from "@cosmos-kit/react";
 import { getChainName } from "@/utils";
 import { CoinSDKType } from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import { getAddressBalances, removeBalancesCache } from "@/services/data_provider/Balances";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
+import { useDisclosure } from "@/hooks";
+import TransferIbcAssetModal, { TransferIbcAssetModalProps } from "@/components/wallet/TransferIbcAssetModal";
 
 function TokenList() {
   const [loading, setLoading] = useState(true);
   const [list, setList] = useState<Map<string, Token>>(new Map());
   const [userBalances, setUserBalances] = useState<CoinSDKType[]>([]);
   const [filtered, setFiltered] = useState<Token[]>([]);
+  const [modalProps, setModalProps] = useState<TransferIbcAssetModalProps>();
 
   const router = useRouter();
   const { address } = useChain(getChainName());
+  const ibcModalDisclosure = useDisclosure();
+
+  const openModal = async (selectedToken: Token, action: 'deposit'|'withdraw') => {
+    const newProps = {
+      control: ibcModalDisclosure,
+      token: selectedToken,
+      tokenDisplayDenom: await getTokenDisplayDenom(selectedToken.metadata.base, selectedToken),
+      action: action,
+      onClick: () => {},
+    }
+
+    setModalProps(newProps);
+    newProps.control.onOpen();
+  }
 
   const handleSearch = (query: string) => {
     setLoading(true);
@@ -104,15 +121,16 @@ function TokenList() {
       flexDirection='column' 
       width='$auto'
       >
-       <Box
-        display='flex'
-        flex={1}
-        justifyContent={{desktop: 'space-between', mobile: 'center'}}
-        flexDirection={{desktop: 'row', mobile: 'column'}}
-        p='$2'
-        m='$4'
-        gap={'$2'}
-       >
+        {modalProps && <TransferIbcAssetModal props={{control: ibcModalDisclosure, action: modalProps.action, onClick: modalProps.onClick, token: modalProps.token, tokenDisplayDenom: modalProps.tokenDisplayDenom}} />}
+        <Box
+          display='flex'
+          flex={1}
+          justifyContent={{desktop: 'space-between', mobile: 'center'}}
+          flexDirection={{desktop: 'row', mobile: 'column'}}
+          p='$2'
+          m='$4'
+          gap={'$2'}
+        >
           <Box mt='$6'>
             <Text fontSize={'$md'}>All Assets</Text>    
           </Box>
@@ -128,18 +146,53 @@ function TokenList() {
           balances={userBalances}
           list={
             filtered.map((token, i) => {
-              return {
-                token: token,
-                onWithdraw: () => {
+              const showWithdraw = () => {
+                return isFactoryType(token.metadata.base) || (isIBCType(token.metadata.base) && token.ibcTrace !== undefined);
+              }
+              
+              const onWithdraw = () => {
+                if (!isIBCType(token.metadata.base)) {
                   router.push({
                     pathname: '/token',
                     query: {
                       denom: token.metadata.base
                     }
                   });
-                },
-                showWithdraw: token.type.toLowerCase() === 'factory',
-                withdrawLabel: "Details",
+
+                  return;
+                }
+
+                openModal(token, "withdraw");
+              }
+
+              const withdrawLabel = () => {
+                if (isIBCType(token.metadata.base)) {
+                  return "Withdraw";
+                }
+
+                return  'View';
+              }
+
+              const showDeposit= () => {
+                return isIBCType(token.metadata.base) && token.ibcTrace !== undefined;
+              }
+
+              const onDeposit = () => {
+                if (!isIBCType(token.metadata.base)) {
+                  return;
+                }
+
+                openModal(token, "deposit");
+              }
+
+              return {
+                token: token,
+                onWithdraw: onWithdraw,
+                showWithdraw: showWithdraw(),
+                withdrawLabel: withdrawLabel(),
+                showDeposit: showDeposit(),
+                depositLabel: 'Deposit',
+                onDeposit: onDeposit,
               };
             })
           }
