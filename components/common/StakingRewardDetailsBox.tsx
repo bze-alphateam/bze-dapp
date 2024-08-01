@@ -35,6 +35,7 @@ export interface StakingRewardDetailMemoData {
   totalStaked: string;
   minStaking: string;
   status: string;
+  statusColor: string;
 }
 
 export interface StakingRewardDetailsBoxProps {
@@ -45,10 +46,10 @@ export interface StakingRewardDetailsBoxProps {
 }
 
 export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetailsBoxProps) {
-  const { apr, dailyRewards, lock, remainingPeriod, totalStaked, minStaking, status } = useMemo((): StakingRewardDetailMemoData => {
+  const { apr, dailyRewards, lock, remainingPeriod, totalStaked, minStaking, status, statusColor } = useMemo((): StakingRewardDetailMemoData => {
     const pToken = props.prizeToken;
     const sToken = props.stakingToken;
-    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: "", minStaking: "", status: "Active"};
+    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: "", minStaking: "", status: "Active", statusColor: '$textSuccess'};
     if (pToken === undefined || sToken === undefined) {
       return result;
     }
@@ -62,6 +63,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
 
     if (staked.lte(0)) {
       result.status = "Waiting for stakers";
+      result.statusColor = '$textWarning';
     }
 
     const pDisplay = pToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === pToken.metadata.display);
@@ -76,6 +78,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
 
     if (remaining.lte(0)) {
       result.status = "Finished";
+      result.statusColor = '$textDanger';
     }
 
     const sDisplay = sToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === sToken.metadata.display);
@@ -124,7 +127,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
         </Box>
       </Box>
       <Box textAlign={'center'} p='$1'>
-        <Text fontWeight={'$hairline'} >{status}</Text>
+        <Text fontWeight={'$hairline'} color={statusColor}>{status}</Text>
       </Box>
       {apr !== "" ? <StakingRewardDetailsBoxRow props={{name: 'APR:', value: apr}} /> : null}
       <StakingRewardDetailsBoxRow props={{name: 'Reward:', value: props.prizeToken.metadata.display}} />
