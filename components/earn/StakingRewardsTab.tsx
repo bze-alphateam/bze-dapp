@@ -6,7 +6,7 @@ import { Token, getAllSupplyTokens, getRewardsParams, getTokenDisplayDenom } fro
 import { SearchInput } from "@/components/common/Input";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import { useDisclosure, useToast, useTx } from "@/hooks";
-import { amountToUAmount, calculateApr, getChainName, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee } from "@/utils";
+import { amountToUAmount, calculateApr, getChainName, isGreaterOrEqualToZero, isGreaterThanZero, prettyAmount, prettyFee, sanitizeNumberInput } from "@/utils";
 import BigNumber from "bignumber.js";
 import { DeliverTxResponse } from "@cosmjs/stargate";
 import { bze } from '@bze/bzejs';
@@ -120,7 +120,7 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
     <StakingRewardDetailsBox prizeToken={prizeToken} stakingToken={stakingToken} reward={props.reward}>
       {!showForm ? 
         <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'} justifyContent={'center'} mt={'$6'} flexWrap={'wrap'}>
-          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}}>Stake</Button>
+          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}} disabled={props.reward.payouts >= props.reward.duration}>Stake</Button>
         </Box>
         :
         <Box mt={'$6'} justifyContent={'center'}>
@@ -128,11 +128,11 @@ function StakingRewardDetail({props}: {props: StakingRewardDetailProps}) {
             size='sm'
             id="stake_amount"
             label={"Stake " + stakingToken.metadata.display}
-            onChange={(e) => {onAmountChange(e.target.value)}}
+            onChange={(e) => {onAmountChange(sanitizeNumberInput(e.target.value))}}
             placeholder="Amount"
             value={amount ?? ""}
-            type="number"
-            inputMode="text"
+            type="text"
+            inputMode="numeric"
             disabled={submitPending}
           />
           {estimatedApr && <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected ARP ~{estimatedApr.toString()}%</Text>}
@@ -159,10 +159,10 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
   //form state
   const [prizeAmount, setPrizeAmount] = useState<string>("");
   const [selectedPrizeDenom, setSelectedPrizeDenom] = useState<Token|undefined>();
-  const [duration, setDuration] = useState<number|undefined>();
+  const [duration, setDuration] = useState<string|undefined>();
   const [selectedStakingDenom, setSelectedStakingDenom] = useState<Token|undefined>();
-  const [minStake, setMinStake] = useState<number|undefined>();
-  const [lock, setLock] = useState<number|undefined>();
+  const [minStake, setMinStake] = useState<string|undefined>();
+  const [lock, setLock] = useState<string|undefined>();
   const [validForm, setValidForm] = useState(false);
   const [submitPending, setSubmitPending] = useState(false);
 
@@ -280,8 +280,8 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
     setSubmitPending(true);
     const msg = createStakingReward({
       creator: address ?? "",
-      duration: duration.toString(),
-      lock: lock.toString(),
+      duration: duration,
+      lock: lock,
       minStake: convertedMinStake,
       prizeDenom: selectedPrizeDenom.metadata.base,
       prizeAmount: convertedPrizeAmount,
@@ -344,11 +344,11 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               size='sm'
               id="prize_amount"
               label="Daily reward"
-              onChange={(e) => {setPrizeAmount(e.target.value)}}
+              onChange={(e) => {setPrizeAmount(sanitizeNumberInput(e.target.value))}}
               placeholder="Amount"
               value={prizeAmount ?? ""}
-              type="number"
-              inputMode="text"
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -361,11 +361,11 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               size='sm'
               id="duration"
               label="Reward duration"
-              onChange={(e) => {setDuration(e.target.value)}}
+              onChange={(e) => {setDuration(sanitizeNumberInput(e.target.value))}}
               placeholder="No. of days"
               value={duration ? `${duration}` : ""}
-              type="number"
-              inputMode="text"
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -378,11 +378,11 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               size='sm'
               id="min_stake"
               label="Min stake"
-              onChange={(e) => {setMinStake(e.target.value !== "" ? e.target.value : undefined)}}
+              onChange={(e) => {setMinStake(sanitizeNumberInput(e.target.value))}}
               placeholder="Min stake amount"
               value={minStake ? `${minStake}` : ""}
-              type="number"
-              inputMode="text"
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -391,11 +391,11 @@ function AddStakingRewardForm({props}: {props: AddStakingRewardFormProps}) {
               size='sm'
               id="lock"
               label="Unstake lock"
-              onChange={(e) => {setLock(e.target.value !== "" ? e.target.value : undefined)}}
+              onChange={(e) => {setLock(sanitizeNumberInput(e.target.value))}}
               placeholder="No. of days"
               value={lock ? `${lock}`: ""}
-              type="number"
-              inputMode="text"
+              type="text"
+              inputMode="numeric"
               disabled={validForm}
             />
           </Box>
@@ -453,8 +453,9 @@ export function StakingRewards() {
 
   const fetchStakingRewards = async () => {
     const all = await getStakingRewards();
-    setRewards(all.list);
-    setFilteredRewards(all.list);
+    const sorted = all.list.sort((a, b) => a.payouts >= a.duration ? 1 : -1);
+    setRewards(sorted);
+    setFilteredRewards(sorted);
   }
   
   const fetchTokens = async () => {
@@ -520,7 +521,7 @@ export function StakingRewards() {
       <DefaultBorderedBox p='$6' m='$6'>
         <Box display={'flex'} flex={1} flexDirection={{desktop: 'row', mobile: 'column'}} alignItems={'center'} gap={'$2'}>
           <Box>
-            {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
+            {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Create Staking Reward</Button>}
           </Box>
           <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
             <SearchInput placeholder='Search by asset' width={20} onSubmit={onSearchSubmit}/>

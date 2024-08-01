@@ -14,6 +14,8 @@ import {
   Toaster,
 } from "@interchain-ui/react";
 import { ASSETS, CHAINS } from "@/config";
+import { chains } from "chain-registry";
+
 
 function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const { themeClass } = useTheme();
@@ -27,7 +29,7 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <ChainProvider
-        chains={CHAINS}
+        chains={[...chains, ...CHAINS]}
         // @ts-ignore
         assetLists={ASSETS}
         wallets={[...keplrWallets]}

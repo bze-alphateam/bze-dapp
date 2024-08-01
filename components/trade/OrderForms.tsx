@@ -1,5 +1,5 @@
 import { useToast, useTx } from "@/hooks";
-import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, getMinAmount, getMinPrice, marketIdFromDenoms, prettyAmount, priceToUPrice, uAmountToAmount } from "@/utils";
+import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, getMinAmount, getMinPrice, marketIdFromDenoms, prettyAmount, priceToUPrice, sanitizeNumberInput, uAmountToAmount } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
@@ -338,11 +338,11 @@ export function OrderForms(props: OrderFormsProps) {
         <TextField
             id="price"
             size="sm"
-            onChange={(e) => {onPriceChange(e.target.value.replace(/[^\d.-]/g, ''))}}
+            onChange={(e) => {onPriceChange(sanitizeNumberInput(e.target.value))}}
             placeholder=""
             value={price}
-            type="number"
-            inputMode="text"
+            type="text"
+            inputMode="numeric"
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'}  pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
@@ -350,10 +350,10 @@ export function OrderForms(props: OrderFormsProps) {
           />
           <TextField
             id="amount"
-            type="number"
-            inputMode="text"
+            type="text"
+            inputMode="numeric"
             size="sm"
-            onChange={(e) => {onAmountChange(e.target.value.replace(/[^\d.-]/g, ''))}}
+            onChange={(e) => {onAmountChange(sanitizeNumberInput(e.target.value))}}
             placeholder=""
             value={amount}
             intent={'default'}
@@ -364,10 +364,10 @@ export function OrderForms(props: OrderFormsProps) {
           <Divider my={'$2'} />
           <TextField
             id="total"
-            type="number"
-            inputMode="text"
+            type="text"
+            inputMode="numeric"
             size="sm"
-            onChange={(e) => {onTotalChange(e.target.value.replace(/[^\d.-]/g, ''))}}
+            onChange={(e) => {onTotalChange(sanitizeNumberInput(e.target.value))}}
             placeholder=""
             value={total}
             intent={'default'}

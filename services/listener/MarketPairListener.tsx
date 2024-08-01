@@ -68,7 +68,6 @@ class Listener {
 
   start(): void {
     if (this.isStarted) {
-      console.log("market pair listener: already started", this.marketId)
       return;
     }
 
@@ -78,13 +77,11 @@ class Listener {
       TmWebSocket.subscribe(SUB_ID_ORDER_EXECUTED, orderExecutedEventQuery(this.marketId), (e: any) => {this.onOrderExecuted(e)});
 
       this.isStarted = true;
-      console.log("market pair listener: started", this.marketId)
     }
   }
 
   stop(): void {
     if (!this.isStarted) {
-      console.log("market pair listener: already stopped", this.marketId);
       return;
     }
 
@@ -94,7 +91,6 @@ class Listener {
       TmWebSocket.unsubscribe(SUB_ID_ORDER_EXECUTED);
       
       this.isStarted = false;
-      console.log("market pair listener: stopped", this.marketId);
     }
   }
 }

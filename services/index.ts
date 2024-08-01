@@ -7,3 +7,5 @@ export * from './data_provider/Account';
 export * from './data_provider/Tokens';
 export * from './data_provider/Market';
 export * from './data_provider/MarketChart';
+export * from './data_provider/Price';
+export * from './PriceCalculator';

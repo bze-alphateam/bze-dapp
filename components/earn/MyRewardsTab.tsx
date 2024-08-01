@@ -5,7 +5,7 @@ import { StakingRewardSDKType } from "@bze/bzejs/types/codegen/beezee/rewards/st
 import { Token, getAllSupplyTokens, getTokenDisplayDenom } from "@/services";
 import { SearchInput } from "@/components/common/Input";
 import { useToast, useTx } from "@/hooks";
-import { amountToUAmount, getChainName, isGreaterThanZero, prettyAmount, uAmountToAmount } from "@/utils";
+import { amountToUAmount, getChainName, isGreaterThanZero, prettyAmount, sanitizeNumberInput, uAmountToAmount } from "@/utils";
 import BigNumber from "bignumber.js";
 import { bze } from '@bze/bzejs';
 import { useChain } from "@cosmos-kit/react";
@@ -30,7 +30,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
   const [prizeDisplayDenom, setPrizeDisplayDenom] = useState<DenomUnitSDKType>();
   const [claimable, setClaimable] = useState(new BigNumber(0));
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState<string>("");
 
   const { tx } = useTx();
   const { address } = useChain(getChainName());
@@ -90,7 +90,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
 
   const cancelForm = () => {
     setShowForm(false);
-    setAmount(undefined);
+    setAmount("");
   }
 
   const submitStake = async () => {
@@ -165,7 +165,7 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
         {!confirmUnstake && !showForm &&
         <Box display='flex' flexDirection={'row'} justifyContent={'space-around'}>
           <Button size='sm' intent="primary" onClick={() => {setConfirmUnstake(true)}} disabled={submitPending}>Unstake</Button>
-          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}} disabled={submitPending}>Stake</Button>
+          <Button size='sm' intent="primary" onClick={() => {setShowForm(true)}} disabled={submitPending || props.reward.payouts >= props.reward.duration}>Stake</Button>
           <Button size='sm' intent="primary" onClick={() => {claim()}} isLoading={submitPending}>Claim</Button>
         </Box>
         }
@@ -198,16 +198,16 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
             size='sm'
             id="stake_amount"
             label={"Stake " + stakingToken.metadata.display}
-            onChange={(e) => {setAmount(e.target.value)}}
+            onChange={(e) => {setAmount(sanitizeNumberInput(e.target.value))}}
             placeholder="Amount"
             value={amount ?? ""}
-            type="number"
-            inputMode="text"
+            type="text"
+            inputMode="numeric"
             disabled={submitPending}
           />
           <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
             <Button size='sm' intent="secondary" onClick={cancelForm} disabled={submitPending}>Cancel</Button>
-            <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending} >Stake</Button>
+            <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending}>Stake</Button>
           </Box>
         </Box>  
       }

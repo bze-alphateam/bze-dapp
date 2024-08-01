@@ -25,7 +25,6 @@ interface CreateMarketFormProps {
 }
 
 function CreateMarketForm({props}: {props: CreateMarketFormProps}) {
-  const [formDenom, setFormDenom] = useState<string>("");
   const [allTokens, setAllTokens] = useState<Token[]>([]);
   const [baseCoin, setBaseCoin] = useState<Token|undefined>();
   const [quoteCoin, setQuoteCoin] = useState<Token|undefined>();
@@ -39,11 +38,6 @@ function CreateMarketForm({props}: {props: CreateMarketFormProps}) {
 
   const { toast } = useToast();
   const { tx } = useTx();
-  const router = useRouter();
-
-  const onFormDenomChange = (text: string) => {
-    setFormDenom(text);
-  }
 
   const validate = (): boolean => {
     if (address === undefined) {
@@ -375,13 +369,13 @@ export default function Home() {
           <Text as="h1" fontSize={'$2xl'}>Trade</Text>
         </Box>
       </Box >
-      <Box display='flex' flex={1} justifyContent={'center'} alignItems={'center'}>
+      {/* <Box display='flex' flex={1} justifyContent={'center'} alignItems={'center'}>
         <Text fontSize={'$2xl'} fontWeight={'$bold'}>Trading opens soon... 🚀</Text>
-      </Box>
-      {/* <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
+      </Box> */}
+      <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
         <MarketsListing loading={loading} list={list} tokens={allTokens}/>
         <CallToActionBox props={{onMarketCreated: reloadList}}/>
-      </Box> */}
+      </Box>
     </Layout>
   );
 }

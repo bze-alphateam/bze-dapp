@@ -2,7 +2,8 @@ import { DenomUnitSDKType, MetadataSDKType } from "@bze/bzejs/types/codegen/cosm
 import { getRestClient } from "../Client";
 import Long from 'long';
 import { MAINNET_UDENOM, TESTNET_UDENOM, getChain, getLastCharsAfterSlash } from "@/utils";
-import { EXCLUDED_TOKENS, VERIFIED_TOKENS } from "@/config/verified";
+import { EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS } from "@/config/verified";
+import { IBCTrace } from '@chain-registry/types';
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -13,6 +14,8 @@ export interface Token {
   verified: boolean,
   type: string,
   coingekoId?: string,
+  stableCoin?: boolean,
+  ibcTrace?: IBCTrace, 
 }
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
@@ -43,6 +46,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
         logo: TOKEN_IMG_DEFAULT,
         verified: isVerified(metadatas[i].base),
         type: getDenomType(metadatas[i].base),
+        stableCoin: STABLE_COINS[metadatas[i].base] ?? false,
       }
 
       if (meta.metadata.symbol === "") {
@@ -57,7 +61,7 @@ export async function getFactoryTokens(): Promise<Map<string, Token>> {
     }
 
      //override metadata with details from chain registry
-    let chain = getChain();
+    let chain = await getChain();
     for (let i = 0; i < chain.assets.length; i++) {
       for (let j = 0; j < chain.assets[i].assets.length; j++) {
         let chainAsset = chain.assets[i].assets[j];
@@ -188,7 +192,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
   const [factoryTokens, fetchedSupply] = await Promise.all([getFactoryTokens(), getSupply()]);
   let allSupplyTokens = factoryTokens;
   //override metadata with details from chain registry
-  let chain = getChain();
+  let chain = await getChain();
   for (let a = 0; a < fetchedSupply.length; a++) {
     let current = fetchedSupply[a];
     let foundInFactory = factoryTokens.get(current.denom)
@@ -218,13 +222,14 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
           verified: isVerified(current.denom) || isIBCType(current.denom),
           coingekoId: '',
           type: getDenomType(current.denom),
+          stableCoin: STABLE_COINS[current.denom] ?? false,
         }
         
         meta.metadata.denom_units = chainAsset.denom_units;
         meta.metadata.display = chainAsset.display;
         meta.metadata.symbol = chainAsset.symbol;
         meta.metadata.name = chainAsset.name;
-        if (chainAsset.description === undefined) {
+        if (chainAsset.description !== undefined) {
           meta.metadata.description = chainAsset.description;
         }
         
@@ -234,6 +239,15 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
 
         if (chainAsset.coingecko_id !== '') {
           meta.coingekoId = chainAsset.coingecko_id;
+        }
+
+        if (isIBCType(current.denom) && chainAsset.traces && Array.isArray(chainAsset.traces)) {
+          // @ts-ignore
+          const ibcTrace = chainAsset.traces.find(item => item.type === "ibc");
+          if (ibcTrace) {
+             // @ts-ignore
+            meta.ibcTrace = ibcTrace;
+          }
         }
         
         allSupplyTokens.set(chainAsset.base, meta)

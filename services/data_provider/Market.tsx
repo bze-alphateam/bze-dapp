@@ -1,9 +1,11 @@
-import { QueryAllMarketResponseSDKType, QueryMarketAggregatedOrdersResponseSDKType, QueryMarketHistoryResponseSDKType, QueryMarketOrderResponseSDKType, QueryUserMarketOrdersResponseSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
+import { QueryAllMarketResponseSDKType, QueryAssetMarketsResponseSDKType, QueryGetMarketRequest, QueryGetMarketResponse, QueryGetMarketResponseSDKType, QueryMarketAggregatedOrdersResponseSDKType, QueryMarketHistoryResponseSDKType, QueryMarketOrderResponseSDKType, QueryUserMarketOrdersResponseSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
 import { getRestClient } from "../Client";
 import { bze } from '@bze/bzejs';
+import { getFromCache, setInCache } from "./cache";
 
 const ALL_MARKETS_KEY = 'markets:list';
 const ALL_MARKETS_CACHE_TTL = 1000 * 60 * 5; //5 minutes
+const CACHE_TTL_IN_SECONDS = 5 * 60;
 
 const ORDER_TYPE_BUY = 'buy';
 const ORDER_TYPE_SELL = 'sell';
@@ -13,6 +15,8 @@ const { fromPartial: QueryMarketAggregatedOrdersRequestFromPartyal } = bze.trade
 const { fromPartial: QueryMarketHistoryRequestFromPartial } = bze.tradebin.v1.QueryMarketHistoryRequest;
 const { fromPartial: QueryUserMarketOrdersRequestFromPartial } = bze.tradebin.v1.QueryUserMarketOrdersRequest;
 const { fromPartial: QueryMarketOrderRequestFromPartial } = bze.tradebin.v1.QueryMarketOrderRequest;
+const { fromPartial: QueryAssetMarketsRequestFromPartial } = bze.tradebin.v1.QueryAssetMarketsRequest;
+const { fromPartial: QueryGetMarketRequestFromPartial } = bze.tradebin.v1.QueryGetMarketRequest;
 
 export async function getMarketBuyOrders(marketId: string): Promise<QueryMarketAggregatedOrdersResponseSDKType> {
   return getMarketOrders(marketId, ORDER_TYPE_BUY);
@@ -127,5 +131,61 @@ export async function getMarketOrder(marketId: string, orderType: string, orderI
     console.error(e);
 
     return {order: undefined};
+  }
+}
+
+export async function getAssetMarkets(denom: string): Promise<QueryAssetMarketsResponseSDKType> {
+  try {
+    const cacheKey = `${ALL_MARKETS_KEY}${denom}`;
+    let localData = getFromCache(cacheKey);
+    if (null !== localData) {
+        let parsed = JSON.parse(localData);
+        if (parsed) {
+          return parsed;
+        }
+    }
+
+    const client = await getRestClient();
+    const response = await client.bze.tradebin.v1.assetMarkets(QueryAssetMarketsRequestFromPartial({asset: denom}));
+
+    setInCache(cacheKey, JSON.stringify(response), CACHE_TTL_IN_SECONDS)
+    
+    return response;
+  } catch(e) {
+    console.error(e);
+
+    return {base: [], quote: []};
+  }
+}
+
+export async function getAssetsMarket(base: string, quote: string): Promise<QueryGetMarketResponseSDKType> {
+  try {
+    let cacheKey = `${ALL_MARKETS_KEY}${base}:${quote}`;
+    let localData = getFromCache(cacheKey);
+    // search for inversed denoms (base and quote) since the blockchhain allows one pair only no matter the order they are in
+    // and it returns on the called endpoint the market regardless of the order you're giving the assets
+    if (null === localData) {
+      let cacheKey = `${ALL_MARKETS_KEY}${quote}:${base}`;
+      localData = getFromCache(cacheKey);
+    }
+
+    if (null !== localData) {
+        let parsed = JSON.parse(localData);
+        if (parsed) {
+          return parsed;
+        }
+    }
+
+    const client = await getRestClient();
+    const response = await client.bze.tradebin.v1.market(QueryGetMarketRequestFromPartial({base: base, quote: quote}));
+    
+    //increase cache TTL since the market is not expected to be different
+    setInCache(cacheKey, JSON.stringify(response), CACHE_TTL_IN_SECONDS);
+    
+    return response;
+  } catch(e) {
+    console.error(e);
+
+    return {};
   }
 }

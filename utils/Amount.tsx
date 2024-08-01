@@ -90,7 +90,11 @@ export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExpon
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent))).toString()
+  return uPriceToBigNumberPrice(price, quoteExponent, baseExponent).toString()
+}
+
+export const uPriceToBigNumberPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): BigNumber => {
+  return price.multipliedBy(Math.pow(10, (baseExponent - quoteExponent)));
 }
 
 //calculates min amount of an order just like tradebin module does
@@ -128,4 +132,19 @@ export const calculateApr = (dailyAmount: string|number|BigNumber, staked: strin
   }
 
   return computedApr;
+}
+
+export const sanitizeNumberInput = (input: string) => {
+  // Regular expression to match all characters not allowed in a non-negative number
+  // Allow digits and a single decimal point
+  let sanitized = input.replace(/[^0-9.]/g, '');
+
+  // Ensure only one decimal point is present
+  const parts = sanitized.split('.');
+  if (parts.length > 2) {
+    // Join parts after the first '.' back into the first part
+    sanitized = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  return sanitized;
 }
