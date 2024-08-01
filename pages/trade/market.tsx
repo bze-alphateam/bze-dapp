@@ -167,6 +167,15 @@ export default function MarketPair() {
   const { query } = router;
   const { address } = useChain(getChainName());
 
+  const loadMarketPrice = async () => {
+    if (historyOrders?.length && tokens?.baseToken && tokens?.quoteToken) {
+      console.log("loadMarketPrice");
+      const lastPrice = uPriceToBigNumberPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent);
+      const prices = await getMarketUsdPrices(tokens.baseToken, tokens.quoteToken, lastPrice);
+      setMarketPrices(prices);
+    }
+  }
+
   const loadChart = async () => {
     if (tokens === undefined) {
       return;
@@ -180,11 +189,6 @@ export default function MarketPair() {
     );
 
     setChartData(chart);
-    if (historyOrders?.length && tokens?.baseToken && tokens?.quoteToken) {
-      const lastPrice = uPriceToBigNumberPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent);
-      const prices = await getMarketUsdPrices(tokens.baseToken, tokens.quoteToken, lastPrice);
-      setMarketPrices(prices);
-    }
   }
 
   const fetchActiveOrders = async () => {
@@ -240,6 +244,8 @@ export default function MarketPair() {
     if (activeOrders === undefined) {
       fetchActiveOrders();
     }
+
+    loadMarketPrice();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, historyOrders, myOrders, activeOrders]);
 
@@ -255,7 +261,7 @@ export default function MarketPair() {
 
     return vol.toString();
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartData, chartType]);
+  }, [chartData, chartType, historyOrders]);
 
   const onOrderCancelled = useCallback(() => {}, []);
   const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
@@ -284,6 +290,7 @@ export default function MarketPair() {
       fetchMarketHistory();
       fetchMyOrders();
       loadChart();
+      loadMarketPrice();
     });
     MarketPairListener.addOnOrderSavedCallback((event: OrderSavedEvent) => {
       fetchActiveOrders();
