@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState } from "react";
 import { BurnedCoinsSDKType } from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
 import { BURNER, getAllBurnedCoins, getBlockTimeByHeight, getModuleAddress, getNextBurning } from "@/services";
-import { amountToUAmount, getBzeDenomExponent, getChainName, getCurrentuDenom, getMinDenom, hoursUntil, minutesUntil, prettyAmount, prettyDate, prettyDateTime, toPrettyDenom, uAmountToAmount } from "@/utils";
+import { amountToUAmount, getBzeDenomExponent, getChainName, getCurrentuDenom, getMinDenom, hoursUntil, minutesUntil, prettyAmount, prettyDate, prettyDateTime, sanitizeNumberInput, toPrettyDenom, uAmountToAmount } from "@/utils";
 import Long from "long";
 import { parseCoins } from "@cosmjs/stargate";
 import { useChain } from "@cosmos-kit/react";
@@ -216,11 +216,11 @@ function Contribute({onContributeSuccess}: ContributeProps) {
           <>
             <TextField
                 id="fund-burner-amount"
-                type="number"
-                inputMode="text"
+                type="text"
+                inputMode="numeric"
                 label={""}
                 size="sm"
-                onChange={(e) => {setAmount(e.target.value)}}
+                onChange={(e) => {setAmount(sanitizeNumberInput(e.target.value))}}
                 placeholder={"BZE amount"}
                 value={amount}
                 intent={'default'}

@@ -8,7 +8,7 @@ import { useToast, useTx } from "@/hooks";
 import { bze } from '@bze/bzejs';
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
-import { amountToUAmount, getChainName, prettyAmount, uAmountToAmount } from "@/utils";
+import { amountToUAmount, getChainName, prettyAmount, sanitizeNumberInput, uAmountToAmount } from "@/utils";
 
 interface TokenOwnershipProps extends TokenMetadataProps {}
 
@@ -321,11 +321,11 @@ function TokenSupply({props}: {props: TokenSupplyProps}) {
             {showForm && 
               <TextField
                 id="burn-mint-amount"
-                type="number"
-                inputMode="text"
+                type="text"
+                inputMode="numeric"
                 label={""}
                 size="sm"
-                onChange={(e) => {setAmount(e.target.value)}}
+                onChange={(e) => {setAmount(sanitizeNumberInput(e.target.value))}}
                 placeholder={"Amount to " + (showBurnButton ? "burn" : "mint")}
                 value={amount}
                 intent={'default'}
@@ -551,11 +551,11 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
             <TooltippedText text="Decimals/Exponent (ex: 6)" tooltip="The number of decimals for the largest denomination."/>
           }
           size="sm"
-          onChange={(e) => {setDecimals(e.target.value)}}
+          onChange={(e) => {setDecimals(sanitizeNumberInput(e.target.value))}}
           placeholder="Number of decimals"
           value={decimals}
-          type="number"
-          inputMode="text"
+          type="text"
+          inputMode="numeric"
           intent={'default'}
           disabled={disabled || pendingSubmit}
           attributes={{

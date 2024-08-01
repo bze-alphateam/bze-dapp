@@ -3,7 +3,7 @@ import { BasicModal, Box, TextField, Button, Callout, Text } from "@interchain-u
 import { Token } from "@/services";
 import { useEffect, useMemo, useState } from "react";
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
-import { amountToUAmount, getChainName, toUpperFirstLetter } from "@/utils";
+import { amountToUAmount, getChainName, sanitizeNumberInput, toUpperFirstLetter } from "@/utils";
 import BigNumber from "bignumber.js";
 import { ibc } from '@bze/bzejs';
 import Long from 'long';
@@ -174,7 +174,7 @@ export default function TransferIbcAssetModal({props}: {props: TransferIbcAssetM
             type="text"
             inputMode="numeric"
             size="sm"
-            onChange={(e) => {setAmount(e.target.value)}}
+            onChange={(e) => {setAmount(sanitizeNumberInput(e.target.value))}}
             placeholder={`${props.tokenDisplayDenom.denom.toUpperCase()} amount`}
             value={amount}
             intent={'default'}
