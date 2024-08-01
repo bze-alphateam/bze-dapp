@@ -5,7 +5,7 @@ import { StakingRewardSDKType } from "@bze/bzejs/types/codegen/beezee/rewards/st
 import { Token, getAllSupplyTokens, getTokenDisplayDenom } from "@/services";
 import { SearchInput } from "@/components/common/Input";
 import { useToast, useTx } from "@/hooks";
-import { amountToUAmount, getChainName, isGreaterThanZero, prettyAmount, sanitizeNumberInput, uAmountToAmount } from "@/utils";
+import { amountToUAmount, calculateApr, getChainName, isGreaterThanZero, prettyAmount, sanitizeNumberInput, uAmountToAmount } from "@/utils";
 import BigNumber from "bignumber.js";
 import { bze } from '@bze/bzejs';
 import { useChain } from "@cosmos-kit/react";
@@ -32,9 +32,35 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   const [claimable, setClaimable] = useState(new BigNumber(0));
   const [amount, setAmount] = useState<string>("");
 
+  const [shouldEstimateApr, setShouldEstimateApr] = useState(false);
+  const [estimatedApr, setEstimatedApr] = useState<BigNumber|undefined>();
+
   const { tx } = useTx();
   const { address } = useChain(getChainName());
   const { toast } = useToast();
+
+  const onAmountChange = (amount: string) => {
+    setAmount(amount);
+    if (!shouldEstimateApr || !prizeToken) {
+      return;
+    }
+
+    const pDisplay = prizeToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === prizeToken.metadata.display);
+    if (!pDisplay) {
+      return;
+    }
+
+    const amountNum = new BigNumber(amountToUAmount(amount, pDisplay.exponent));
+    if (!amountNum.gt(0)) {
+      setEstimatedApr(undefined);
+      return;
+    }
+
+    const staked = new BigNumber(props.reward.staked_amount);
+    const apr = calculateApr(props.reward.prize_amount, staked.plus(amountNum));
+
+    setEstimatedApr(apr);
+  }
 
   const cancelUnstake = () => {
     setConfirmUnstake(false);
@@ -150,6 +176,8 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
       let rewardsToClaim = deposited.multipliedBy(distr.minus(joinedAt)).decimalPlaces(0);
       setClaimable(rewardsToClaim);
     }
+
+    setShouldEstimateApr(props.reward.prize_denom === props.reward.staking_denom);
   }, [props]);
 
   if (prizeToken === undefined || stakingToken === undefined) {
@@ -198,13 +226,14 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
             size='sm'
             id="stake_amount"
             label={"Stake " + stakingToken.metadata.display}
-            onChange={(e) => {setAmount(sanitizeNumberInput(e.target.value))}}
+            onChange={(e) => {onAmountChange(sanitizeNumberInput(e.target.value))}}
             placeholder="Amount"
             value={amount ?? ""}
             type="text"
             inputMode="numeric"
             disabled={submitPending}
           />
+          {estimatedApr && <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected ARP ~{estimatedApr.toString()}%</Text>}
           <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
             <Button size='sm' intent="secondary" onClick={cancelForm} disabled={submitPending}>Cancel</Button>
             <Button size='sm' intent="primary" onClick={submitStake} isLoading={submitPending}>Stake</Button>
