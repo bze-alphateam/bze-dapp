@@ -453,8 +453,9 @@ export function StakingRewards() {
 
   const fetchStakingRewards = async () => {
     const all = await getStakingRewards();
-    setRewards(all.list);
-    setFilteredRewards(all.list);
+    const sorted = all.list.sort((a, b) => a.payouts >= a.duration ? 1 : -1);
+    setRewards(sorted);
+    setFilteredRewards(sorted);
   }
   
   const fetchTokens = async () => {
@@ -520,7 +521,7 @@ export function StakingRewards() {
       <DefaultBorderedBox p='$6' m='$6'>
         <Box display={'flex'} flex={1} flexDirection={{desktop: 'row', mobile: 'column'}} alignItems={'center'} gap={'$2'}>
           <Box>
-            {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Add Staking Reward</Button>}
+            {!showAddForm && <Button size="sm" intent="primary" onClick={() => {setShowAddForm(true)}}>Create Staking Reward</Button>}
           </Box>
           <Box display={'flex'} justifyContent={'flex-end'} flex={1}>
             <SearchInput placeholder='Search by asset' width={20} onSubmit={onSearchSubmit}/>

@@ -34,6 +34,7 @@ export interface StakingRewardDetailMemoData {
   remainingPeriod: string;
   totalStaked: string;
   minStaking: string;
+  status: string;
 }
 
 export interface StakingRewardDetailsBoxProps {
@@ -44,10 +45,10 @@ export interface StakingRewardDetailsBoxProps {
 }
 
 export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetailsBoxProps) {
-  const { apr, dailyRewards, lock, remainingPeriod, totalStaked, minStaking } = useMemo((): StakingRewardDetailMemoData => {
+  const { apr, dailyRewards, lock, remainingPeriod, totalStaked, minStaking, status } = useMemo((): StakingRewardDetailMemoData => {
     const pToken = props.prizeToken;
     const sToken = props.stakingToken;
-    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: "", minStaking: ""}
+    let result = {prizeToken: pToken, stakingToken: sToken, apr: "", dailyRewards: "", lock: "", remainingPeriod: "", totalStaked: "", minStaking: "", status: "Active"};
     if (pToken === undefined || sToken === undefined) {
       return result;
     }
@@ -59,6 +60,10 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
       result.apr = `~${computedApr.toString()}%`;
     }
 
+    if (staked.lte(0)) {
+      result.status = "Waiting for stakers";
+    }
+
     const pDisplay = pToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === pToken.metadata.display);
     if (pDisplay === undefined) {
       return result;
@@ -66,8 +71,12 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
     result.dailyRewards = `${prettyAmount(uAmountToAmount(props.reward.prize_amount, pDisplay.exponent))} ${pDisplay.denom}`;
     result.lock = `${props.reward.lock} days`
 
-    const remaining = new BigNumber(props.reward.duration).minus(props.reward.payouts).toString();
-    result.remainingPeriod = `${remaining} days`
+    const remaining = new BigNumber(props.reward.duration).minus(props.reward.payouts);
+    result.remainingPeriod = `${remaining.toString()} days`
+
+    if (remaining.lte(0)) {
+      result.status = "Finished";
+    }
 
     const sDisplay = sToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === sToken.metadata.display);
     if (sDisplay === undefined) {
@@ -113,6 +122,9 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
           <Text fontWeight={'$hairline'} fontSize={'$sm'} color={'$primary100'}>Earn</Text>
           <Text fontWeight={'$bold'} fontSize={'$lg'} color={'$primary200'}>{props.prizeToken.metadata.display}</Text>
         </Box>
+      </Box>
+      <Box textAlign={'center'} p='$1'>
+        <Text fontWeight={'$hairline'} >{status}</Text>
       </Box>
       {apr !== "" ? <StakingRewardDetailsBoxRow props={{name: 'APR:', value: apr}} /> : null}
       <StakingRewardDetailsBoxRow props={{name: 'Reward:', value: props.prizeToken.metadata.display}} />
