@@ -430,6 +430,7 @@ export default function MarketPair() {
                 onOrderPlaced={onOrderPlaced}
                 activeOrders={activeOrders !== undefined ? activeOrders : {buyOrders: [], sellOrders:[]}}
                 loading={activeOrders === undefined}
+                marketPrices={marketPrices}
               />
             </Box>
             <Box mt={'$6'} display='flex' flex={1} gap={'$6'}>

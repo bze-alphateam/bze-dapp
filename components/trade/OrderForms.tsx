@@ -11,6 +11,7 @@ import { AggregatedOrderSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin
 import { ActiveOrders, MarketPairTokens } from "./ActiveOrders";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
 import { useRouter } from "next/router";
+import { MarketPrices, formatUsdAmount } from "@/services";
 
 export interface OrderFormData {
   price: string;
@@ -26,6 +27,7 @@ interface OrderFormsProps {
   onOrderPlaced?: () => void;
   activeOrders: ActiveOrders;
   loading: boolean;
+  marketPrices?: MarketPrices;
 }
 
 const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
@@ -348,6 +350,13 @@ export function OrderForms(props: OrderFormsProps) {
             startAddon={<Box width={'$16'}  pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
             endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
           />
+          {
+            props.marketPrices && 
+            parseFloat(price) > 0 &&
+            props.marketPrices.denom !== props.tokens.baseTokenDisplayDenom.denom &&
+            props.marketPrices.denom !== props.tokens.quoteTokenDisplayDenom.denom &&
+            <Box textAlign={'center'} mb={'$2'}><Text fontSize={'$xs'} fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(price).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text></Box>
+          }
           <TextField
             id="amount"
             type="text"
@@ -375,6 +384,13 @@ export function OrderForms(props: OrderFormsProps) {
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Total</Text></Box>}
             endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
           />
+          {
+            props.marketPrices && 
+            parseFloat(total) > 0 &&
+            props.marketPrices.denom !== props.tokens.baseTokenDisplayDenom.denom &&
+            props.marketPrices.denom !== props.tokens.quoteTokenDisplayDenom.denom &&
+            <Box textAlign={'center'} mb={'$2'}><Text fontSize={'$xs'} fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(total).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text></Box>
+          }
           <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
             <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display}</Button>
           </Box>
