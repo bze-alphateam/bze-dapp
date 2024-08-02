@@ -28,7 +28,7 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
       return "";
     }
 
-    return `${prettyAmount(uAmountToAmount(props.balance.amount, tokenDisplayDenom.exponent))} ${tokenDisplayDenom.denom.toUpperCase()}`;
+    return `${uAmountToAmount(props.balance.amount, tokenDisplayDenom.exponent)} ${tokenDisplayDenom.denom.toUpperCase()}`;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.balance])
 
