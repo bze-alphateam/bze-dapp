@@ -66,10 +66,10 @@ export function OrderHistoryList(props: OrderHistoryProps) {
     <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
         <Box width={'33%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display.toUpperCase()})</Text>
         </Box>
         <Box width={'33%'} display={'flex'} flex={1} justifyContent={'center'}>
-          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display.toUpperCase()})</Text>
         </Box>
         <Box width={'34%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
           <Text color={'$primary200'}>Time</Text>
@@ -223,10 +223,10 @@ export function MyOrdersList(props: MyOrdersProps) {
     <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display.toUpperCase()})</Text>
         </Box>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'center'}>
-          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display})</Text>
+          <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display.toUpperCase()})</Text>
         </Box>
         <Box width={'25%'} display={'flex'} flex={1} justifyContent={'center'}>
           <Text color={'$primary200'}>Type</Text>

@@ -354,7 +354,7 @@ export default function MarketPair() {
     <Layout>
       <Box display='block' flexDirection={'row'}>
         <Box marginBottom={'$6'} ml='$6'>
-          <Box><Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display}</Text></Text></Box>
+          <Box><Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text></Box>
           {historyOrders !== undefined && tokens !== undefined &&
             <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
               {
@@ -362,7 +362,7 @@ export default function MarketPair() {
                 <>
                   <Text color={'$primary200'}>Last price: </Text>
                   <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
-                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {tokens.quoteTokenDisplayDenom.denom}
+                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {tokens.quoteTokenDisplayDenom.denom.toUpperCase()}
                   </Text>
                   {
                     marketPrices && 
@@ -384,7 +384,7 @@ export default function MarketPair() {
             <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
               <Text color={'$primary200'}>{chartType} volume: </Text>
               <Text color={'$primary200'} fontWeight={'$bold'}>
-                {uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} {tokens.baseTokenDisplayDenom.denom}
+                {uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} {tokens.baseTokenDisplayDenom.denom.toUpperCase()}
               </Text>
               {
                 marketPrices && 

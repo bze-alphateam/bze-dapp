@@ -332,7 +332,7 @@ export function OrderForms(props: OrderFormsProps) {
             onClick: () => {isBuy ? onTotalChange(quoteBalance) : onAmountChange(baseBalance)}
           }}
           >
-            <Text color={'$primary200'} fontWeight={'$semibold'}>{prettyAmount(isBuy ? quoteBalance : baseBalance)} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom : props.tokens.baseTokenDisplayDenom.denom}</Text>
+            <Text color={'$primary200'} fontWeight={'$semibold'}>{prettyAmount(isBuy ? quoteBalance : baseBalance)} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom.toUpperCase() : props.tokens.baseTokenDisplayDenom.denom.toUpperCase()}</Text>
           </Box>
         }
       </Box>
@@ -348,7 +348,7 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'}  pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display.toUpperCase()}</Text></Box>}
           />
           {
             props.marketPrices && 
@@ -368,7 +368,7 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Amount</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.baseToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.baseToken.metadata.display.toUpperCase()}</Text></Box>}
           />
           <Divider my={'$2'} />
           <TextField
@@ -382,7 +382,7 @@ export function OrderForms(props: OrderFormsProps) {
             intent={'default'}
             disabled={isPendingSubmit}
             startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$hairline'}>Total</Text></Box>}
-            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display}</Text></Box>}
+            endAddon={<Box width={'$16'}  pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display.toUpperCase()}</Text></Box>}
           />
           {
             props.marketPrices && 
@@ -392,7 +392,7 @@ export function OrderForms(props: OrderFormsProps) {
             <Box textAlign={'center'} mb={'$2'}><Text fontSize={'$xs'} fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(total).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text></Box>
           }
           <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
-            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display}</Button>
+            <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {onFormSubmit()}} isLoading={isPendingSubmit} disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display.toUpperCase()}</Button>
           </Box>
       </Box>
     </DefaultBorderedBox>

@@ -17,7 +17,7 @@ export interface MarketPairTokens {
 export function PriceHeaderLine({ticker}: {ticker: string}) {
   return (
     <Box width={'33%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-      <Text color={'$primary200'}>Price({ticker})</Text>
+      <Text color={'$primary200'}>Price({ticker.toUpperCase()})</Text>
     </Box>
   );
 }
@@ -25,7 +25,7 @@ export function PriceHeaderLine({ticker}: {ticker: string}) {
 export function AmountHeaderLine({ticker}: {ticker: string}) {
   return (
     <Box width={'33%'} display={'flex'} flex={1} justifyContent={'center'}>
-      <Text color={'$primary200'}>Amount({ticker})</Text>
+      <Text color={'$primary200'}>Amount({ticker.toUpperCase()})</Text>
     </Box>
   );
 }
@@ -33,7 +33,7 @@ export function AmountHeaderLine({ticker}: {ticker: string}) {
 export function TotalHeaderLine({ticker}: {ticker: string}) {
   return (
     <Box width={'34%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
-      <Text color={'$primary200'}>Total({ticker})</Text>
+      <Text color={'$primary200'}>Total({ticker.toUpperCase()})</Text>
     </Box>
   );
 }

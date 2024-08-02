@@ -182,7 +182,7 @@ export default withTooltip<AreaProps, TooltipData>(
         {tooltipData && (
           <div>
             <Tooltip top={tooltipTop - 12} left={tooltipLeft + 12} style={tooltipStyles}>
-              {`${getStockValue(tooltipData)} ${quoteTokenDisplayDenom.denom}`}
+              {`${getStockValue(tooltipData)} ${quoteTokenDisplayDenom.denom.toUpperCase()}`}
             </Tooltip>
             <Tooltip
               top={yMax - 14}
