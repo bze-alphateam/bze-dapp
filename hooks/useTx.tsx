@@ -45,9 +45,7 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
 }
 
 export const useTx = (chainName?: string) => {
-  console.log("chainName", chainName);
-  const { address, getOfflineSigner, getRpcEndpoint } = useChain(chainName ?? getChainName());
-  console.log("address", address);
+  const { address, getOfflineSigner } = useChain(chainName ?? getChainName());
   const { toast } = useToast();
 
   const tx = async (msgs: Msg[], options: TxOptions) => {

@@ -154,7 +154,7 @@ export default function MarketPair() {
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<MarketPairTokens>();
   const [chartData, setChartData] = useState<ChartPoint[]>();
-  const [chartType, setChartType] = useState(CHART_30D);
+  const [chartType, setChartType] = useState(CHART_7D);
   const [marketPrices, setMarketPrices] = useState<MarketPrices|undefined>();
 
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
@@ -169,7 +169,6 @@ export default function MarketPair() {
 
   const loadMarketPrice = async () => {
     if (historyOrders?.length && tokens?.baseToken && tokens?.quoteToken) {
-      console.log("loadMarketPrice");
       const lastPrice = uPriceToBigNumberPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent);
       const prices = await getMarketUsdPrices(tokens.baseToken, tokens.quoteToken, lastPrice);
       setMarketPrices(prices);
