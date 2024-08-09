@@ -176,6 +176,7 @@ export default function MarketPair() {
   }
 
   const loadChart = async () => {
+    console.log("chartType", chartType);
     if (tokens === undefined) {
       return;
     }
@@ -263,12 +264,13 @@ export default function MarketPair() {
   }, [chartData, chartType, historyOrders]);
 
   const onOrderCancelled = useCallback(() => {}, []);
-  const onChartChange = useCallback((chartType: string) => setChartType(chartType), []);
+  const onChartChange = useCallback((ct: string) => setChartType(ct), []);
   const onOrderPlaced = useCallback(() => {
     setOrderFormData(EmptyOrderFormData)
   }, []);
 
   useEffect(() => {
+    setChartData(undefined);
     loadChart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType, tokens]);

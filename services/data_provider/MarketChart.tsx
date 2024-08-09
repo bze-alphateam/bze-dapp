@@ -3,6 +3,9 @@ import { getRestClient } from "../Client";
 import { bze } from '@bze/bzejs';
 import BigNumber from "bignumber.js";
 import { uPriceToPrice } from "@/utils";
+import {getFromCache, setInCache} from "@/services/data_provider/cache";
+
+const INTERVAL_CACHE_TTL = 60 * 60 * 6; //6h in seconds
 
 interface TimeInterval {
   start: number;
@@ -12,6 +15,8 @@ interface TimeInterval {
 export interface ChartPoint extends TimeInterval {
   price: string;
   volume: string;
+  isFilled: boolean;
+  isCurrent: boolean;
 }
 
 //chart periods
@@ -115,19 +120,49 @@ function decrementTimeInterval(interval: TimeInterval): TimeInterval {
   }
 }
 
-function buildEmptyIntervals(chart: string): Map<number, ChartPoint> {
+function getIntervalCacheKey(marketId: string, chart: string, intervalEnd: number): string {
+  return `chart:interval:${marketId}:${chart}:${intervalEnd}`;
+}
+
+// returns an interval from cache or an empty one if it doesn't exist
+function getCachedIntervalOrEmpty(marketId: string, chart: string, intervalStart: number, intervalEnd: number): ChartPoint {
+  const now = new Date();
+  const isCurrent = now.getTime() < intervalEnd;
+
+  const intervalCacheKey = getIntervalCacheKey(marketId, chart, intervalEnd);
+  const cachedInterval = getFromCache(intervalCacheKey);
+  if (cachedInterval) {
+    const decodedInterval = JSON.parse(cachedInterval);
+    if (decodedInterval) {
+      return {
+        start: decodedInterval.start,
+        end: decodedInterval.end,
+        price: decodedInterval.price,
+        volume: decodedInterval.volume,
+        isFilled: decodedInterval.isFilled,
+        isCurrent: isCurrent,
+      }
+    }
+  }
+
+  return {
+    start: intervalStart,
+    end: intervalEnd,
+    price: "0",
+    volume: "0",
+    isFilled: false,
+    isCurrent: isCurrent,
+  }
+}
+
+function getCachedIntervalsIfExist(marketId: string, chart: string): Map<number, ChartPoint> {
   const neededIntervals = getNoOfIntervalsNeeded(chart);
   let currentInterval = getChartCurrentInterval(chart);
   const res = new Map();
   for (let i = 0; i < neededIntervals; i++) {
     res.set(
       currentInterval.end, 
-      {
-        start: currentInterval.start,
-        end: currentInterval.end,
-        price: "0",
-        volume: "0",
-      }
+      getCachedIntervalOrEmpty(marketId, chart, currentInterval.start, currentInterval.end),
     )
 
     currentInterval = decrementTimeInterval(currentInterval);
@@ -136,11 +171,16 @@ function buildEmptyIntervals(chart: string): Map<number, ChartPoint> {
   return res;
 }
 
+function cacheInterval(marketId: string, chart: string, interval: ChartPoint): void {
+  const intervalCacheKey = getIntervalCacheKey(marketId, chart, interval.end);
+  setInCache(intervalCacheKey, JSON.stringify(interval), INTERVAL_CACHE_TTL);
+}
+
 export async function getMarketChart(marketId: string, chart: string, quoteExponent: number, baseExponent: number): Promise<ChartPoint[]> {
-  const limit = 250;
+  const limit = 500;
   let offset = 0;
   let marketHistory = await getMarketChartHistory(marketId, false, limit, offset);
-  let intervalsToFill = buildEmptyIntervals(chart);
+  let intervalsToFill = getCachedIntervalsIfExist(marketId, chart);
   if (marketHistory.list.length === 0) {
     return Array.from(intervalsToFill.values()).sort((a, b) => a.start - b.start);
   }
@@ -151,6 +191,12 @@ export async function getMarketChart(marketId: string, chart: string, quoteExpon
 
   //fill empty intervals with the next price found
   for (let i = 0; i < result.length; i++) {
+    //if it is not current interval cache it
+    if (!result[i].isCurrent) {
+      result[i].isFilled = true;
+      cacheInterval(marketId, chart, result[i]);
+    }
+
     //save first non empty interval
     //an empty interval is one that has price === 0 and volume === 0
     const firstNonEmptyInerval = result[i];
@@ -171,6 +217,7 @@ export async function getMarketChart(marketId: string, chart: string, quoteExpon
       //we don't touch "volume" because we want to know this interval is filled manually just to make the chart look nicer
       nextIterval.price = firstNonEmptyInerval.price;
       result[j] = nextIterval;
+      cacheInterval(marketId, chart, result[j]);
     }
   }
 
@@ -190,6 +237,10 @@ async function fillChartIntervals(
   let histBookmark = 0;
   let listLen = marketHistory.list.length;
   for (const [key, interval] of intervalsToFill) {
+    if (!interval.isCurrent && interval.isFilled) {
+      continue;
+    }
+
     if (histBookmark >= listLen) {
       //we reached the end of the history orders and we need to fetch the next page in order to continue populate the remaining intervals
       if (listLen < limit) {
