@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, MarketPrices, formatUsdAmount, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getMarketUsdPrices, getTokenDisplayDenom } from "@/services";
 import BigNumber from "bignumber.js";
 import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice } from "@/utils";
@@ -162,6 +162,7 @@ export default function MarketPair() {
   const [myOrders, setMyOrders] = useState<OrderReferenceSDKType[]>();
 
   const [orderFormData, setOrderFormData] = useState<OrderFormData>(EmptyOrderFormData);
+  const chartTypeRef = useRef(chartType);
 
   const router = useRouter();
   const { query } = router;
@@ -176,14 +177,13 @@ export default function MarketPair() {
   }
 
   const loadChart = async () => {
-    console.log("chartType", chartType);
     if (tokens === undefined) {
       return;
     }
 
     const chart = await getMarketChart(
       marketIdFromDenoms(tokens.baseToken.metadata.base, tokens.quoteToken.metadata.base),
-      chartType,
+      chartTypeRef.current,
       tokens.quoteTokenDisplayDenom.exponent,
       tokens.baseTokenDisplayDenom.exponent
     );
@@ -270,6 +270,7 @@ export default function MarketPair() {
   }, []);
 
   useEffect(() => {
+    chartTypeRef.current = chartType;
     setChartData(undefined);
     loadChart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
