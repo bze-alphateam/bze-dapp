@@ -18,6 +18,10 @@ export function getOsmosisRpcUrl(): string {
   return process.env.NEXT_PUBLIC_RPC_URL_OSMOSIS !== undefined ? process.env.NEXT_PUBLIC_RPC_URL_OSMOSIS : '';
 }
 
+export function getNobleRpcUrl(): string {
+  return process.env.NEXT_PUBLIC_RPC_URL_NOBLE !== undefined ? process.env.NEXT_PUBLIC_RPC_URL_NOBLE : '';
+}
+
 export async function getRestClient() {
   return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
 }
@@ -30,6 +34,8 @@ export async function getSigningClient(offlineSigner: any, chainName?: string): 
       return getSigningBzeClient({rpcEndpoint: getArchwayRpcURL(), signer: offlineSigner});
     case 'osmosis':
       return getSigningBzeClient({rpcEndpoint: getOsmosisRpcUrl(), signer: offlineSigner});
+    case 'noble':
+      return getSigningBzeClient({rpcEndpoint: getNobleRpcUrl(), signer: offlineSigner});
     default:
       return getSigningBzeClient({rpcEndpoint: getRpcURL(), signer: offlineSigner});
   }
