@@ -394,7 +394,7 @@ export default function MarketPair() {
                 new BigNumber(getTotalVolume).gt(0) &&
                 marketPrices.denom !== tokens.baseTokenDisplayDenom.denom &&
                 <Text color={'$primary200'} fontSize={'$xs'} fontWeight={'$semibold'}>
-                  ({formatUsdAmount(marketPrices.base.multipliedBy(uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)))} {marketPrices.denom})
+                  ({formatUsdAmount(marketPrices.base.multipliedBy(uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)))} {marketPrices.denom.toUpperCase()})
                 </Text>
               }
             </Box>
