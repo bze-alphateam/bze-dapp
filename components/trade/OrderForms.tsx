@@ -337,7 +337,7 @@ export function OrderForms(props: OrderFormsProps) {
       setBasebalance("0");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props, address])
+  }, [props.data, props.tokens, address])
 
   useEffect(() => {
     const onRouteChange = () => {
