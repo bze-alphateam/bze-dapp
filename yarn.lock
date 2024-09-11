@@ -60,10 +60,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@bze/bzejs@^0.7.12":
-  version "0.7.12"
-  resolved "https://registry.yarnpkg.com/@bze/bzejs/-/bzejs-0.7.12.tgz#f0dd2edfd65297c294236cea67c6769a0b612b11"
-  integrity sha512-8obg83msIW7raEZO7KDwlCH/pgRwUK9nfiOQMfC+t3K2rUJ5ycKPjMlLa45zgu+B6AjAC6EJSelSaR9nXZNA0A==
+"@bze/bzejs@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@bze/bzejs/-/bzejs-0.7.2.tgz#88de3d680a4ef7baf2b435972ede507d3e84e875"
+  integrity sha512-bxiin9GobtdHhh7KUqiPqpi1TQBrWHOOu8/+dg+lTjezMfkcgN5PZzWaXpGs0YdgVKuCn+0EkBNWufu57UxFpQ==
   dependencies:
     "@babel/runtime" "^7.19.4"
     "@cosmjs/amino" "0.32.2"
