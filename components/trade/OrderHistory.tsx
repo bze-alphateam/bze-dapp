@@ -63,7 +63,7 @@ function OrderHistoryListRow(props: OrderHistoryListRowProps) {
 export function OrderHistoryList(props: OrderHistoryProps) {
 
   return (
-    <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
+    <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'300px'} overflowY={'scroll'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
         <Box width={'33%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
           <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display.toUpperCase()})</Text>
