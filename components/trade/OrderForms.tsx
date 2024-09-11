@@ -1,5 +1,19 @@
 import { useToast, useTx } from "@/hooks";
-import { amountToUAmount, calculateAmountFromPrice, calculatePricePerUnit, calculateTotalAmount, getChainName, getMinAmount, getMinPrice, marketIdFromDenoms, prettyAmount, priceToUPrice, sanitizeNumberInput, uAmountToAmount } from "@/utils";
+import {
+    amountToUAmount,
+    calculateAmountFromPrice,
+    calculatePricePerUnit,
+    calculateTotalAmount,
+    getChainName,
+    getMinAmount,
+    getMinPrice,
+    marketIdFromDenoms,
+    prettyAmount, priceToBigNumberUPrice,
+    priceToUPrice,
+    sanitizeNumberInput,
+    uAmountToAmount,
+    uPriceToBigNumberPrice
+} from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
 import { useEffect, useState } from "react";
@@ -219,8 +233,8 @@ export function OrderForms(props: OrderFormsProps) {
     }
 
     const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
-    const uPrice = priceToUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
-    const minAmount = getMinAmount(uPrice, props.tokens.baseTokenDisplayDenom.exponent);
+    const uPrice = priceToBigNumberUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
+    const minAmount = getMinAmount(uPrice.toString(), props.tokens.baseTokenDisplayDenom.exponent);
     if (amountNum.lt(minAmount)) {
       toast({
         type: 'error',
@@ -230,8 +244,34 @@ export function OrderForms(props: OrderFormsProps) {
       return;
     }
 
+    if (isBuy) {
+      if (props.activeOrders.sellOrders.length > 0) {
+        const maxPrice = props.activeOrders.sellOrders[props.activeOrders.sellOrders.length - 1].price;
+        if (uPrice.gt(maxPrice)) {
+          toast({
+            type: 'error',
+            title: `Price is too high. You can buy at a lower price`
+          });
+
+          return;
+        }
+      }
+    } else {
+      if (props.activeOrders.buyOrders.length > 0) {
+        const minPrice = props.activeOrders.buyOrders[0].price;
+        if (uPrice.lt(minPrice)) {
+          toast({
+            type: 'error',
+            title: `Price is too low. You can sell at a higher price`
+          });
+
+          return;
+        }
+      }
+    }
+
     setIsPendingSubmit(true);
-    const msgs = getOrderTxMessages(props, address, isBuy, uAmount, uPrice);
+    const msgs = getOrderTxMessages(props, address, isBuy, uAmount, uPrice.toString());
 
     await tx(msgs, {
       toast: {
@@ -297,7 +337,7 @@ export function OrderForms(props: OrderFormsProps) {
       setBasebalance("0");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props, address])
+  }, [props.data, props.tokens, address])
 
   useEffect(() => {
     const onRouteChange = () => {

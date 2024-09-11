@@ -4,7 +4,7 @@ import { AggregatedOrderSDKType, HistoryOrderSDKType } from "@bze/bzejs/types/co
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import { Box, Divider, Icon, Stack, Text } from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
-import { useEffect, useState } from "react";
+import {useCallback, useEffect, useState} from "react";
 import { OrderFormData } from "./OrderForms";
 
 export interface MarketPairTokens {
@@ -115,6 +115,39 @@ export interface ActiveOrdersProps {
 }
 
 export function ActiveOrdersList(props: ActiveOrdersProps) {
+
+  const orderToFormData = (order: AggregatedOrderSDKType): OrderFormData => {
+    const p = uPriceToPrice(new BigNumber(order.price), props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
+    const a = uAmountToAmount(order.amount, props.tokens.baseTokenDisplayDenom.exponent);
+    const priceNum = new BigNumber(p);
+    const amountNum = new BigNumber(a);
+
+    return {
+      price: p,
+      amount: a,
+      total: priceNum.multipliedBy(amountNum).decimalPlaces(props.tokens.quoteTokenDisplayDenom.exponent).toString()
+    };
+  }
+
+  const buyOrderClickCallback = useCallback(() => {
+    if (props.orders.buyOrders.length === 0) {
+      return;
+    }
+
+    props.onOrderClick(orderToFormData(props.orders.buyOrders[0]));
+
+  }, [props.orders.buyOrders])
+
+  const sellOrderClickCallback = useCallback(() => {
+    const count = props.orders.sellOrders.length;
+    if (count === 0) {
+      return;
+    }
+
+    props.onOrderClick(orderToFormData(props.orders.sellOrders[count-1]));
+  }, [props.orders.sellOrders])
+
+
   return (
     <Box display={'flex'} flex={1} flexDirection={'column'}>
       <Stack space={'$6'} attributes={{ marginBottom: "$4", flex: 1 }} justify={'center'}>
@@ -139,7 +172,7 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
                     quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                     order={order}
                     orderType="sell"
-                    onClick={props.onOrderClick}
+                    onClick={sellOrderClickCallback}
                     key={`${order.price}${order.amount}`}
                   />
                 ))
@@ -161,7 +194,7 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
                   quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                   order={order}
                   orderType="buy"
-                  onClick={props.onOrderClick}
+                  onClick={buyOrderClickCallback}
                   key={`${order.price}${order.amount}`}
                 />
               ))

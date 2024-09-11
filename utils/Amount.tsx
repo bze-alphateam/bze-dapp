@@ -86,7 +86,11 @@ export const calculateAmountFromPrice = (price: string, totalPrice: string, deci
 }
 
 export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
-  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent))).toFixed(MAX_PRICE_DECIMALS).toString()
+  return priceToBigNumberUPrice(price, quoteExponent, baseExponent).toFixed(MAX_PRICE_DECIMALS).toString();
+}
+
+export const priceToBigNumberUPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): BigNumber => {
+  return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent)));
 }
 
 export const uPriceToPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): string => {
