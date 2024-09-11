@@ -116,36 +116,14 @@ export interface ActiveOrdersProps {
 
 export function ActiveOrdersList(props: ActiveOrdersProps) {
 
-  const orderToFormData = (order: AggregatedOrderSDKType): OrderFormData => {
-    const p = uPriceToPrice(new BigNumber(order.price), props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
-    const a = uAmountToAmount(order.amount, props.tokens.baseTokenDisplayDenom.exponent);
-    const priceNum = new BigNumber(p);
-    const amountNum = new BigNumber(a);
+  const buyOrderClickCallback = useCallback((data: OrderFormData) => {
+    props.onOrderClick(data);
+  }, [])
 
-    return {
-      price: p,
-      amount: a,
-      total: priceNum.multipliedBy(amountNum).decimalPlaces(props.tokens.quoteTokenDisplayDenom.exponent).toString()
-    };
-  }
+  const sellOrderClickCallback = useCallback((data: OrderFormData) => {
 
-  const buyOrderClickCallback = useCallback(() => {
-    if (props.orders.buyOrders.length === 0) {
-      return;
-    }
-
-    props.onOrderClick(orderToFormData(props.orders.buyOrders[0]));
-
-  }, [props.orders.buyOrders])
-
-  const sellOrderClickCallback = useCallback(() => {
-    const count = props.orders.sellOrders.length;
-    if (count === 0) {
-      return;
-    }
-
-    props.onOrderClick(orderToFormData(props.orders.sellOrders[count-1]));
-  }, [props.orders.sellOrders])
+    props.onOrderClick(data);
+  }, [])
 
 
   return (
