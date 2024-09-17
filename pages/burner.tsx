@@ -37,7 +37,7 @@ function BurnCard({burned}: {burned: BurnedCoinsSDKType}) {
   },[burned]);
 
   return (
-    <DefaultBorderedBox p='$6' m='$6' maxWidth={{'desktop': '20vw', mobile: '$auto'}} flex='1'>
+    <DefaultBorderedBox p='$6' m='$6' maxWidth={{'desktop': '20vw', mobile: '$auto'}} minWidth={'15vw'} flex='1'>
       <Box display={'flex'} flexDirection={'column'} alignItems='center'>
         <Box p='$6'>
           <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>{amount}</Text>
