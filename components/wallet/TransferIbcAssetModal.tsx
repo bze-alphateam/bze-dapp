@@ -92,7 +92,6 @@ export default function TransferIbcAssetModal({props}: {props: TransferIbcAssetM
       timeoutTimestamp: transferTimeout,
       token: coin(uAmount, props.token.ibcTrace.counterparty.base_denom)
     });
-    console.log("msg", msg);
     await depositTx([msg], {
       toast: {
         description: 'Successfully sent deposit transaction'

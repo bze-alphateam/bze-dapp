@@ -1,4 +1,4 @@
-import { getRestClient } from "../Client";
+import {getRestClient, getRestURL} from "../Client";
 import { BURNER } from "./Burner";
 
 const MODULE_ADDRESS_KEY = 'auth:module:address:';
@@ -33,12 +33,17 @@ export async function getModuleAddress(module: string): Promise<string> {
         }
     }
 
-    const client = await getRestClient();
-    let response = await client.cosmos.auth.v1beta1.moduleAccounts({module: module});
+    const url = getRestURL();
+    let response = await fetch(`${url}/cosmos/auth/v1beta1/module_accounts/${module}`)
+    if (!response.ok) {
+        return "testbz18hsqalgwlzqavrrkfnxmrjmygwyjy8se37kq3x";
+    }
+
+    let parsed = await response.json()
     {/* @ts-ignore */}
-    let addy = response.accounts[0].base_account?.address;
+    let addy = parsed.account.base_account?.address;
     if (addy === undefined) {
-      return '';
+        return "testbz18hsqalgwlzqavrrkfnxmrjmygwyjy8se37kq3x";
     }
     
     let cacheData = {

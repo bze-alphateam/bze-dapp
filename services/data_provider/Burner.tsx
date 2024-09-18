@@ -4,6 +4,8 @@ import { getActiveProposals } from "./Proposal";
 import { getModuleAddress } from "./Account";
 import { getAddressBalances } from "./Balances";
 import { getCurrentuDenom } from "@/utils";
+import {RaffleSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
+import {getFromCache, setInCache} from "@/services/data_provider/cache";
 
 export interface NextBurning {
   amount: string,
@@ -25,9 +27,14 @@ const FAILOVER_DATA = {
 }
 
 export const BURNER = 'burner';
+export const RAFFLE = 'burner_raffle';
 const BURNED_KEY = 'burner:all_burned_coins';
+const RAFFLES_KEY = 'burner:raffles';
+const EPOCH_KEY = 'burner:epoch';
+const BURNER_EPOCH = 'hour';
 const PROPOSAL_TYPE_BURNING = '/bze.burner.v1.BurnCoinsProposal';
-const LOCAL_CACHE_TTL = 1000 * 60 * 60 * 4; //4 hours
+const LOCAL_CACHE_TTL = 60 * 60 * 4; //4 hours
+const RAFFLE_CACHE_TTL = 60; // 1 minute
 
 let cacheExpireAt: number = 0;
 
@@ -129,5 +136,63 @@ export async function getNextBurning(): Promise<NextBurning|undefined> {
     amount: bzeBalance[0].amount,
     denom: bzeBalance[0].denom,
     time: filtered[0].voting_end_time,
+  }
+}
+
+export async function getRaffles(): Promise<RaffleSDKType[]> {
+  try {
+    const cacheKey = RAFFLES_KEY;
+    let localData = getFromCache(cacheKey);
+    if (null !== localData) {
+        let parsed = JSON.parse(localData);
+        if (parsed) {
+          return parsed.list;
+        }
+    }
+
+    const client = await getRestClient();
+    const response = await client.bze.burner.v1.raffles();
+
+    setInCache(cacheKey, JSON.stringify(response), RAFFLE_CACHE_TTL)
+
+    return response.list;
+  } catch(e) {
+    console.error(e);
+
+    return [];
+  }
+}
+
+export async function removeRafflessCache() {
+  localStorage.removeItem(RAFFLES_KEY);
+}
+
+
+export async function getRaffleModuleAddress(): Promise<string> {
+  return getModuleAddress(RAFFLE);
+}
+
+export async function getBurnerCurrentEpoch(): Promise<number> {
+  try {
+    const cacheKey = EPOCH_KEY;
+    let localData = getFromCache(cacheKey);
+    if (null !== localData) {
+        let parsed = parseInt(localData);
+        if (parsed) {
+          return parsed;
+        }
+    }
+
+    const client = await getRestClient();
+    const response = await client.bze.epochs.v1.currentEpoch({identifier: BURNER_EPOCH});
+
+    setInCache(cacheKey, `${response.current_epoch}`, RAFFLE_CACHE_TTL)
+
+    //@ts-ignore
+    return response.current_epoch;
+  } catch(e) {
+    console.error(e);
+
+    return 0;
   }
 }
