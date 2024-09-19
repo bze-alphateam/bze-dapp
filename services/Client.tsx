@@ -2,7 +2,7 @@
 import { getChainName } from '@/utils';
 import { bze, getSigningBzeClient } from '@bze/bzejs';
 
-function getRestURL(): string {
+export function getRestURL(): string {
   return process.env.NEXT_PUBLIC_REST_URL !== undefined ? process.env.NEXT_PUBLIC_REST_URL : '';
 }
 

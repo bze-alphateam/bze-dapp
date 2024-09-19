@@ -1,10 +1,14 @@
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import { decodeBase64, snakeToCamel } from "./Functions";
 import { bze } from '@bze/bzejs';
+import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/types/codegen/beezee/burner/events";
 
 const { fromPartial: OrderCanceledEventFromPartial } = bze.tradebin.v1.OrderCanceledEvent;
 const { fromPartial: OrderSavedEventFromPartial } = bze.tradebin.v1.OrderSavedEvent;
 const { fromPartial: OrderExecutedEventFromPartial } = bze.tradebin.v1.OrderExecutedEvent;
+
+const { fromPartial: RaffleWinnerEventFromPartial } = bze.burner.v1.RaffleWinnerEvent;
+const { fromPartial: RaffleLostEventFromPartial } = bze.burner.v1.RaffleLostEvent;
 
 interface Attribute {
   key: string;
@@ -45,4 +49,16 @@ export const parseOrderExecutedEvent = (event: TendermintEvent): OrderExecutedEv
   let attributes = transformAttributes(event.attributes);
 
   return OrderExecutedEventFromPartial(attributes);
+}
+
+export const parseRaffleLostEvent = (event: TendermintEvent): RaffleLostEvent => {
+  let attributes = transformAttributes(event.attributes);
+
+  return RaffleLostEventFromPartial(attributes);
+}
+
+export const parseRaffleWinnerEvent = (event: TendermintEvent): RaffleWinnerEvent => {
+  let attributes = transformAttributes(event.attributes);
+
+  return RaffleWinnerEventFromPartial(attributes);
 }
