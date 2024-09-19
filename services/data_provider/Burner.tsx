@@ -4,7 +4,7 @@ import { getActiveProposals } from "./Proposal";
 import { getModuleAddress } from "./Account";
 import { getAddressBalances } from "./Balances";
 import { getCurrentuDenom } from "@/utils";
-import {RaffleSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
+import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
 
 export interface NextBurning {
@@ -194,5 +194,17 @@ export async function getBurnerCurrentEpoch(): Promise<number> {
     console.error(e);
 
     return 0;
+  }
+}
+
+export async function getRaffleWinners(denom: string): Promise<RaffleWinnerSDKType[]> {
+  try {
+    const client = await getRestClient();
+    const response = await client.bze.burner.v1.raffleWinners({denom: denom});
+    return response.list;
+  } catch(e) {
+    console.error(e);
+
+    return [];
   }
 }

@@ -1,4 +1,4 @@
-import { Divider, Box, Text, Button, TextField, Callout } from "@interchain-ui/react";
+import {Divider, Box, Text, Button, TextField, Callout, BasicModal} from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState, memo } from "react";
 import { BurnedCoinsSDKType } from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
@@ -8,24 +8,103 @@ import {
     getBlockTimeByHeight, getBurnerCurrentEpoch,
     getModuleAddress,
     getNextBurning, getRaffleModuleAddress,
-    getRaffles as getBlockchainRaffles, getRestURL,
+    getRaffles as getBlockchainRaffles, getRaffleWinners, getRestURL,
     getTokenDisplayDenom, removeRafflessCache
 } from "@/services";
-import { amountToUAmount, getBzeDenomExponent, getChainName, getCurrentuDenom, hoursUntil, minutesUntil, prettyAmount, prettyDate, prettyDateTime, sanitizeNumberInput, toPrettyDenom, uAmountToAmount } from "@/utils";
+import {
+    amountToUAmount,
+    getBzeDenomExponent,
+    getChainName,
+    getCurrentuDenom,
+    hoursUntil,
+    minutesUntil,
+    prettyAmount,
+    prettyDate,
+    prettyDateTime,
+    sanitizeNumberInput,
+    stringTruncateFromCenter,
+    toPrettyDenom,
+    uAmountToAmount
+} from "@/utils";
 import Long from "long";
 import { parseCoins } from "@cosmjs/stargate";
 import { useChain } from "@cosmos-kit/react";
-import { useToast, useTx } from "@/hooks";
+import {useDisclosure, UseDisclosureReturn, useToast, useTx} from "@/hooks";
 import { bze } from '@bze/bzejs';
 import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
-import {RaffleSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
+import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import { DenomUnitSDKType } from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import BigNumber from "bignumber.js";
 import { useRouter } from "next/router";
-import AddressBalanceListener from "@/services/listener/BalanceListener";
 import RaffleListener from "@/services/listener/RaffleListener";
 import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/types/codegen/beezee/burner/events";
+
+interface WinnersModalProps {
+  control: UseDisclosureReturn;
+  raffle?: RaffleBoxRaffle;
+}
+
+function WinnersModal({props}: {props: WinnersModalProps}) {
+  const [winners, setWinners] = useState<RaffleWinnerSDKType[]>([]);
+
+  const { address } = useChain(getChainName());
+
+  useEffect(() => {
+    const fetchWinners = async () => {
+      if (!props.raffle?.sdk?.denom) {
+        return;
+      }
+
+      const w = await getRaffleWinners(props.raffle.sdk.denom);
+      setWinners(w);
+    }
+
+    fetchWinners();
+  }, [props.raffle]);
+
+  return (
+    <BasicModal
+      onClose={props.control.onClose}
+      renderTrigger={function Va(){}}
+      title={`${props.raffle?.displayDenom.denom.toUpperCase()} Raffle Winners`}
+      isOpen={props.control.isOpen}
+    >
+      <Box display='flex' flexDirection='column' p='$6'>
+        {
+          winners.length >= 100 &&
+          <Box mb='$6'>
+            <Text color={'$orange200'}>Showing only last 100 winners</Text>
+          </Box>
+        }
+        <Box overflowY={'scroll'} maxHeight={"30vw"} width={'$full'}>
+          {winners.length === 0 ?
+            <Text>No winners yet.</Text>
+            :
+            winners.map((winner: RaffleWinnerSDKType, index: number) => {
+            const isMe = winner.winner === address;
+            let textColor = '$primary200';
+            if (isMe) {
+              textColor =  '$green200';
+            }
+
+            return (
+              <Box key={index + winner.winner} as="div" p='$2' display={'flex'} flexDirection={'row'} alignItems={'center'} flex={1}>
+                <Box display={'flex'} flex={1} justifyContent={'center'}>
+                  <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'}>
+                    <Text fontSize={'$lg'} color={textColor} fontWeight={'$semibold'}>{stringTruncateFromCenter(winner.winner, 12)}{isMe ? ` (You)` : undefined}</Text>
+                    <Box width={'55px'}></Box>
+                    <Text fontSize={'$lg'} color={textColor} fontWeight={'$semibold'}>{uAmountToAmount(winner.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}</Text>
+                  </Box>
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
+      </Box>
+    </BasicModal>
+  )
+}
 
 function BurnCard({burned}: {burned: BurnedCoinsSDKType}) {
   const [amount, setAmount] = useState<string>('Loading...');
@@ -76,11 +155,11 @@ function BurnBox({ children, title }: { children: React.ReactNode, title: string
         <Text as="h3" textAlign='center' fontSize='$md'>{title}</Text>
       </Box>
       <Divider />
-      <Box 
-        display={'flex'} 
-        flex={1} 
-        flexWrap='wrap' 
-        flexGrow={1} 
+      <Box
+        display={'flex'}
+        flex={1}
+        flexWrap='wrap'
+        flexGrow={1}
         justifyContent='center'
         flexDirection={{'desktop': 'row', 'mobile': 'column'}}
       >
@@ -102,7 +181,7 @@ function BurnHistory() {
 
       return parsedB - parsedA;
     });
-    
+
     setBurnings(sorted);
     setLoading(false);
   }
@@ -120,7 +199,7 @@ function BurnHistory() {
           <BurnCard key={burn.height} burned={burn}/>
         ))
       }
-    </BurnBox>    
+    </BurnBox>
   );
 }
 
@@ -228,7 +307,7 @@ function Contribute({onContributeSuccess}: ContributeProps) {
       }
       <Box p='$6' flexDirection={'row'} display={'flex'} flex={1} justifyContent={'space-evenly'} alignItems={'center'} width={'100%'}>
         {
-          showForm ? 
+          showForm ?
           <>
             <TextField
                 id="fund-burner-amount"
@@ -247,7 +326,7 @@ function Contribute({onContributeSuccess}: ContributeProps) {
           </> :
           <Button size="sm" intent="primary" onClick={() => {setShowForm(true)}}>Fund burner</Button>
         }
-        
+
       </Box>
     </Box>
   );
@@ -263,7 +342,7 @@ function NextBurning() {
     if (next === undefined) {
       return;
     }
-    
+
     setAmount(`${prettyAmount(uAmountToAmount(next.amount, 6))} ${toPrettyDenom(next.denom)} 🔥`);
     if (next.time === undefined) {
       return;
@@ -305,7 +384,7 @@ function NextBurning() {
       <DefaultBorderedBox p='$6' m='$6' flex='1'>
         <Contribute onContributeSuccess={onContributeSuccess}/>
       </DefaultBorderedBox>
-    </BurnBox> 
+    </BurnBox>
   );
 }
 
@@ -369,6 +448,7 @@ interface RaffleBoxRaffle {
   balance: CoinSDKType;
   currentEpoch: number;
   withdrawResult?: WithdrawResult;
+  onWinnersClick: (raffle: RaffleBoxRaffle) => {};
 }
 
 
@@ -413,7 +493,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
 
     const prize = balNum.multipliedBy(raffle.sdk.ratio);
 
-    return `${uAmountToAmount(prize.toString(), raffle.displayDenom.exponent)} ${raffle.sdk.denom.toUpperCase()}`;
+    return `${uAmountToAmount(prize.toString(), raffle.displayDenom.exponent)} ${raffle.displayDenom.denom.toUpperCase()}`;
   }
 
   const submitTicket = async (raffle: RaffleBoxRaffle) => {
@@ -469,10 +549,10 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
     <DefaultBorderedBox p='$2' m='$2' flex='1' key={props.raffle.sdk.denom}>
       <Box flex={1} display={'flex'} flexDirection={{'mobile': 'column', desktop: 'row'}} alignItems={{mobile: 'center', desktop: 'center'}} justifyContent={{mobile: undefined, desktop: 'space-between'}}>
         <Box p='$6'>
-          <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>{props.raffle.sdk.denom.toUpperCase()} Raffle</Text>
+          <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary300'>{props.raffle.displayDenom.denom.toUpperCase()} Raffle</Text>
         </Box>
         <Box p='$6'>
-          <Text fontSize={'$lg'} color='$primary300'> Ticket price: {ticketPrice} {props.raffle.sdk.denom.toUpperCase()}</Text>
+          <Text fontSize={'$lg'} color='$primary300'> Ticket price: {ticketPrice} {props.raffle.displayDenom.denom.toUpperCase()}</Text>
         </Box>
         <Box p='$6'>
           <Text fontSize={'$lg'} color='$primary300'> Chances: 1 out of {prettyAmount(Long.fromNumber(1_000_000).div(props.raffle.sdk.chances).toNumber())} </Text>
@@ -483,12 +563,13 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
         <Box>
           <Box minWidth={{mobile: '$auto', desktop: '500px'}} flex={1} display={'flex'} flexDirection={'column'} justifyContent={'space-between'}>
             <RaffleDescriptionTextBox text={'Winners'} value={props.raffle.sdk.winners.toString()} />
-            <RaffleDescriptionTextBox text={'Total won'} value={`${uAmountToAmount(props.raffle.sdk.total_won, props.raffle.displayDenom.exponent)} ${props.raffle.sdk.denom.toUpperCase()}`} />
+            <RaffleDescriptionTextBox text={'Total won'} value={`${uAmountToAmount(props.raffle.sdk.total_won, props.raffle.displayDenom.exponent)} ${props.raffle.displayDenom.denom.toUpperCase()}`} />
             <RaffleDescriptionTextBox text={'Remaining'} value={remaining ?? 'Finished'} />
           </Box>
           <Box flex={1} display={'flex'} flexDirection={{'mobile': 'column', desktop: 'row'}} justifyContent={'space-evenly'}>
             <Box p='$6'>
-              <Button size="sm" intent="secondary" onClick={()=> window.open(`${getRestURL()}/bze/burner/v1/raffle_winners?denom=${props.raffle.sdk.denom}`, "_blank")}>View winners</Button>
+              {/*<Button size="sm" intent="secondary" onClick={()=> window.open(`${getRestURL()}/bze/burner/v1/raffle_winners?denom=${props.raffle.sdk.denom}`, "_blank")}>View winners</Button>*/}
+              <Button size="sm" intent="secondary" onClick={()=> props.raffle.onWinnersClick(props.raffle)}>View winners</Button>
             </Box>
           </Box>
         </Box>
@@ -497,7 +578,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
             <Text fontSize={'$lg'} fontWeight={'$bold'}  color='$primary300'>Current Prize: ~{calculateCurrentPrize(props.raffle)}</Text>
           </Box>
           <Box p='$6'>
-            <Text fontSize={'$sm'} color='$primary200' fontWeight={'$hairline'}>You will pay {ticketPrice} {props.raffle.sdk.denom.toUpperCase()} to try your luck.</Text>
+            <Text fontSize={'$sm'} color='$primary200' fontWeight={'$hairline'}>You will pay {ticketPrice} {props.raffle.displayDenom.denom.toUpperCase()} to try your luck.</Text>
           </Box>
           <Box p='$6'>
             <Button size="sm" intent="primary" disabled={(remaining === undefined) || pending} isLoading={pending || waitingResult} onClick={() => submitTicket(props.raffle)}>Try your luck</Button>
@@ -506,7 +587,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
             {pending && !waitingResult && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>Submitting transaction...</Text>}
             {!pending && waitingResult && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>Waiting for result... ({waitingSeconds}s)</Text>}
             {!pending && !waitingResult && props.raffle.withdrawResult && !props.raffle.withdrawResult.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$red200'>Unlucky! 😔 Better luck next time!</Text>}
-            {!pending && !waitingResult && props.raffle.withdrawResult?.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>You won {uAmountToAmount(props.raffle.withdrawResult.amount, props.raffle.displayDenom.exponent)} {props.raffle.sdk.denom.toUpperCase()}! 🥳</Text>}
+            {!pending && !waitingResult && props.raffle.withdrawResult?.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>You won {uAmountToAmount(props.raffle.withdrawResult.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}! 🥳</Text>}
           </Box>
         </DefaultBorderedBox>
       </Box>
@@ -517,9 +598,16 @@ RafflesBoxItem.displayName = 'RafflesBoxItem';
 
 function RafflesBox() {
   const [raffles, setRaffles] = useState<RaffleBoxRaffle[]>([]);
+  const [modalRaffle, setModaLRaffle] = useState<RaffleBoxRaffle>();
 
   const router = useRouter();
   const { address } = useChain(getChainName());
+  const winnerDisclosure = useDisclosure();
+
+  const onRaffleWinnersClick = async (raffle: RaffleBoxRaffle) => {
+     setModaLRaffle(raffle);
+     winnerDisclosure.onOpen();
+  }
 
   const getRaffles = async (): Promise<RaffleBoxRaffle[]> => {
     const addr = await getRaffleModuleAddress();
@@ -545,7 +633,15 @@ function RafflesBox() {
         continue;
       }
 
-      boxRaffles.push({sdk: data[i], displayDenom: display, balance: pot, currentEpoch: epoch})
+      const raff = {
+        sdk: data[i],
+        displayDenom: display,
+        balance: pot,
+        currentEpoch: epoch,
+        onWinnersClick: onRaffleWinnersClick
+      };
+
+      boxRaffles.push(raff)
     }
 
     return boxRaffles;
@@ -652,6 +748,7 @@ function RafflesBox() {
 
   return (
     <BurnBox title='Raffles'>
+      <WinnersModal props={{control: winnerDisclosure, raffle: modalRaffle }}/>
       <Box p='$2' m='$6' flex='1'>
         <Box display={'flex'} flexDirection={'column'} alignItems='stretch'>
           {raffles.length === 0 ?
