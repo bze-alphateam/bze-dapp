@@ -94,6 +94,7 @@ function WinnersModal({props}: {props: WinnersModalProps}) {
                   <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'}>
                     <Text fontSize={'$lg'} color={textColor} fontWeight={'$semibold'}>{stringTruncateFromCenter(winner.winner, 12)}{isMe ? ` (You)` : undefined}</Text>
                     <Box width={'55px'}></Box>
+                    {/*@ts-ignore*/}
                     <Text fontSize={'$lg'} color={textColor} fontWeight={'$semibold'}>{uAmountToAmount(winner.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}</Text>
                   </Box>
                 </Box>
