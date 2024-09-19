@@ -175,12 +175,15 @@ function BurnHistory() {
 
   const fetchBurnings = async () => {
     const list = await getAllBurnedCoins();
-    const sorted = list.burnedCoins.sort((a, b) => {
+    let sorted = list.burnedCoins.sort((a, b) => {
       let parsedA = parseInt(a.height);
       let parsedB = parseInt(b.height);
 
       return parsedB - parsedA;
     });
+
+    //exclude burnings not related to BZE
+    sorted = sorted.filter((b) => b.burned.includes(getCurrentuDenom()))
 
     setBurnings(sorted);
     setLoading(false);
