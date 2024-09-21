@@ -3,6 +3,7 @@ import { Container, Divider, Box } from "@interchain-ui/react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { Sidebar, Topbar } from "./Sidebar";
+import { GoogleTagManager } from '@next/third-parties/google'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="description" content="BeeZee blockchain decentralized application" />
         <link rel="icon" href="/logo_320px.png" />
       </Head>
+      <GoogleTagManager gtmId="G-7DRJTECDTV" />
       <Header />
       <Divider mb="$6" display={{desktop: 'flex', mobile: 'none'}}/>
       <Topbar />
