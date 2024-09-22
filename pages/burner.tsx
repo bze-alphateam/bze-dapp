@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState, memo } from "react";
 import { BurnedCoinsSDKType } from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
 import {
-    BURNER,
+    BURNER, checkAddressWonRaffle,
     getAllBurnedCoins, getAllSupplyTokens,
     getBlockTimeByHeight, getBurnerCurrentEpoch,
     getModuleAddress,
@@ -12,7 +12,8 @@ import {
     getTokenDisplayDenom, removeRafflessCache
 } from "@/services";
 import {
-    amountToUAmount,
+    addDebounce,
+    amountToUAmount, cancelDebounce,
     getBzeDenomExponent,
     getChainName,
     getCurrentuDenom,
@@ -455,13 +456,14 @@ interface RaffleBoxRaffle {
   onWinnersClick: (raffle: RaffleBoxRaffle) => {};
 }
 
-
-const waitingDefault = 15;
+const WAITING_DEFAULT = 15;
+const ON_SUCCESS_DEBOUNCE = 'onSuccessTimeout';
 
 const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
   const [pending, setPending] = useState(false);
   const [waitingResult, setWaitingResult] = useState(false);
-  const [waitingSeconds, setWaitingSeconds] = useState(waitingDefault);
+  const [waitingSeconds, setWaitingSeconds] = useState(WAITING_DEFAULT);
+  const [withdrawResult, setWithdrawResult] = useState<WithdrawResult|undefined>();
 
   const { address } = useChain(getChainName());
   const { toast } = useToast();
@@ -500,6 +502,22 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
     return `${uAmountToAmount(prize.toString(), raffle.displayDenom.exponent)} ${raffle.displayDenom.denom.toUpperCase()}`;
   }
 
+  const addWithdrawResult = async (height?: number|undefined, result?: WithdrawResult|undefined) => {
+    setPending(false);
+    setWaitingResult(false);
+    setWaitingSeconds(WAITING_DEFAULT);
+    cancelDebounce(ON_SUCCESS_DEBOUNCE);
+    if (result) {
+      setWithdrawResult(result);
+      return;
+    }
+
+    if (height && address) {
+      const raffleResult = await checkAddressWonRaffle(address, props.raffle.sdk.denom, height);
+      setWithdrawResult(raffleResult);
+    }
+  }
+
   const submitTicket = async (raffle: RaffleBoxRaffle) => {
     if (!address) {
       toast({
@@ -510,7 +528,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
     }
 
     setPending(true);
-    let expectedSeconds = waitingDefault;
+    let expectedSeconds = WAITING_DEFAULT;
     let msg = joinRaffle({
       creator: address,
       denom: raffle.sdk.denom
@@ -528,10 +546,14 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
           expectedSeconds--;
           setWaitingSeconds(expectedSeconds);
         }, 1000)
-        setTimeout(() => {
+        addDebounce('raffle-interval-clean', WAITING_DEFAULT * 1000, async () => {
           setWaitingSeconds(0);
           clearInterval(intrvl);
-        }, waitingDefault * 1000)
+        })
+        addDebounce(ON_SUCCESS_DEBOUNCE, WAITING_DEFAULT * 1000, async () => {
+          setWaitingSeconds(0);
+          addWithdrawResult(res.height + 2);
+        })
       },
     });
 
@@ -543,9 +565,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
 
   useEffect(() => {
     if (props.raffle.withdrawResult) {
-      setPending(false);
-      setWaitingResult(false);
-      setWaitingSeconds(waitingDefault);
+      addWithdrawResult(undefined, props.raffle.withdrawResult);
     }
   }, [props.raffle.withdrawResult])
 
@@ -572,7 +592,6 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
           </Box>
           <Box flex={1} display={'flex'} flexDirection={{'mobile': 'column', desktop: 'row'}} justifyContent={'space-evenly'}>
             <Box p='$6'>
-              {/*<Button size="sm" intent="secondary" onClick={()=> window.open(`${getRestURL()}/bze/burner/v1/raffle_winners?denom=${props.raffle.sdk.denom}`, "_blank")}>View winners</Button>*/}
               <Button size="sm" intent="secondary" onClick={()=> props.raffle.onWinnersClick(props.raffle)}>View winners</Button>
             </Box>
           </Box>
@@ -589,9 +608,9 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
           </Box>
           <Box p='$2'>
             {pending && !waitingResult && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>Submitting transaction...</Text>}
-            {!pending && waitingResult && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>Waiting for result... ({waitingSeconds}s)</Text>}
-            {!pending && !waitingResult && props.raffle.withdrawResult && !props.raffle.withdrawResult.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$red200'>Unlucky! 😔 Better luck next time!</Text>}
-            {!pending && !waitingResult && props.raffle.withdrawResult?.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>You won {uAmountToAmount(props.raffle.withdrawResult.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}! 🥳</Text>}
+            {!pending && waitingResult && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>{"Let's see how lucky you are..."} ({waitingSeconds}s)</Text>}
+            {!pending && !waitingResult && withdrawResult && !withdrawResult.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$red200'>Unlucky! 😔 Better luck next time!</Text>}
+            {!pending && !waitingResult && withdrawResult?.hasWon && <Text fontSize={'$sm'} fontWeight={"$light"} color='$green200'>You won {uAmountToAmount(withdrawResult.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}! 🥳</Text>}
           </Box>
         </DefaultBorderedBox>
       </Box>

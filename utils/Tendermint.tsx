@@ -10,7 +10,7 @@ const { fromPartial: OrderExecutedEventFromPartial } = bze.tradebin.v1.OrderExec
 const { fromPartial: RaffleWinnerEventFromPartial } = bze.burner.v1.RaffleWinnerEvent;
 const { fromPartial: RaffleLostEventFromPartial } = bze.burner.v1.RaffleLostEvent;
 
-interface Attribute {
+export interface Attribute {
   key: string;
   value: string;
   index: boolean;

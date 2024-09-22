@@ -3,9 +3,10 @@ import { QueryAllBurnedCoinsResponseSDKType } from "@bze/bzejs/types/codegen/bee
 import { getActiveProposals } from "./Proposal";
 import { getModuleAddress } from "./Account";
 import { getAddressBalances } from "./Balances";
-import { getCurrentuDenom } from "@/utils";
+import {getCurrentuDenom, transformAttributes} from "@/utils";
 import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {getBlockResults} from "@/services";
 
 export interface NextBurning {
   amount: string,
@@ -207,4 +208,59 @@ export async function getRaffleWinners(denom: string): Promise<RaffleWinnerSDKTy
 
     return [];
   }
+}
+
+interface RaffleResult {
+  hasWon: boolean;
+  amount: number;
+  denom: string;
+  address: string;
+}
+
+export async function checkAddressWonRaffle(address: string, denom: string,  height: number): Promise<RaffleResult> {
+  const response = {
+    hasWon: false,
+    amount: 0,
+    denom: denom,
+    address: address,
+  };
+  if (address == "" || height <= 0) {
+    return response;
+  }
+
+  const blockResults = await getBlockResults(height);
+  if (!blockResults) {
+    console.error('got invalid block results from rpc');
+    return response;
+  }
+
+  if (!blockResults.result?.end_block_events) {
+    return response;
+  }
+
+  if (blockResults.result.end_block_events.length === 0) {
+    return response;
+  }
+
+
+  const raffleEvents = blockResults.result.end_block_events.filter(ev => ev.type.includes('Raffle'));
+  if (!raffleEvents || raffleEvents.length === 0) {
+    return response;
+  }
+
+  for (let i = 0; i < raffleEvents.length; i++) {
+    const ev = raffleEvents[i];
+    const converted = transformAttributes(ev.attributes)
+    if ('participant' in converted && ev.type.includes('RaffleLostEvent') && converted['participant'] === address) {
+      return response;
+    }
+
+    if ('winner' in converted && ev.type.includes('RaffleWinnerEvent') && converted['winner'] === address && converted['denom'] === denom) {
+      response.hasWon = true;
+      response.amount = converted['amount'];
+      return response;
+    }
+  }
+
+  return response;
 }

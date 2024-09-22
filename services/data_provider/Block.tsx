@@ -1,6 +1,7 @@
 import { GetBlockByHeightResponseSDKType } from "@bze/bzejs/types/codegen/cosmos/base/tendermint/v1beta1/query";
-import { getRestClient } from "../Client";
+import {getRestClient, getRpcURL} from "../Client";
 import Long from "long";
+import {TendermintEvent} from "@/utils";
 
 type FailoverBlockTimes = {
   [key: string]: string;
@@ -54,4 +55,35 @@ export async function getBlockTimeByHeight(height: Long): Promise<Date|undefined
   }
 
   return details.block?.header?.time
+}
+
+interface BlockResults {
+    result: {
+        end_block_events: TendermintEvent[]
+    }
+}
+
+export async function getBlockResults(height: number): Promise<BlockResults|undefined> {
+    const rpcUrl = getRpcURL().replace("wss", "https");
+    const url = `${rpcUrl}/block_results?height=${height}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.log('not ok response from RPC: ', response);
+            return undefined
+        }
+
+        const blockResults = await response.json();
+        return blockResults;
+    } catch (error) {
+        console.error("Failed to fetch block results:", error);
+        throw error;
+    }
 }
