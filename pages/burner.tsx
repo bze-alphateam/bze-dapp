@@ -536,10 +536,9 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
 
     await tx([msg], {
       toast: {
-        description: 'Successfully joined raffle'
+        description: 'Success. Your luck is decided in 2 blocks.'
       },
       onSuccess: async (res) => {
-        //TODO: fetch the block by res.height + 2 if the websocket doesnt update the flag here
         setWaitingSeconds(expectedSeconds);
         setWaitingResult(true);
         let intrvl = setInterval(() => {
