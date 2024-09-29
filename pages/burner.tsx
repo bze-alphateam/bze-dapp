@@ -3,13 +3,13 @@ import { DefaultBorderedBox, Layout } from "@/components";
 import { useEffect, useState, memo } from "react";
 import { BurnedCoinsSDKType } from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
 import {
-    BURNER, checkAddressWonRaffle,
-    getAllBurnedCoins, getAllSupplyTokens,
+    BURNER, checkAddressWonRaffle, formatUsdAmount,
+    getAllBurnedCoins, getAllSupplyTokens, getAssetPrice,
     getBlockTimeByHeight, getBurnerCurrentEpoch,
     getModuleAddress,
     getNextBurning, getRaffleModuleAddress,
     getRaffles as getBlockchainRaffles, getRaffleWinners, getRestURL,
-    getTokenDisplayDenom, removeRafflessCache
+    getTokenDisplayDenom, removeRafflessCache, Token,
 } from "@/services";
 import {
     addDebounce,
@@ -448,6 +448,7 @@ interface WithdrawResult {
 }
 
 interface RaffleBoxRaffle {
+  assetPrice: BigNumber;
   sdk: RaffleSDKType;
   displayDenom: DenomUnitSDKType;
   balance: CoinSDKType;
@@ -498,8 +499,15 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
     }
 
     const prize = balNum.multipliedBy(raffle.sdk.ratio);
+    const bigAmt = uAmountToAmount(prize.toString(), raffle.displayDenom.exponent);
+    let returnStr = `${bigAmt} ${raffle.displayDenom.denom.toUpperCase()}`;
+    if (raffle.assetPrice.gt(0)) {
+      const usdPrize = raffle.assetPrice.multipliedBy(bigAmt)
 
-    return `${uAmountToAmount(prize.toString(), raffle.displayDenom.exponent)} ${raffle.displayDenom.denom.toUpperCase()}`;
+      return returnStr + `(~${formatUsdAmount(usdPrize)} USD)`
+    }
+
+    return returnStr;
   }
 
   const addWithdrawResult = async (height?: number|undefined, result?: WithdrawResult|undefined) => {
@@ -656,6 +664,7 @@ function RafflesBox() {
       }
 
       const raff = {
+        assetPrice: await getAssetPrice(raffleToken),
         sdk: data[i],
         displayDenom: display,
         balance: pot,
