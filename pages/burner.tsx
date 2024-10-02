@@ -489,7 +489,7 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
       return `1 day`;
     }
 
-    return `${days} days`;
+    return `${Math.floor(days)} days`;
   }
 
   const calculateCurrentPrize = (raffle: RaffleBoxRaffle): string => {
