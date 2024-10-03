@@ -550,6 +550,11 @@ const RafflesBoxItem = memo((props: {raffle: RaffleBoxRaffle}) => {
         setWaitingSeconds(expectedSeconds);
         setWaitingResult(true);
         let intrvl = setInterval(() => {
+          if (expectedSeconds <= 0) {
+            clearInterval(intrvl);
+            return;
+          }
+
           expectedSeconds--;
           setWaitingSeconds(expectedSeconds);
         }, 1000)
