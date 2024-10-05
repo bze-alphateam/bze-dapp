@@ -108,7 +108,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
         />
         <Box>
           <Text fontWeight={'$hairline'} fontSize={'$sm'} color={'$primary100'}>Stake</Text>
-          <Text fontWeight={'$bold'} fontSize={'$lg'} color={'$primary200'}>{props.stakingToken.metadata.display}</Text>
+          <Text fontWeight={'$bold'} fontSize={'$lg'} color={'$primary200'}>{props.stakingToken.metadata.display.toUpperCase()}</Text>
         </Box>
         <Box>
           <Icon name="arrowRightLine" size={'$2xl'} color={'$primary200'} />
@@ -123,19 +123,19 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
         />
         <Box>
           <Text fontWeight={'$hairline'} fontSize={'$sm'} color={'$primary100'}>Earn</Text>
-          <Text fontWeight={'$bold'} fontSize={'$lg'} color={'$primary200'}>{props.prizeToken.metadata.display}</Text>
+          <Text fontWeight={'$bold'} fontSize={'$lg'} color={'$primary200'}>{props.prizeToken.metadata.display.toUpperCase()}</Text>
         </Box>
       </Box>
       <Box textAlign={'center'} p='$1'>
         <Text fontWeight={'$hairline'} color={statusColor}>{status}</Text>
       </Box>
       {apr !== "" ? <StakingRewardDetailsBoxRow props={{name: 'APR:', value: apr}} /> : null}
-      <StakingRewardDetailsBoxRow props={{name: 'Reward:', value: props.prizeToken.metadata.display}} />
-      <StakingRewardDetailsBoxRow props={{name: 'Daily distribution:', value: dailyRewards}} />
-      <StakingRewardDetailsBoxRow props={{name: 'Min stake:', value: minStaking}} />
+      <StakingRewardDetailsBoxRow props={{name: 'Reward:', value: props.prizeToken.metadata.display.toUpperCase()}} />
+      <StakingRewardDetailsBoxRow props={{name: 'Daily distribution:', value: dailyRewards.toUpperCase()}} />
+      <StakingRewardDetailsBoxRow props={{name: 'Min stake:', value: minStaking.toUpperCase()}} />
       <StakingRewardDetailsBoxRow props={{name: 'Lock:', value: lock}} />
       <StakingRewardDetailsBoxRow props={{name: 'Remaining:', value: remainingPeriod}} />
-      <StakingRewardDetailsBoxRow props={{name: 'Staked:', value: totalStaked}} />
+      <StakingRewardDetailsBoxRow props={{name: 'Staked:', value: totalStaked.toUpperCase()}} />
       <StakingRewardDetailsBoxRow props={{name: 'Verified:', value: props.prizeToken.verified && props.stakingToken.verified ? '✅ YES' : '❌ NO'}} />
       {children}
     </DefaultBorderedBox>
