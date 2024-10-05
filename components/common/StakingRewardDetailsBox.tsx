@@ -129,7 +129,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
       <Box textAlign={'center'} p='$1'>
         <Text fontWeight={'$hairline'} color={statusColor}>{status}</Text>
       </Box>
-      {apr !== "" ? <StakingRewardDetailsBoxRow props={{name: 'APR:', value: apr}} /> : null}
+      {apr !== "?" ? <StakingRewardDetailsBoxRow props={{name: 'APR:', value: apr}} /> : null}
       <StakingRewardDetailsBoxRow props={{name: 'Reward:', value: props.prizeToken.metadata.display.toUpperCase()}} />
       <StakingRewardDetailsBoxRow props={{name: 'Daily distribution:', value: dailyRewards.toUpperCase()}} />
       <StakingRewardDetailsBoxRow props={{name: 'Min stake:', value: minStaking.toUpperCase()}} />
