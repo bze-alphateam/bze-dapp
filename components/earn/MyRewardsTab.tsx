@@ -187,8 +187,8 @@ function MyRewardDetail({props}: {props: MyRewardDetailProps}) {
   return (
     <StakingRewardDetailsBox prizeToken={prizeToken} stakingToken={stakingToken} reward={props.reward}>
       <Divider mt='$6' mb='$6'/>
-      <StakingRewardDetailsBoxRow props={{name: 'Your stake:', value: `${prettyAmount(uAmountToAmount(props.participant?.amount ?? 0, stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom}`}} />
-      <StakingRewardDetailsBoxRow props={{name: 'Pending rewards', value: `${prettyAmount(uAmountToAmount(claimable.toString(), prizeDisplayDenom?.exponent ?? 0))} ${prizeDisplayDenom?.denom}`}}/>
+      <StakingRewardDetailsBoxRow props={{name: 'Your stake:', value: `${prettyAmount(uAmountToAmount(props.participant?.amount ?? 0, stakingDisplayDenom?.exponent ?? 0))} ${stakingDisplayDenom?.denom.toUpperCase()}`}} />
+      <StakingRewardDetailsBoxRow props={{name: 'Pending rewards', value: `${prettyAmount(uAmountToAmount(claimable.toString(), prizeDisplayDenom?.exponent ?? 0))} ${prizeDisplayDenom?.denom.toUpperCase()}`}}/>
       <Box mt={'$6'} display={'flex'} flexDirection={'column'}>
         {!confirmUnstake && !showForm &&
         <Box display='flex' flexDirection={'row'} justifyContent={'space-around'}>
