@@ -134,7 +134,7 @@ function CreateMarketForm({props}: {props: CreateMarketFormProps}) {
           }}
           iconName="informationLine"
           intent="warning"
-          title="Create denom fee"
+          title="Create Market fee"
         >
           You will pay a fee of {props.fee} to create the market.
         </Callout>
