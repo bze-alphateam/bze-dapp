@@ -403,7 +403,9 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       return;
     }
 
-    let intDecimals = parseInt(decimals)
+    // removed the possiblity to create tokens with decimals different than 6
+    // let intDecimals = parseInt(decimals)
+    let intDecimals = 6;
     if (intDecimals === 0 || intDecimals > 18) {
       toast({
         type: 'error',
@@ -472,7 +474,9 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
       return;
     }
     setDisplay(metaDenoms[0].denom);
-    setDecimals(`${metaDenoms[0].exponent}`);
+    // removed the possiblity to create tokens with decimals different than 6
+    // setDecimals(`${metaDenoms[0].exponent}`);
+    setDecimals("6");
     setVerified(isVerified(props.chainMetadata.base));
   }
 
@@ -557,7 +561,7 @@ function TokenMetadata({props}: {props: TokenMetadataProps}) {
           type="text"
           inputMode="numeric"
           intent={'default'}
-          disabled={disabled || pendingSubmit}
+          disabled={true || disabled || pendingSubmit}
           attributes={{
             width: {desktop: '40%', mobile: '$full'},
             marginTop: {mobile: '15px', desktop: "0px"},
