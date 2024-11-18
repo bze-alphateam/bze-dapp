@@ -23,16 +23,21 @@ const getAllTickersUrl = (): string => {
 }
 
 export async function getAllTickers(): Promise<Map<string, Ticker>> {
-    const resp = await fetch(getAllTickersUrl());
-    const tickers = new Map();
-    if (resp.status !== 200) {
+    try {
+        const resp = await fetch(getAllTickersUrl());
+        const tickers = new Map();
+        if (resp.status !== 200) {
+            return tickers;
+        }
+
+        const decodedResp = await resp.json();
+        for (let i = 0; i < decodedResp.length; i++) {
+            tickers.set(decodedResp[i].market_id, decodedResp[i]);
+        }
+
         return tickers;
+    } catch (e) {
+        console.error("failed to fetch tickrs", e);
+        return new Map();
     }
-
-    const decodedResp = await resp.json();
-    for (let i = 0; i < decodedResp.length; i++) {
-        tickers.set(decodedResp[i].market_id, decodedResp[i]);
-    }
-
-    return tickers;
 }

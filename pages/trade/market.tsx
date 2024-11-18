@@ -19,6 +19,7 @@ interface MarketChartProps {
   onChartChange?: (chartType: string) => void;
   chartData: ChartPoint[];
   loading: boolean;
+  volume?: string;
 }
 
 const MarketChart = memo((props: MarketChartProps) =>  {
@@ -55,11 +56,19 @@ const MarketChart = memo((props: MarketChartProps) =>  {
           alignItems={'center'}
           m={'$6'}
         >
-          <Box display={'flex'} width={'$full'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
-            <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
-            <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
-            <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
-            <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+          <Box display={'flex'} flex={1} width={'$full'} flexDirection={'row'} gap={'$2'}>
+            <Box display={'flex'} flex={1} flexDirection={'row'} gap={'$2'}>
+              <Text color={'$primary200'}>Volume: </Text>
+              <Text color={'$primary200'} fontWeight={'$bold'}>
+                {props.volume}
+              </Text>
+            </Box>
+            <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
+              <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
+              <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
+              <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
+              <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+            </Box>
           </Box>
           <Box display={'flex'} flex={1}>
             <Chart 
@@ -411,6 +420,7 @@ export default function MarketPair() {
                 loading={chartData === undefined}
                 tokens={tokens}
                 onChartChange={onChartChange}
+                volume={`${uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} ${tokens.baseTokenDisplayDenom.denom.toUpperCase()}`}
               />
               <ActiveOrdersSection 
                 tokens={tokens}
