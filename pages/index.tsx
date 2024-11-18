@@ -2,7 +2,7 @@ import { Divider, Box, Text, Button, Callout, FieldLabel } from "@interchain-ui/
 import { DefaultBorderedBox, Layout, TooltippedText } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import { useEffect, useState } from "react";
-import { Token, getAllMarkets, getAllSupplyTokens, getTradebinParams, removeAllMarketsCache } from "@/services";
+import { Token, getAllMarkets, getAllSupplyTokens, getTradebinParams, removeAllMarketsCache, Ticker, getAllTickers } from "@/services";
 import { getChainName, prettyFee, truncateDenom } from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
@@ -213,6 +213,7 @@ interface MarketListProps {
   list: MarketSDKType[];
   tokens: Map<string, Token>;
   loading: boolean;
+  tickers?: Map<string, Ticker>;
 }
 
 function MarketsListing(props: MarketListProps) {
@@ -309,11 +310,12 @@ function MarketsListing(props: MarketListProps) {
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
       {loading ? 
         <MarketsList
-          titles={['Market', 'Details']}
+          titles={['Market', 'Last 24 Hours']}
           list={[]}
           /> :
         <MarketsList
-          titles={['Market', 'Details']}
+          titles={['Market', 'Last 24 Hours']}
+          tickers={props.tickers}
           list={
             filtered.sort(sortMarketsCallback).map((market, i) => {
               return {
@@ -344,12 +346,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [allTokens, setAllTokens] = useState<Map<string, Token>>(new Map());
   const [list, setList] = useState<MarketSDKType[]>([]);
+  const [tickers, setTickers] = useState<Map<string, Ticker>>(new Map());
 
   const fetchList = async () => {
-    const [resp, tokens] = await Promise.all([getAllMarkets(), getAllSupplyTokens()]);
-
+    const [resp, tokens, tick] = await Promise.all([getAllMarkets(), getAllSupplyTokens(), getAllTickers()]);
     setAllTokens(tokens);
     setList(resp.market);
+    setTickers(tick);
     setLoading(false);
   }
 
@@ -373,7 +376,7 @@ export default function Home() {
         <Text fontSize={'$2xl'} fontWeight={'$bold'}>Trading opens soon... 🚀</Text>
       </Box> */}
       <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
-        <MarketsListing loading={loading} list={list} tokens={allTokens}/>
+        <MarketsListing loading={loading} list={list} tokens={allTokens} tickers={tickers}/>
         <CallToActionBox props={{onMarketCreated: reloadList}}/>
       </Box>
     </Layout>
