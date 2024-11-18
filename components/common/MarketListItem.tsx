@@ -98,17 +98,12 @@ export default function MarketListItem(props: MarketListItemProps) {
                 width: "40%",
               }}
             >
-              {/*<Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>*/}
-             {/* <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>*/}
-             {/*   {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}*/}
-             {/*</Text>*/}
               <Text
                 fontSize={'$sm'}
-    //            fontWeight="$hairline"
                 attributes={{ marginBottom: "$2" }}
                 color={priceChange >= 0.0 ? "$green200" : "$red200"}
               >
-                Price: {prettyAmount(lastPrice)} {props.quoteToken?.metadata.display?.toUpperCase()} ({priceChange > 0.0 ? "+" : ""}{priceChange}%){priceChange >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
+                Price: {lastPrice} {props.quoteToken?.metadata.display?.toUpperCase()} ({priceChange > 0.0 ? "+" : ""}{priceChange}%){priceChange >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
               </Text>
               <Text
                 fontSize={'$sm'}
