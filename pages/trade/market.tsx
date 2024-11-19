@@ -284,6 +284,8 @@ export default function MarketPair() {
       tokens.baseTokenDisplayDenom.exponent
     );
 
+    console.log(chart);
+
     setChartData(chart);
   }
 

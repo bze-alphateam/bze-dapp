@@ -7,12 +7,12 @@ interface DefaultBoxProps extends BoxProps {
 export function DefaultBorderedBox({ children, ...props}: DefaultBoxProps) {
   return(
     <Box
-      boxShadow={'$dark-lg'}
+      boxShadow={"$xl"}
       attributes={{
-        borderWidth: '2px',
-        borderStyle: 'solid',
+        borderWidth: '3px',
+        borderStyle: "solid",
         borderColor: useColorModeValue('$blackAlpha200', '$whiteAlpha100'),
-        borderRadius: '$xl',
+        borderRadius: '$md',
       }}
       {...props}
     >
