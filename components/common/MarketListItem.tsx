@@ -102,6 +102,7 @@ export default function MarketListItem(props: MarketListItemProps) {
                 fontSize={'$sm'}
                 attributes={{ marginBottom: "$2" }}
                 color={priceChange >= 0.0 ? "$green200" : "$red200"}
+                fontWeight={"$semibold"}
               >
                 Price: {lastPrice} {props.quoteToken?.metadata.display?.toUpperCase()} ({priceChange > 0.0 ? "+" : ""}{priceChange}%){priceChange >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
               </Text>
