@@ -19,20 +19,28 @@ import {
   getMarketSellOrders,
   getMarketUsdPrices,
   getTokenDisplayDenom,
-  Ticker
+  Ticker, HistoryOrder, getAddressHistory
 } from "@/services";
 import BigNumber from "bignumber.js";
 import {
   addDebounce,
   getChainName,
-  marketIdFromDenoms,
+  marketIdFromDenoms, prettyAmount,
   uAmountToAmount,
   uPriceToBigNumberPrice,
   uPriceToPrice
 } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import { HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
+import {
+  ActiveOrders,
+  ActiveOrdersList,
+  ActiveOrdersProps,
+  MarketPairTokens,
+  MyHistoryList,
+  MyOrdersList,
+  OrderHistoryList
+} from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
@@ -186,18 +194,28 @@ interface OrderHistoryProps {
   tokens: MarketPairTokens;
   loading: boolean;
   orders: HistoryOrderSDKType[];
+  userOrders: HistoryOrder[];
 }
 
 const OrderHistory = memo((props: OrderHistoryProps) => {  
+  const [intentHistory, setIntentHistory] = useState(true);
+
   return (
     <DefaultBorderedBox p={'$2'} width={{desktop: '$containerMd', mobile: '$auto'}} minHeight={'20vh'} >
-      <Box display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'} >
-        <Text as="h4">History</Text>
+      <Box display={'flex'} flex={1}>
+        <Box display={'flex'} flex={1}><Button intent={intentHistory ? "tertiary" : "secondary"} size={intentHistory ? "lg": "sm"} fluid onClick={() => {!intentHistory ? setIntentHistory(true) : null}} disabled={false}>Market history</Button></Box>
+        <Box display={'flex'} flex={1}><Button intent={!intentHistory ? "tertiary" : "secondary"} size={!intentHistory ? "lg": "sm"} fluid onClick={() => {intentHistory ? setIntentHistory(false) : null}} disabled={false}>My history</Button></Box>
       </Box>
       <Divider my={'$2'}/>
-      <Box>
-        <OrderHistoryList {...props} />
-      </Box>
+      {intentHistory ?
+          <Box>
+            <OrderHistoryList {...props} />
+          </Box>
+          :
+          <Box>
+            <MyHistoryList {...props} />
+          </Box>
+      }
     </DefaultBorderedBox>
   );
 });
@@ -237,6 +255,7 @@ export default function MarketPair() {
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
   const [activeOrders, setActiveOrders] = useState<ActiveOrders>();
   const [myOrders, setMyOrders] = useState<OrderReferenceSDKType[]>();
+  const [myHistory, setMyHistory] = useState<HistoryOrder[]>();
 
   const [orderFormData, setOrderFormData] = useState<OrderFormData>(EmptyOrderFormData);
   const chartTypeRef = useRef(chartType);
@@ -324,6 +343,9 @@ export default function MarketPair() {
 
     loadMarketPrice();
     addDebounce("fetchTicker", 500, fetchTickers);
+    if (address) {
+      addDebounce("fetchMyHistory", 500, () => fetchMyHistory(marketId, address));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, historyOrders, myOrders, activeOrders]);
 
@@ -344,6 +366,10 @@ export default function MarketPair() {
   const fetchTickers = async () => {
     const data = await getAllTickers();
     setTicker(data.get(marketId));
+  };
+  const fetchMyHistory = async (marketId: string, address: string) => {
+    const data = await getAddressHistory(address, marketId);
+    setMyHistory(data);
   };
   const onOrderCancelled = useCallback(() => {}, []);
   const onChartChange = useCallback((ct: string) => setChartType(ct), []);
@@ -387,6 +413,9 @@ export default function MarketPair() {
     fetchMyOrders();
 
     fetchTickers();
+    if (address) {
+      fetchMyHistory(marketId, address);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, address])
@@ -446,7 +475,7 @@ export default function MarketPair() {
           </Box>
           <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4" mt="$4">
             <PriceBox price={ticker ? ticker.last_price: 0} change={ticker ? ticker.change : 0} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
-            <StatsBox title="24h Volume" value={ticker ? ticker.base_volume: "0"} denom={tokens?.baseTokenDisplayDenom.denom ?? ""}/>
+            <StatsBox title="24h Volume" value={ticker ? prettyAmount(ticker.base_volume) : "0"} denom={tokens?.baseTokenDisplayDenom.denom ?? ""}/>
             <StatsBox title="24h High" value={ticker ? ticker.high : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
             <StatsBox title="24h Low" value={ticker ? ticker?.low : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
           </Box>
@@ -477,6 +506,7 @@ export default function MarketPair() {
                 tokens={tokens}
                 loading={historyOrders === undefined}
                 orders={historyOrders !== undefined ? historyOrders: []}
+                userOrders={myHistory !== undefined ? myHistory : []}
               />
               <OrderForms 
                 data={orderFormData}

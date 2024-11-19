@@ -1,4 +1,13 @@
 
+export interface HistoryOrder {
+    "order_id": number;
+    "price": string|number;
+    "base_volume": string|number;
+    "quote_volume": string|number;
+    "executed_at": string;
+    "order_type": string;
+}
+
 export interface Ticker {
     base: string;
     quote: string;
@@ -22,6 +31,10 @@ const getAllTickersUrl = (): string => {
     return `${getHost()}/api/dex/tickers`;
 }
 
+const getAddressHistoryUrl = (): string => {
+    return `${getHost()}/api/dex/history`;
+}
+
 export async function getAllTickers(): Promise<Map<string, Ticker>> {
     try {
         const resp = await fetch(getAllTickersUrl());
@@ -39,5 +52,20 @@ export async function getAllTickers(): Promise<Map<string, Ticker>> {
     } catch (e) {
         console.error("failed to fetch tickrs", e);
         return new Map();
+    }
+}
+
+export async function getAddressHistory(address: string, market: string): Promise<HistoryOrder[]> {
+    try {
+        const url = `${getAddressHistoryUrl()}?address=${address}&market_id=${market}&limit=100`;
+        const resp = await fetch(url);
+        if (resp.status !== 200) {
+            return [];
+        }
+
+        return await resp.json();
+    } catch (e) {
+        console.error("failed to fetch address orders", e);
+        return [];
     }
 }
