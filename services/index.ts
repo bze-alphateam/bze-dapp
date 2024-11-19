@@ -9,3 +9,4 @@ export * from './data_provider/Market';
 export * from './data_provider/MarketChart';
 export * from './data_provider/Price';
 export * from './PriceCalculator';
+export * from './data_provider/Aggregator';

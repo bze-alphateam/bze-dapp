@@ -1,11 +1,12 @@
 
-import { Token } from "@/services";
+import { Ticker } from "@/services";
 import { BaseComponentProps, Box, Stack, Text, AssetListItem as InterchainAssetListItem } from "@interchain-ui/react";
 import MarketListItem, { MarketListItemProps } from "./MarketListItem";
 
 export interface MarketListProps extends BaseComponentProps {
   list: MarketListItemProps[];
   titles?: [string, string];
+  tickers?: Map<string, Ticker>;
   attributes?: any;
 }
 
@@ -43,6 +44,7 @@ export default function MarketsList(props: MarketListProps) {
                   withdrawLabel={item.withdrawLabel ?? InterchainAssetListItem.defaultProps.withdrawLabel}
                   baseToken={item.baseToken}
                   quoteToken={item.quoteToken}
+                  tickers={props.tickers}
                 />
               </Box>
             ))}

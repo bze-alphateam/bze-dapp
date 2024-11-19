@@ -1,6 +1,7 @@
 import { Box, Text, Tabs } from "@interchain-ui/react";
 import { Layout, MyRewards, StakingRewards } from "@/components";
 import { useState } from "react";
+import Image from "next/image";
 
 
 export default function Earn() {
@@ -52,7 +53,15 @@ export default function Earn() {
               label: 'Staking rewards'
             },
             {
-              content: <h1>Coming soon</h1>,
+              content:
+                  <Box>
+                    <Box p={"$4"} display={"flex"} flex={1} justifyContent={"center"}>
+                      <Image src={"/beezee-bee.jpg"} alt={"The Bee is BEEZEE!"} width={400} height={400}/>
+                    </Box>
+                    <Box p={"$4"} display={"flex"} flex={1} justifyContent={"center"}>
+                      <Text fontSize={"$lg"} color={'$primary100'}>The Bee is BEEZEE building this section. Coming soon!</Text>
+                    </Box>
+                  </Box>,
               label: 'Trading rewards'
             },
             {

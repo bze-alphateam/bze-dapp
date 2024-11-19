@@ -2,16 +2,91 @@ import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
-import { CHART_1D, CHART_1H, CHART_30D, CHART_7D, ChartPoint, MarketPrices, formatUsdAmount, getAddressMarketOrders, getAllSupplyTokens, getMarketBuyOrders, getMarketChart, getMarketHistory, getMarketSellOrders, getMarketUsdPrices, getTokenDisplayDenom } from "@/services";
+import {
+  getAllTickers,
+  CHART_1D,
+  CHART_1H,
+  CHART_30D,
+  CHART_7D,
+  ChartPoint,
+  MarketPrices,
+  formatUsdAmount,
+  getAddressMarketOrders,
+  getAllSupplyTokens,
+  getMarketBuyOrders,
+  getMarketChart,
+  getMarketHistory,
+  getMarketSellOrders,
+  getMarketUsdPrices,
+  getTokenDisplayDenom,
+  Ticker, HistoryOrder, getAddressHistory
+} from "@/services";
 import BigNumber from "bignumber.js";
-import {getChainName, marketIdFromDenoms, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice } from "@/utils";
+import {
+  addDebounce,
+  getChainName,
+  marketIdFromDenoms, prettyAmount,
+  uAmountToAmount,
+  uPriceToBigNumberPrice,
+  uPriceToPrice
+} from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import { HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import { ActiveOrders, ActiveOrdersList, ActiveOrdersProps, MarketPairTokens, MyOrdersList, OrderHistoryList } from "@/components/trade";
+import {
+  ActiveOrders,
+  ActiveOrdersList,
+  ActiveOrdersProps,
+  MarketPairTokens,
+  MyHistoryList,
+  MyOrdersList,
+  OrderHistoryList
+} from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import Chart from "@/components/trade/Chart";
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
+
+const PriceBox = ({ price, change, denom }: { price: number; change: number, denom: string }) => (
+    <DefaultBorderedBox
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        p="$4"
+        border="1px solid"
+        borderColor="$gray200"
+        borderRadius="$md"
+        width={{desktop: '24%', mobile: '100%'}}
+    >
+      <Text fontSize="$xs" fontWeight="$thin">
+        Price
+      </Text>
+      <Text fontSize="$xs" fontWeight="$semibold" color={change >= 0 ? "$green200" : "$red200"}>
+        {price} {denom.toUpperCase()} ({change > 0.0 ? "+" : ""}{change}%){change >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
+      </Text>
+    </DefaultBorderedBox>
+);
+
+const StatsBox = ({ title, value, denom }: { title: string; value: string|number, denom: string }) => (
+    <DefaultBorderedBox
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        p="$4"
+        border="1px solid"
+        borderColor="$gray200"
+        borderRadius="$md"
+        width={{desktop: '24%', mobile: '100%'}}
+    >
+      <Text fontSize="$xs" fontWeight="$thin">
+        {title}
+      </Text>
+      <Text fontSize="$xs" fontWeight="$semibold" color="$primary200">
+        {value} {denom.toUpperCase()}
+      </Text>
+    </DefaultBorderedBox>
+);
 
 interface MarketChartProps {
   tokens: MarketPairTokens;
@@ -19,6 +94,7 @@ interface MarketChartProps {
   onChartChange?: (chartType: string) => void;
   chartData: ChartPoint[];
   loading: boolean;
+  volume?: string;
 }
 
 const MarketChart = memo((props: MarketChartProps) =>  {
@@ -55,11 +131,19 @@ const MarketChart = memo((props: MarketChartProps) =>  {
           alignItems={'center'}
           m={'$6'}
         >
-          <Box display={'flex'} width={'$full'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
-            <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
-            <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
-            <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
-            <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+          <Box display={'flex'} flex={1} width={'$full'} flexDirection={'row'} gap={'$2'}>
+            <Box display={'flex'} flex={1} flexDirection={'row'} gap={'$2'}>
+              <Text color={'$primary200'}>Volume: </Text>
+              <Text color={'$primary200'} fontWeight={'$bold'}>
+                {props.volume}
+              </Text>
+            </Box>
+            <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
+              <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
+              <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
+              <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
+              <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+            </Box>
           </Box>
           <Box display={'flex'} flex={1}>
             <Chart 
@@ -110,18 +194,28 @@ interface OrderHistoryProps {
   tokens: MarketPairTokens;
   loading: boolean;
   orders: HistoryOrderSDKType[];
+  userOrders: HistoryOrder[];
 }
 
 const OrderHistory = memo((props: OrderHistoryProps) => {  
+  const [intentHistory, setIntentHistory] = useState(true);
+
   return (
     <DefaultBorderedBox p={'$2'} width={{desktop: '$containerMd', mobile: '$auto'}} minHeight={'20vh'} >
-      <Box display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'} >
-        <Text as="h4">History</Text>
+      <Box display={'flex'} flex={1}>
+        <Box display={'flex'} flex={1}><Button intent={intentHistory ? "tertiary" : "secondary"} size={intentHistory ? "lg": "sm"} fluid onClick={() => {!intentHistory ? setIntentHistory(true) : null}} disabled={false}>Market history</Button></Box>
+        <Box display={'flex'} flex={1}><Button intent={!intentHistory ? "tertiary" : "secondary"} size={!intentHistory ? "lg": "sm"} fluid onClick={() => {intentHistory ? setIntentHistory(false) : null}} disabled={false}>My history</Button></Box>
       </Box>
       <Divider my={'$2'}/>
-      <Box>
-        <OrderHistoryList {...props} />
-      </Box>
+      {intentHistory ?
+          <Box>
+            <OrderHistoryList {...props} />
+          </Box>
+          :
+          <Box>
+            <MyHistoryList {...props} />
+          </Box>
+      }
     </DefaultBorderedBox>
   );
 });
@@ -156,10 +250,12 @@ export default function MarketPair() {
   const [chartData, setChartData] = useState<ChartPoint[]>();
   const [chartType, setChartType] = useState(CHART_7D);
   const [marketPrices, setMarketPrices] = useState<MarketPrices|undefined>();
+  const [ticker, setTicker] = useState<Ticker|undefined>();
 
   const [historyOrders, setHistoryOrders] = useState<HistoryOrderSDKType[]>();
   const [activeOrders, setActiveOrders] = useState<ActiveOrders>();
   const [myOrders, setMyOrders] = useState<OrderReferenceSDKType[]>();
+  const [myHistory, setMyHistory] = useState<HistoryOrder[]>();
 
   const [orderFormData, setOrderFormData] = useState<OrderFormData>(EmptyOrderFormData);
   const chartTypeRef = useRef(chartType);
@@ -187,6 +283,8 @@ export default function MarketPair() {
       tokens.quoteTokenDisplayDenom.exponent,
       tokens.baseTokenDisplayDenom.exponent
     );
+
+    console.log(chart);
 
     setChartData(chart);
   }
@@ -246,6 +344,10 @@ export default function MarketPair() {
     }
 
     loadMarketPrice();
+    addDebounce("fetchTicker", 500, fetchTickers);
+    if (address) {
+      addDebounce("fetchMyHistory", 500, () => fetchMyHistory(marketId, address));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, historyOrders, myOrders, activeOrders]);
 
@@ -263,6 +365,14 @@ export default function MarketPair() {
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartData, chartType, historyOrders]);
 
+  const fetchTickers = async () => {
+    const data = await getAllTickers();
+    setTicker(data.get(marketId));
+  };
+  const fetchMyHistory = async (marketId: string, address: string) => {
+    const data = await getAddressHistory(address, marketId);
+    setMyHistory(data);
+  };
   const onOrderCancelled = useCallback(() => {}, []);
   const onChartChange = useCallback((ct: string) => setChartType(ct), []);
   const onOrderPlaced = useCallback(() => {
@@ -303,7 +413,13 @@ export default function MarketPair() {
     MarketPairListener.start();
 
     fetchMyOrders();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    fetchTickers();
+    if (address) {
+      fetchMyHistory(marketId, address);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, address])
 
   useEffect(() => {
@@ -356,49 +472,15 @@ export default function MarketPair() {
     <Layout>
       <Box display='block' flexDirection={'row'}>
         <Box marginBottom={'$6'} ml='$6'>
-          <Box><Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text></Box>
-          {historyOrders !== undefined && tokens !== undefined &&
-            <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
-              {
-                historyOrders.length > 0 && 
-                <>
-                  <Text color={'$primary200'}>Last price: </Text>
-                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
-                    {uPriceToPrice(new BigNumber(historyOrders[0].price), tokens.quoteTokenDisplayDenom.exponent, tokens.baseTokenDisplayDenom.exponent)} {tokens.quoteTokenDisplayDenom.denom.toUpperCase()}
-                  </Text>
-                  {
-                    marketPrices && 
-                    marketPrices.base.gt(0) &&
-                    marketPrices.denom !== tokens.quoteTokenDisplayDenom.denom && 
-                    marketPrices.denom !== tokens.baseTokenDisplayDenom.denom &&
-                    <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontSize={'$xs'} fontWeight={'$semibold'}>
-                     ({formatUsdAmount(marketPrices.base)} {marketPrices.denom})
-                    </Text>
-                  }
-                  <Text color={historyOrders[0].order_type === 'sell' ? '$green200' : '$red300'} fontWeight={'$bold'}>
-                     {historyOrders[0].order_type === 'sell' ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
-                  </Text>
-                </>
-              }
-            </Box>
-          }
-          {chartData !== undefined && tokens !== undefined &&
-            <Box display={'flex'} flexDirection={'row'} alignItems={'center'} mt={'$2'} gap={'$2'}>
-              <Text color={'$primary200'}>{chartType} volume: </Text>
-              <Text color={'$primary200'} fontWeight={'$bold'}>
-                {uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} {tokens.baseTokenDisplayDenom.denom.toUpperCase()}
-              </Text>
-              {
-                marketPrices && 
-                marketPrices.quote.gt(0) &&
-                new BigNumber(getTotalVolume).gt(0) &&
-                marketPrices.denom !== tokens.baseTokenDisplayDenom.denom &&
-                <Text color={'$primary200'} fontSize={'$xs'} fontWeight={'$semibold'}>
-                  ({formatUsdAmount(marketPrices.base.multipliedBy(uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)))} {marketPrices.denom.toUpperCase()})
-                </Text>
-              }
-            </Box>
-          }
+          <Box>
+            <Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
+          </Box>
+          <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4" mt="$4">
+            <PriceBox price={ticker ? ticker.last_price: 0} change={ticker ? ticker.change : 0} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
+            <StatsBox title="24h Volume" value={ticker ? prettyAmount(ticker.base_volume) : "0"} denom={tokens?.baseTokenDisplayDenom.denom ?? ""}/>
+            <StatsBox title="24h High" value={ticker ? ticker.high : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
+            <StatsBox title="24h Low" value={ticker ? ticker?.low : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
+          </Box>
         </Box>
       </Box >
       <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column'}}  mx='$6'>
@@ -411,6 +493,7 @@ export default function MarketPair() {
                 loading={chartData === undefined}
                 tokens={tokens}
                 onChartChange={onChartChange}
+                volume={`${uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} ${tokens.baseTokenDisplayDenom.denom.toUpperCase()}`}
               />
               <ActiveOrdersSection 
                 tokens={tokens}
@@ -425,6 +508,7 @@ export default function MarketPair() {
                 tokens={tokens}
                 loading={historyOrders === undefined}
                 orders={historyOrders !== undefined ? historyOrders: []}
+                userOrders={myHistory !== undefined ? myHistory : []}
               />
               <OrderForms 
                 data={orderFormData}
