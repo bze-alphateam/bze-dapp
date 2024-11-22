@@ -1,5 +1,3 @@
-import {CHART_1D, CHART_4H, CHART_7D} from "@/services";
-
 export interface TradeViewChart {
     "time": string;
     "low": number;
@@ -11,9 +9,9 @@ export interface TradeViewChart {
 
 export interface HistoryOrder {
     "order_id": number;
-    "price": string|number;
-    "base_volume": string|number;
-    "quote_volume": string|number;
+    "price": string | number;
+    "base_volume": string | number;
+    "quote_volume": string | number;
     "executed_at": string;
     "order_type": string;
 }

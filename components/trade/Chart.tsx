@@ -1,7 +1,7 @@
-import { createChart, ColorType } from 'lightweight-charts';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {ColorType, createChart} from 'lightweight-charts';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Box, Text, useColorModeValue} from "@interchain-ui/react";
-import { getNoOfIntervalsNeeded } from "@/services";
+import {getNoOfIntervalsNeeded} from "@/services";
 
 interface PriceData {
     open: number;
@@ -29,8 +29,8 @@ export const ChartComponent = (props: ChartProps) => {
 
     const chartContainerRef = useRef<HTMLDivElement>(null);
 
-    const vColor = useColorModeValue( 'rgba(113,119,117,0.72)', 'rgba(185,183,183,0.72)');
-    const gridColor = useColorModeValue( '#d0d0d0', '#535d72');
+    const vColor = useColorModeValue('rgba(113,119,117,0.72)', 'rgba(185,183,183,0.72)');
+    const gridColor = useColorModeValue('#d0d0d0', '#535d72');
     const textColor = useColorModeValue('#929ce4', '#929ce4');
 
     const errorTimeout = setTimeout(() => {
@@ -67,7 +67,7 @@ export const ChartComponent = (props: ChartProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.chartType]);
 
-    const formatByAverage = (avg: number): {precision: number, minMove: number} => {
+    const formatByAverage = (avg: number): { precision: number, minMove: number } => {
         if (avg < 0.0001) {
             return {precision: 7, minMove: 0.000001};
         } else if (avg < 0.001) {
@@ -83,7 +83,7 @@ export const ChartComponent = (props: ChartProps) => {
         }
     }
 
-    const getPriceFormatOptions = useCallback((): {precision: number, minMove: number} => {
+    const getPriceFormatOptions = useCallback((): { precision: number, minMove: number } => {
         if (!priceData) {
             return {precision: 3, minMove: 0.01};
         }
@@ -96,7 +96,7 @@ export const ChartComponent = (props: ChartProps) => {
         return formatByAverage(avg);
     }, [priceData]);
 
-    const getVolumeFormatOptions = useCallback((): {precision: number, minMove: number} => {
+    const getVolumeFormatOptions = useCallback((): { precision: number, minMove: number } => {
         if (!volumeData) {
             return {precision: 3, minMove: 0.01};
         }
