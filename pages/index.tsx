@@ -16,6 +16,7 @@ import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import MarketsList from "@/components/common/MarketList";
 import { MarketSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/market";
 import {EXCLUDED_MARKETS} from "@/config/verified";
+import {BiCheckbox} from "react-icons/bi";
 
 const { createMarket } = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
@@ -223,37 +224,84 @@ function MarketsListing(props: MarketListProps) {
   const [list, setList] = useState<MarketSDKType[]>([]);
   const [filtered, setFiltered] = useState<MarketSDKType[]>([]);
 
+  //filters
+  const [onlyActive, setOnlyActive] = useState(false);
+  const [onlyVerified, setOnlyVerified] = useState(false);
+  const [query, setQuery] = useState("");
+
   const router = useRouter();
 
   const sortMarketsCallback = (a: MarketSDKType, b: MarketSDKType): number => {
+    // Retrieve token data for both markets
     const aBaseToken = tokens.get(a.base);
     const aQuoteToken = tokens.get(a.quote);
     const bBaseToken = tokens.get(b.base);
     const bQuoteToken = tokens.get(b.quote);
-    if (aBaseToken === undefined || aQuoteToken === undefined || bBaseToken === undefined || bQuoteToken === undefined) {
-      return 0
+
+    // If any token data is undefined, assume they are unverified
+    const aVerified = aBaseToken?.verified && aQuoteToken?.verified;
+    const bVerified = bBaseToken?.verified && bQuoteToken?.verified;
+
+    //first verified, then unverified
+    if (aVerified && !bVerified) {
+      return -1;
+    } else if (!aVerified && bVerified) {
+      return 1;
     }
 
-    const aVerified = aBaseToken.verified && aQuoteToken.verified;
-    const bVerified = bBaseToken.verified && bQuoteToken.verified;
-    if (aVerified && bVerified) {
-      return 0;
+    const aTicker = props.tickers?.get(marketIdFromDenoms(a.base, a.quote));
+    const bTicker = props.tickers?.get(marketIdFromDenoms(b.base, b.quote));
+    if (aTicker && bTicker) {
+      if (aQuoteToken?.stableCoin && !bQuoteToken?.stableCoin) {
+        return -1;
+      } else if (!aQuoteToken?.stableCoin && bQuoteToken?.stableCoin) {
+        return 1;
+      }
+
+      return bTicker.quote_volume - aTicker.quote_volume;
     }
 
-    return aVerified ? -1 : 1;
+    if (aTicker && bTicker === undefined) {
+      return -1;
+    } else if (aTicker === undefined && bTicker) {
+      return 1;
+    }
+
+    return 0
   }
 
-  const handleSearch = (query: string) => {
-    setLoading(true);
-    if (query.length === 0) {
-      setFiltered(list);
-      setLoading(false);
-      return;
-    }
-    
+  const filterList = (marketsToFilter: MarketSDKType[], query: string, showOnlyActive: boolean, showOnlyVerified: boolean): MarketSDKType[] => {
     let res: MarketSDKType[] = [];
     query = query.toLowerCase();
-    list.forEach((market) => {
+    marketsToFilter.forEach((market) => {
+      if (showOnlyActive) {
+        const marketTicker = props.tickers?.get(marketIdFromDenoms(market.base, market.quote));
+        if (marketTicker === undefined) {
+          return;
+        }
+
+        if (marketTicker.quote_volume === 0) {
+          return;
+        }
+      }
+
+      if (showOnlyVerified) {
+        const baseToken = tokens.get(market.base);
+        const quoteToken = tokens.get(market.quote);
+        if (baseToken === undefined || quoteToken === undefined) {
+          return;
+        }
+
+        if (!baseToken.verified || !quoteToken.verified) {
+          return;
+        }
+      }
+
+      if (query.length === 0) {
+        res.push(market);
+        return;
+      }
+
       if (market.base.toLowerCase().includes(query) || market.quote.toLowerCase().includes(query)) {
         res.push(market);
         return;
@@ -274,15 +322,40 @@ function MarketsListing(props: MarketListProps) {
       }
     });
 
+    return res;
+  }
+
+  const handleSearch = (query: string, showOnlyActive: boolean, showOnlyVerified: boolean) => {
+    setLoading(true);
+    setQuery(query);
+
+    let res: MarketSDKType[] = filterList(list, query, showOnlyActive, showOnlyVerified);
+
     setFiltered(res);
     setLoading(false);
+  }
+
+  const filterButtonIntent = (active: boolean): "success"|"secondary" => {
+    return active ? 'success' : 'secondary';
+  }
+
+  const toggleShowActive = () => {
+    handleSearch(query, !onlyActive, onlyVerified);
+    setOnlyActive(!onlyActive);
+  }
+
+  const toggleShowVerified = () => {
+    handleSearch(query, onlyActive, !onlyVerified);
+    setOnlyVerified(!onlyVerified);
   }
 
   useEffect(() => {
     setLoading(props.loading);
     setList(props.list);
-    setFiltered(props.list);
+    const filtered = filterList(props.list, query, onlyActive, onlyVerified);
+    setFiltered(filtered);
     setTokens(props.tokens);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 
   return (
@@ -302,20 +375,25 @@ function MarketsListing(props: MarketListProps) {
         m='$4'
         gap={'$2'}
        >
-        <Box mt='$6'>
-          <Text fontSize={'$md'}>Markets</Text>    
-        </Box>
-        <SearchInput placeholder='Search market' width={20} onSubmit={handleSearch}/>
-      </Box>
+          <Box>
+            <Text fontSize={'$md'}>Markets</Text>
+            <Box display={"flex"} flex={1} flexDirection={"row"} mt={"$4"} justifyContent={"space-between"}>
+              <Box><Button intent={filterButtonIntent(onlyVerified)} size={"xs"} onClick={toggleShowVerified}>Only verified</Button></Box>
+              <Box width={"$2"}></Box>
+              <Box><Button intent={filterButtonIntent(onlyActive)} size={"xs"} onClick={toggleShowActive}>Only active</Button></Box>
+            </Box>
+          </Box>
+          <Box>
+            <SearchInput placeholder='Search market' width={20} onSubmit={(query: string) => handleSearch(query, onlyActive, onlyVerified)}/>
+          </Box>
+       </Box>
       <Divider mb='$2'/>
       <Box display='flex' flexDirection={'column'} p='$2' m='$4'> 
       {loading ? 
         <MarketsList
-          titles={['Market', 'Last 24 Hours']}
           list={[]}
           /> :
         <MarketsList
-          titles={['Market', 'Last 24 Hours']}
           tickers={props.tickers}
           list={
             filtered.sort(sortMarketsCallback).map((market, i) => {
