@@ -55,7 +55,7 @@ export const getMarketUsdPrices = async (base: Token, quote: Token, lastPrice: B
   if (quotePriceUsd.gt(0)) {
     return {
       base: quotePriceUsd.multipliedBy(lastPrice), 
-      quote: await getAssetPrice(quote),
+      quote: quotePriceUsd,
       denom: USD_DISPLAY_DENOM,
     }
   }

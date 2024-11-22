@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Icon, Skeleton, Text } from "@interchain-ui/react";
+import { Box, Button, Divider, Skeleton, Text } from "@interchain-ui/react";
 import { DefaultBorderedBox, Layout } from "@/components";
 import { useRouter } from "next/router";
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -30,7 +30,9 @@ import BigNumber from "bignumber.js";
 import {
   addDebounce,
   getChainName,
-  marketIdFromDenoms, prettyAmount,
+  marketIdFromDenoms,
+  prettyAmount,
+  uAmountToAmount,
   uPriceToBigNumberPrice,
 } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
@@ -47,48 +49,8 @@ import {
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
+import {PriceBox, StatsBox, VolumeBox} from "@/components/trade/StatsBox";
 
-const PriceBox = ({ price, change, denom }: { price: number; change: number, denom: string }) => (
-    <DefaultBorderedBox
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        p="$4"
-        border="1px solid"
-        borderColor="$gray200"
-        borderRadius="$md"
-        width={{desktop: '24%', mobile: '100%'}}
-    >
-      <Text fontSize="$xs" fontWeight="$thin">
-        Price
-      </Text>
-      <Text fontSize="$xs" fontWeight="$semibold" color={change >= 0 ? "$green200" : "$red200"}>
-        {price} {denom.toUpperCase()} ({change > 0.0 ? "+" : ""}{change}%){change >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
-      </Text>
-    </DefaultBorderedBox>
-);
-
-const StatsBox = ({ title, value, denom }: { title: string; value: string|number, denom: string }) => (
-    <DefaultBorderedBox
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        p="$4"
-        border="1px solid"
-        borderColor="$gray200"
-        borderRadius="$md"
-        width={{desktop: '24%', mobile: '100%'}}
-    >
-      <Text fontSize="$xs" fontWeight="$thin">
-        {title}
-      </Text>
-      <Text fontSize="$xs" fontWeight="$semibold" color="$primary200">
-        {value} {denom.toUpperCase()}
-      </Text>
-    </DefaultBorderedBox>
-);
 
 interface MarketChartProps {
   tokens: MarketPairTokens;
@@ -476,10 +438,10 @@ export default function MarketPair() {
             <Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'} as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text fontSize={'$2xl'} color={'$primary300'} as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
           </Box>
           <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4" mt="$4">
-            <PriceBox price={ticker ? ticker.last_price: 0} change={ticker ? ticker.change : 0} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
-            <StatsBox title="24h Volume" value={ticker ? prettyAmount(ticker.base_volume) : "0"} denom={tokens?.baseTokenDisplayDenom.denom ?? ""}/>
-            <StatsBox title="24h High" value={ticker ? ticker.high : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
-            <StatsBox title="24h Low" value={ticker ? ticker?.low : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""}/>
+            <PriceBox price={ticker ? ticker.last_price: 0} change={ticker ? ticker.change : 0} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
+            <VolumeBox title="24h Volume" value={ticker ? ticker.base_volume : "0"} denom={tokens?.baseTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
+            <StatsBox title="24h High" value={ticker ? ticker.high : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
+            <StatsBox title="24h Low" value={ticker ? ticker?.low : "0"} denom={tokens?.quoteTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
           </Box>
         </Box>
       </Box >

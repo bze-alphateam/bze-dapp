@@ -5,7 +5,6 @@ import MarketListItem, { MarketListItemProps } from "./MarketListItem";
 
 export interface MarketListProps extends BaseComponentProps {
   list: MarketListItemProps[];
-  titles?: [string, string];
   tickers?: Map<string, Ticker>;
   attributes?: any;
 }
@@ -26,11 +25,15 @@ export default function MarketsList(props: MarketListProps) {
           <Box width="$22" />
           <Stack space="$0" attributes={{ marginBottom: "$12", flex: 1 }}>
             <Text attributes={{ width: "20%" }} color="$textSecondary">
-              {props.titles?.[0]}
+              Market
+            </Text>
+            <Box width="15%"></Box>
+            <Text attributes={{ width: "35%" }} color="$textSecondary">
+              24h Price
             </Text>
             <Box width="25%"></Box>
-            <Text attributes={{ width: "25%" }} color="$textSecondary">
-              {props.titles?.[1]}
+            <Text attributes={{ width: "35%" }} color="$textSecondary">
+              24h Volume
             </Text>
           </Stack>
         </Stack>
