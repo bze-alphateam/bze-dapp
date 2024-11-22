@@ -3,7 +3,7 @@ import { DefaultBorderedBox, Layout, TooltippedText } from "@/components";
 import { SearchInput } from "@/components/common/Input";
 import { useEffect, useState } from "react";
 import { Token, getAllMarkets, getAllSupplyTokens, getTradebinParams, removeAllMarketsCache, Ticker, getAllTickers } from "@/services";
-import { getChainName, prettyFee, truncateDenom } from "@/utils";
+import {getChainName, MAINNET_UDENOM, marketIdFromDenoms, prettyFee, truncateDenom} from "@/utils";
 import { useChain, useWallet } from "@cosmos-kit/react";
 import { WalletStatus } from "cosmos-kit";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import MarketsList from "@/components/common/MarketList";
 import { MarketSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/market";
+import {EXCLUDED_MARKETS} from "@/config/verified";
 
 const { createMarket } = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
@@ -351,7 +352,8 @@ export default function Home() {
   const fetchList = async () => {
     const [resp, tokens, tick] = await Promise.all([getAllMarkets(), getAllSupplyTokens(), getAllTickers()]);
     setAllTokens(tokens);
-    setList(resp.market);
+    const filteredMarkets = resp.market.filter((market) => !EXCLUDED_MARKETS[marketIdFromDenoms(market.base, market.quote)]);
+    setList(filteredMarkets);
     setTickers(tick);
     setLoading(false);
   }
