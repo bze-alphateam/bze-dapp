@@ -33,9 +33,7 @@ export const fetchAssetUsdPrice = async (asset: string): Promise<PriceApiRespons
   const cacheKey = getAssetPriceCacheKey(asset);
   const cached = getFromCache(cacheKey);
   if (cached) {
-    const decoded = JSON.parse(cached);
-
-    return decoded;
+    return JSON.parse(cached);
   }
 
   try {
