@@ -407,7 +407,7 @@ export default function MarketPair() {
             fetchActiveOrders();
             fetchMarketHistory();
             fetchMyOrders();
-            loadChart();
+            addDebounce("chart-delayed", 1000, loadChart);
             loadMarketPrice();
         });
         MarketPairListener.addOnOrderSavedCallback((event: OrderSavedEvent) => {
