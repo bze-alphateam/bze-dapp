@@ -443,6 +443,13 @@ export default function Home() {
 
   useEffect(() => {
     fetchList();
+    const refreshInterval = setInterval(() => {
+        fetchList();
+    }, 60 * 1000);
+
+    return () => {
+        clearInterval(refreshInterval);
+    }
   }, []);
 
   return (
