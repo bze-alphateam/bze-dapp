@@ -5,44 +5,46 @@ import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
   getAllTickers,
   CHART_1D,
-  CHART_1H,
+  CHART_4H,
   CHART_30D,
   CHART_7D,
-  ChartPoint,
+  CHART_1Y,
   MarketPrices,
-  formatUsdAmount,
   getAddressMarketOrders,
   getAllSupplyTokens,
   getMarketBuyOrders,
-  getMarketChart,
   getMarketHistory,
   getMarketSellOrders,
   getMarketUsdPrices,
   getTokenDisplayDenom,
-  Ticker, HistoryOrder, getAddressHistory
+  Ticker,
+  HistoryOrder,
+  getAddressHistory,
+  getTradingViewIntervals,
+  getNoOfIntervalsNeeded,
+  getChartMinutes,
+  TradeViewChart,
+  getChartIntervalsLimit,
 } from "@/services";
 import BigNumber from "bignumber.js";
 import {
   addDebounce,
   getChainName,
   marketIdFromDenoms, prettyAmount,
-  uAmountToAmount,
   uPriceToBigNumberPrice,
-  uPriceToPrice
 } from "@/utils";
 import { useChain } from "@cosmos-kit/react";
 import { HistoryOrderSDKType, OrderReferenceSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import {
   ActiveOrders,
   ActiveOrdersList,
-  ActiveOrdersProps,
+  ActiveOrdersProps, ChartComponent,
   MarketPairTokens,
   MyHistoryList,
   MyOrdersList,
   OrderHistoryList
 } from "@/components/trade";
 import { EmptyOrderFormData, OrderFormData, OrderForms } from "@/components/trade/OrderForms";
-import Chart from "@/components/trade/Chart";
 import { OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent } from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
 
@@ -92,7 +94,7 @@ interface MarketChartProps {
   tokens: MarketPairTokens;
   chartType: string;
   onChartChange?: (chartType: string) => void;
-  chartData: ChartPoint[];
+  chartData: TradeViewChart[];
   loading: boolean;
   volume?: string;
 }
@@ -117,6 +119,9 @@ const MarketChart = memo((props: MarketChartProps) =>  {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.chartData, props.chartType]);
 
+  const initialData = [{ open: 10, high: 10.63, low: 9.49, close: 9.55, time: 1642427876 }, { open: 9.55, high: 10.30, low: 9.42, close: 9.94, time: 1642514276 }, { open: 9.94, high: 10.17, low: 9.92, close: 9.78, time: 1642600676 }, { open: 9.78, high: 10.59, low: 9.18, close: 9.51, time: 1642687076 }, { open: 9.51, high: 10.46, low: 9.10, close: 10.17, time: 1642773476 }, { open: 10.17, high: 10.96, low: 10.16, close: 10.47, time: 1642859876 }, { open: 10.47, high: 11.39, low: 10.40, close: 10.81, time: 1642946276 }, { open: 10.81, high: 11.60, low: 10.30, close: 10.75, time: 1643032676 }, { open: 10.75, high: 11.60, low: 10.49, close: 10.93, time: 1643119076 }, { open: 10.93, high: 11.53, low: 10.76, close: 10.96, time: 1643205476 }];
+
+
   return (
     <DefaultBorderedBox 
       width={{desktop: '$containerMd', mobile: '$auto'}}
@@ -131,34 +136,27 @@ const MarketChart = memo((props: MarketChartProps) =>  {
           alignItems={'center'}
           m={'$6'}
         >
-          <Box display={'flex'} flex={1} width={'$full'} flexDirection={'row'} gap={'$2'}>
-            <Box display={'flex'} flex={1} flexDirection={'row'} gap={'$2'}>
+          <Box display={'flex'} flex={1} width={'$full'} flexDirection={{desktop: 'row', mobile: 'column'}} gap={'$2'}>
+            <Box display={'flex'} flex={1} flexDirection={'row'} gap={'$2'} justifyContent={{desktop: 'flex-start', mobile: 'center'}}>
               <Text color={'$primary200'}>Volume: </Text>
               <Text color={'$primary200'} fontWeight={'$bold'}>
                 {props.volume}
               </Text>
             </Box>
-            <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'flex-end'} gap={'$2'}>
-              <Button intent={getChartButtonIntent(CHART_1H)} size="xs" onClick={() => {selectChart(CHART_1H)}}>{CHART_1H}</Button>
+            <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={{desktop: 'flex-end', mobile: 'center'}} gap={'$2'}>
+              <Button intent={getChartButtonIntent(CHART_4H)} size="xs" onClick={() => {selectChart(CHART_4H)}}>{CHART_4H}</Button>
               <Button intent={getChartButtonIntent(CHART_1D)} size="xs" onClick={() => {selectChart(CHART_1D)}}>{CHART_1D}</Button>
               <Button intent={getChartButtonIntent(CHART_7D)} size="xs" onClick={() => {selectChart(CHART_7D)}}>{CHART_7D}</Button>
               <Button intent={getChartButtonIntent(CHART_30D)} size="xs" onClick={() => {selectChart(CHART_30D)}}>{CHART_30D}</Button>
+              <Button intent={getChartButtonIntent(CHART_1Y)} size="xs" onClick={() => {selectChart(CHART_1Y)}}>{CHART_1Y}</Button>
             </Box>
           </Box>
-          <Box display={'flex'} flex={1}>
-            <Chart 
-              key={chartId}
-              height={500} 
-              width={window.innerWidth > 769 ? 700 : 350} 
-              margin={{
-                top: 20,
-                left: 0,
-                bottom: 10,
-                right: 0,
-              }}
-              chartData={props.chartData}
-              quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
-            />
+          <Box display={'flex'} flex={1} minWidth={300} minHeight={470}>
+            <ChartComponent
+                priceData={props.chartData}
+                volumeData={props.chartData}
+                chartType={props.chartType}
+            ></ChartComponent>
           </Box>
         </Box>
         :
@@ -247,7 +245,7 @@ export default function MarketPair() {
   const [marketId, setMarketId] = useState("");
   const [loading, setLoading] = useState(true);
   const [tokens, setTokens] = useState<MarketPairTokens>();
-  const [chartData, setChartData] = useState<ChartPoint[]>();
+  const [chartData, setChartData] = useState<TradeViewChart[]>();
   const [chartType, setChartType] = useState(CHART_7D);
   const [marketPrices, setMarketPrices] = useState<MarketPrices|undefined>();
   const [ticker, setTicker] = useState<Ticker|undefined>();
@@ -277,14 +275,11 @@ export default function MarketPair() {
       return;
     }
 
-    const chart = await getMarketChart(
-      marketIdFromDenoms(tokens.baseToken.metadata.base, tokens.quoteToken.metadata.base),
-      chartTypeRef.current,
-      tokens.quoteTokenDisplayDenom.exponent,
-      tokens.baseTokenDisplayDenom.exponent
+    const chart = await getTradingViewIntervals(
+        marketIdFromDenoms(tokens.baseToken.metadata.base, tokens.quoteToken.metadata.base),
+        getChartMinutes(chartTypeRef.current),
+        getChartIntervalsLimit(chartTypeRef.current),
     );
-
-    console.log(chart);
 
     setChartData(chart);
   }
@@ -355,10 +350,15 @@ export default function MarketPair() {
     if (chartData === undefined) {
       return "0";
     }
-    
+
+    let intervalsNeeded = getNoOfIntervalsNeeded(chartType);
+    if (chartData.length < intervalsNeeded || intervalsNeeded === 0) {
+      intervalsNeeded = chartData.length;
+    }
+
     let vol = new BigNumber(0);
-    for (let i = 0; i < chartData.length; i++) {
-      vol = vol.plus(chartData[i].volume);
+    for (let i = 0; i < intervalsNeeded; i++) {
+      vol = vol.plus(chartData[chartData.length - 1 -i].value);
     }
 
     return vol.toString();
@@ -493,7 +493,7 @@ export default function MarketPair() {
                 loading={chartData === undefined}
                 tokens={tokens}
                 onChartChange={onChartChange}
-                volume={`${uAmountToAmount(getTotalVolume, tokens.baseTokenDisplayDenom.exponent)} ${tokens.baseTokenDisplayDenom.denom.toUpperCase()}`}
+                volume={`${prettyAmount(getTotalVolume)} ${tokens.baseTokenDisplayDenom.denom.toUpperCase()}`}
               />
               <ActiveOrdersSection 
                 tokens={tokens}

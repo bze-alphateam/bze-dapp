@@ -1,3 +1,13 @@
+import {CHART_1D, CHART_4H, CHART_7D} from "@/services";
+
+export interface TradeViewChart {
+    "time": string;
+    "low": number;
+    "open": number;
+    "high": number;
+    "close": number;
+    "value": number; //volume of the interval
+}
 
 export interface HistoryOrder {
     "order_id": number;
@@ -66,6 +76,21 @@ export async function getAddressHistory(address: string, market: string): Promis
         return await resp.json();
     } catch (e) {
         console.error("failed to fetch address orders", e);
+        return [];
+    }
+}
+
+export async function getTradingViewIntervals(market: string, minutes: number, limit: number): Promise<TradeViewChart[]> {
+    try {
+        const url = `${getHost()}/api/dex/intervals?market_id=${market}&minutes=${minutes}&limit=${limit}&format=tv`;
+        const resp = await fetch(url);
+        if (resp.status !== 200) {
+            return [];
+        }
+
+        return await resp.json();
+    } catch (e) {
+        console.error("failed to fetch trading view intervals", e);
         return [];
     }
 }
