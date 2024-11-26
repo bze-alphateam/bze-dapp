@@ -611,7 +611,7 @@ export const networks = {
                         "display": "Spice",
                         "symbol": "SPICE",
                         "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/spice.png"
+                            "png": "/spice.png",
                         },
                         "images": [
                             {
