@@ -251,7 +251,7 @@ export default function MarketPair() {
     const [loading, setLoading] = useState(true);
     const [tokens, setTokens] = useState<MarketPairTokens>();
     const [chartData, setChartData] = useState<TradeViewChart[]>();
-    const [chartType, setChartType] = useState(CHART_7D);
+    const [chartType, setChartType] = useState(CHART_1D);
     const [marketPrices, setMarketPrices] = useState<MarketPrices | undefined>();
     const [ticker, setTicker] = useState<Ticker | undefined>();
 
