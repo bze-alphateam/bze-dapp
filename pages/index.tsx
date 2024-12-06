@@ -201,15 +201,15 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
     }, []);
 
     return (
-        <Box mx={{desktop: '$12', mobile: '$6'}} mb={{desktop: '$0', mobile: '$12'}}>
+        <Box ml='$6' mb={{desktop: '$0', mobile: '$12'}}>
             <DefaultBorderedBox>
                 <Box display={'flex'} flexDirection={'column'} alignItems='center'>
                     <Box p='$6' mt='$6'>
-                        <Text fontSize={'$md'} fontWeight={'$bold'} color='$primary200'>Create a trading market for your
+                        <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>Create a trading market for your
                             tokens</Text>
                     </Box>
                     <Box p='$6' mb='$6'>
-                        <Text letterSpacing={'$wide'} fontSize={'$sm'}>Create your own trading market on our
+                        <Text letterSpacing={'$wide'} fontSize={'$md'}>Create your own trading market on our
                             decentralized exchange! With our orderbook style DEX, you have the power to create and
                             manage markets between any two assets, whether they&apos;re native coins, tokens, or IBC
                             assets.</Text>
@@ -217,11 +217,17 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
                 </Box>
                 <Divider/>
                 <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
-                    {showForm && walletStatus === WalletStatus.Connected && <CreateMarketForm props={{
-                        fee: fee, onCancel: () => {
-                            setShowForm(false)
-                        }, onSuccess: onMarketCreated
-                    }}/>}
+                    {showForm && walletStatus === WalletStatus.Connected &&
+                        <Box>
+                            <CreateMarketForm props={{
+                                fee: fee,
+                                onCancel: () => {
+                                    setShowForm(false)
+                                },
+                                onSuccess: onMarketCreated
+                            }}/>
+                        </Box>
+                    }
                     {!showForm && walletStatus === WalletStatus.Connected &&
                         <>
                             <Button size="sm" intent="primary" onClick={() => setShowForm(true)}>Create Market</Button>
@@ -390,7 +396,7 @@ function MarketsListing(props: MarketListProps) {
             mr={{desktop: '$0', mobile: '$6'}}
             mb='$6'
             flexDirection='column'
-            width={{desktop: '$containerlg', mobile: '$auto'}}
+            width={{desktop: '$auto', mobile: '$auto'}}
         >
             <Box
                 display='flex'
@@ -491,7 +497,7 @@ export default function Home() {
             {/* <Box display='flex' flex={1} justifyContent={'center'} alignItems={'center'}>
         <Text fontSize={'$2xl'} fontWeight={'$bold'}>Trading opens soon... 🚀</Text>
       </Box> */}
-            <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}>
+            <Box display='flex' flexDirection={{desktop: 'column', mobile: 'column'}}>
                 <MarketsListing loading={loading} list={list} tokens={allTokens} tickers={tickers}/>
                 <CallToActionBox props={{onMarketCreated: reloadList}}/>
             </Box>
