@@ -321,7 +321,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
                 <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply</Text>
                 <Box mt='$4'>
                     <Text fontSize={'$md'} textAlign={'center'} color={'$primary100'}>{supply}</Text>
-                    <Text fontSize={'$md'} textAlign={'center'} color={'$primary100'}>{denomUnit?.denom}</Text>
+                    <Text fontSize={'$md'} textAlign={'center'} color={'$primary100'}>{denomUnit?.denom.toUpperCase()}</Text>
                 </Box>
             </Box>
             {address === props.admin &&

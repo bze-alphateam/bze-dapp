@@ -15,7 +15,7 @@ export function Header() {
                  justifyContent={{mobile: 'center'}}>
                 <Image src={useColorModeValue("/beezee_dark.svg", "/beezee_light.svg")} alt="beezee blockchain"
                        width={178} height={40} priority={true}/>
-                <Text fontWeight={"$bold"} color={useColorModeValue("$red200", "$yellow300")}>BETA</Text>
+                <Text fontWeight={"$bold"} color={useColorModeValue("#179ad4", "#13c1e1")}>DEX</Text>
                 <Box display="flex" justifyContent="end" gap={5} flex={1}>
                     <Wallet/>
                     <Box marginX={"$6"}>
