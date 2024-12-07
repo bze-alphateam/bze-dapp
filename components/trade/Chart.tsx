@@ -218,16 +218,16 @@ export const ChartComponent = (props: ChartProps) => {
 
             const intervalsToDisplay = neededIntervals();
             if (intervalsToDisplay > 0) {
-                let fromIndex = filteredPriceData.length - 1 - intervalsToDisplay
+                let fromIndex = volumeData.length - 1 - intervalsToDisplay
                 if (fromIndex < 0) {
                     fromIndex = 0;
                 }
 
                 chart.timeScale().setVisibleRange({
                     //@ts-ignore
-                    from: filteredPriceData[fromIndex].time,
+                    from: volumeData[fromIndex].time,
                     //@ts-ignore
-                    to: filteredPriceData[filteredPriceData.length - 1].time,
+                    to: volumeData[volumeData.length - 1].time,
                 });
             }
 
