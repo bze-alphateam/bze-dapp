@@ -2,28 +2,24 @@ import {ColorType, createChart} from 'lightweight-charts';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Box, Text, useColorModeValue} from "@interchain-ui/react";
 import {getNoOfIntervalsNeeded} from "@/services";
+import {from} from "rxjs";
 
 interface PriceData {
     open: number;
     high: number;
     low: number;
     close: number;
-    time: string;
-}
-
-interface VolumeData {
-    time: string,
+    time: number;
     value: number;
 }
 
 interface ChartProps {
     priceData: PriceData[];
-    volumeData: VolumeData[];
     chartType: string;
 }
 
 export const ChartComponent = (props: ChartProps) => {
-    const {priceData, volumeData} = props;
+    const {priceData} = props;
     const [chartText, setChartText] = useState<string>('Loading chart...');
     const [chartLoaded, setChartLoaded] = useState<boolean>(false);
 
@@ -97,17 +93,23 @@ export const ChartComponent = (props: ChartProps) => {
     }, [priceData]);
 
     const getVolumeFormatOptions = useCallback((): { precision: number, minMove: number } => {
-        if (!volumeData) {
+        if (!priceData) {
             return {precision: 3, minMove: 0.01};
         }
 
-        const first = volumeData[0];
-        const middle = volumeData[Math.floor(priceData.length / 2)];
-        const last = volumeData[priceData.length - 1];
+        const first = priceData[0];
+        const middle = priceData[Math.floor(priceData.length / 2)];
+        const last = priceData[priceData.length - 1];
         const avg = (first.value + middle.value + last.value) / 3;
 
         return formatByAverage(avg);
     }, [priceData]);
+
+    const timeToLocal = (originalTime: number): number => {
+        //https://tradingview.github.io/lightweight-charts/docs/time-zones
+        const localOffset = new Date().getTimezoneOffset() * 60;
+        return originalTime - localOffset;
+    }
 
     useEffect(
         () => {
@@ -115,11 +117,25 @@ export const ChartComponent = (props: ChartProps) => {
                 return;
             }
 
-            if (!priceData || !volumeData) {
+            if (!priceData) {
                 return;
             }
 
-            const intervalsNeeded = getNoOfIntervalsNeeded(props.chartType);
+            const volumeData: PriceData[] = [];
+            const filteredPriceData: PriceData[] = [];
+            for (const item of priceData) {
+                const convertedTime = timeToLocal(item.time);
+                const formatted = {
+                    ...item,
+                    time: convertedTime
+                }
+                volumeData.push(formatted);
+
+                if (item.open !== 0 && item.high !== 0 && item.low !== 0 && item.close !== 0) {
+                    filteredPriceData.push(formatted);
+                }
+            }
+
             // @ts-ignore
             const chart = createChart(chartContainerRef.current, {
                 layout: {
@@ -175,8 +191,8 @@ export const ChartComponent = (props: ChartProps) => {
                 borderColor: '#929ce4',
             });
 
-            const filtered = priceData.filter((item, index) => item.open !== 0 && item.high !== 0 && item.low !== 0 && item.close !== 0);
-            priceSeries.setData(filtered);
+            // @ts-ignore
+            priceSeries.setData(filteredPriceData);
 
             const {precision: vPrecision, minMove: vMinMove} = getVolumeFormatOptions();
             const volumeSeries = chart.addHistogramSeries({
@@ -197,13 +213,21 @@ export const ChartComponent = (props: ChartProps) => {
                 textColor: vColor,
             });
 
+            //@ts-ignore
             volumeSeries.setData(volumeData);
 
             const intervalsToDisplay = neededIntervals();
             if (intervalsToDisplay > 0) {
+                let fromIndex = filteredPriceData.length - 1 - intervalsToDisplay
+                if (fromIndex < 0) {
+                    fromIndex = 0;
+                }
+
                 chart.timeScale().setVisibleRange({
-                    from: priceData[priceData.length - 1 - intervalsToDisplay].time,
-                    to: priceData[priceData.length - 1].time,
+                    //@ts-ignore
+                    from: filteredPriceData[fromIndex].time,
+                    //@ts-ignore
+                    to: filteredPriceData[filteredPriceData.length - 1].time,
                 });
             }
 
@@ -220,7 +244,7 @@ export const ChartComponent = (props: ChartProps) => {
             };
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [priceData, volumeData, vColor, gridColor, textColor]
+        [priceData, vColor, gridColor, textColor]
     );
 
     return (
