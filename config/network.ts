@@ -611,11 +611,11 @@ export const networks = {
                         "display": "Spice",
                         "symbol": "SPICE",
                         "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/spice.png"
+                            "png": "/spice_no_bg.png"
                         },
                         "images": [
                             {
-                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/spice.png",
+                                "png": "/spice_no_bg.png",
                                 "theme": {
                                     "primary_color_hex": "#e5ba44"
                                 }
