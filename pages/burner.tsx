@@ -110,6 +110,7 @@ function WinnersModal({props}: { props: WinnersModalProps }) {
                                             <Box width={'55px'}></Box>
                                             {/*@ts-ignore*/}
                                             <Text fontSize={'$lg'} color={textColor}
+                                                  //@ts-ignore
                                                   fontWeight={'$semibold'}>{uAmountToAmount(winner.amount, props.raffle.displayDenom.exponent)} {props.raffle.displayDenom.denom.toUpperCase()}</Text>
                                         </Box>
                                     </Box>
