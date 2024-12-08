@@ -39,7 +39,7 @@ function BuyWithSkip() {
                 </Box>
                 <Box p='$6' mb='$6'>
                     <Text letterSpacing={'$wide'} fontSize={'$md'}>Buy your first BZE coins with assets from other blockchains like Binance Smart Chain, Ethereum, Avalanche, Polygon and more!
-                        Bridging your liquidity to BeeZee network with just a few clicks</Text>
+                        With just a few clicks, fast and secure!</Text>
                 </Box>
             </Box>
             <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
