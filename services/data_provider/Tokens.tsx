@@ -261,6 +261,10 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
 }
 
 export function isVerified(denom: string): boolean {
+    if (isIBCType(denom) || isNativeType(denom)) {
+        return true;
+    }
+
     return VERIFIED_TOKENS[denom] ?? false
 }
 
@@ -285,6 +289,10 @@ export function isNativeType(denom: string): boolean {
 }
 
 export function isFactoryType(denom: string): boolean {
+    if (!denom) {
+        return false;
+    }
+
     return denom.startsWith('factory/');
 }
 

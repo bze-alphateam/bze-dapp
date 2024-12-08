@@ -1,9 +1,10 @@
 import {DefaultBorderedBox, FactoryIcon, Layout, TooltippedText} from "@/components";
 import {
+    getAllSupplyTokens, getDenomType,
     getTokenAdminAddress,
     getTokenChainMetadata,
     getTokenDisplayDenom,
-    getTokenSupply,
+    getTokenSupply, isFactoryType, isIBCType,
     isVerified,
     resetAllTokensCache
 } from "@/services";
@@ -17,8 +18,13 @@ import {useChain, useWallet} from "@cosmos-kit/react";
 import {WalletStatus} from "cosmos-kit";
 import {amountToUAmount, getChainName, prettyAmount, sanitizeNumberInput, uAmountToAmount} from "@/utils";
 import {TokenMarkets} from "@/components/token/TokenMarkets";
+import {DenomUnit} from "cosmjs-types/cosmos/bank/v1beta1/bank";
 
-interface TokenOwnershipProps extends TokenMetadataProps {
+interface TokenOwnershipProps {
+    admin: string;
+    metadata: {
+        base: string;
+    }
 }
 
 const {changeAdmin} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
@@ -61,7 +67,7 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
         let msg = changeAdmin({
             creator: address,
             newAdmin: to,
-            denom: props.chainMetadata.base,
+            denom: props.metadata.base,
         })
 
         await tx([msg], {
@@ -92,7 +98,7 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
         let msg = changeAdmin({
             creator: address,
             newAdmin: "", //to nobody
-            denom: props.chainMetadata.base,
+            denom: props.metadata.base,
         })
 
         await tx([msg], {
@@ -182,7 +188,12 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
 
 const {mint, burn} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
 
-interface TokenSupplyProps extends TokenMetadataProps {
+interface TokenSupplyProps {
+    metadata: {
+        base: string;
+        display: string;
+    },
+    admin: string;
 }
 
 function TokenSupply({props}: { props: TokenSupplyProps }) {
@@ -201,8 +212,8 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
     const {tx} = useTx();
 
     const fetchSupply = async () => {
-        const s = await getTokenSupply(props.chainMetadata.base);
-        const denomUnit = await getTokenDisplayDenom(props.chainMetadata.base);
+        const s = await getTokenSupply(props.metadata.base);
+        const denomUnit = await getTokenDisplayDenom(props.metadata.base);
         setDenomUnit(denomUnit);
         const pretty = uAmountToAmount(s, denomUnit.exponent);
         setSupply(prettyAmount(pretty));
@@ -249,7 +260,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
         let uAmount = amountToUAmount(amount, denomUnit.exponent);
         let msg = mint({
             creator: address,
-            coins: `${uAmount}${props.chainMetadata.base}`
+            coins: `${uAmount}${props.metadata.base}`
         })
 
         await tx([msg], {
@@ -285,7 +296,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
         let uAmount = amountToUAmount(amount, denomUnit.exponent);
         let msg = burn({
             creator: address,
-            coins: `${uAmount}${props.chainMetadata.base}`
+            coins: `${uAmount}${props.metadata.base}`
         })
 
         await tx([msg], {
@@ -310,7 +321,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
 
     useEffect(() => {
         fetchSupply();
-        if (props.chainMetadata.display !== "") {
+        if (props.metadata.display !== "") {
             setCanMint(true);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,7 +330,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
     return (
         <DefaultBorderedBox mb='$12'>
             <Box p='$6' mb='$6'>
-                <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply</Text>
+                <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Supply{isIBCType(props.metadata.base) && (" on BZE Chain")}</Text>
                 <Box mt='$4'>
                     <Text fontSize={'$md'} textAlign={'center'} color={'$primary100'}>{supply}</Text>
                     <Text fontSize={'$md'} textAlign={'center'} color={'$primary100'}>{denomUnit?.denom.toUpperCase()}</Text>
@@ -383,7 +394,7 @@ interface TokenMetadataProps {
     onUpdate: () => void,
 }
 
-function TokenMetadata({props}: { props: TokenMetadataProps }) {
+function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
     const [disabled, setDisabled] = useState(true);
     const [pendingSubmit, setPendingSubmit] = useState(false);
 
@@ -541,7 +552,7 @@ function TokenMetadata({props}: { props: TokenMetadataProps }) {
                     <Text fontSize={'$sm'} color='$primary100'>{verified ? '✅ Verified' : '❌ Not verified'}</Text>
                 </Box>
                 <Box p='$6' display={"flex"} flex={1}  justifyContent={"flex-end"}>
-                    <Button variant={"outlined"} intent={"text"} size={"sm"} leftIcon={"coinsLine"}>Factory Token</Button>
+                    <Button variant={"outlined"} intent={"text"} size={"sm"} leftIcon={"coinsLine"}>{getDenomType(props.chainMetadata.base)} Token</Button>
                 </Box>
             </Box>
             <Box p='$6'>
@@ -655,7 +666,7 @@ function TokenMetadata({props}: { props: TokenMetadataProps }) {
 
 export default function Token() {
     const [loading, setLoading] = useState(true);
-    const [chainMetadata, setChainMetadata] = useState<Awaited<ReturnType<typeof getTokenChainMetadata>>>();
+    const [chainMetadata, setChainMetadata] = useState<MetadataSDKType>();
     const [admin, setAdmin] = useState('');
 
     const router = useRouter();
@@ -663,6 +674,20 @@ export default function Token() {
 
     const fetchChainMetadata = async (denom: string | undefined) => {
         if (denom === undefined || denom === '') {
+            return;
+        }
+
+        if (!isFactoryType(denom)) {
+            const allTokens = await getAllSupplyTokens();
+            const token = allTokens.get(denom);
+            if (token === undefined) {
+                router.push({pathname: '/404'});
+                return;
+            }
+
+            setChainMetadata(token.metadata);
+            setLoading(false);
+
             return;
         }
 
@@ -712,24 +737,16 @@ export default function Token() {
             </Box>
             {!loading && chainMetadata &&
                 <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}} flex={1}>
-                    <TokenMetadata props={{
+                    <TokenChainMetadata props={{
                         chainMetadata: chainMetadata, admin: admin, onUpdate: () => {
                             onMetadataUpdate(chainMetadata?.base)
                         }
                     }}/>
                     <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
                         <Box flexDirection={'row'} flex={1}>
-                            <TokenSupply props={{
-                                chainMetadata: chainMetadata, admin: admin, onUpdate: () => {
-                                }
-                            }}/>
-                            <TokenOwnership props={{
-                                chainMetadata: chainMetadata, admin: admin, onUpdate: () => {
-                                }
-                            }}/>
-                            <TokenMarkets props={{
-                                denom: chainMetadata.base,
-                            }}/>
+                            <TokenSupply props={{metadata: chainMetadata, admin: admin}}/>
+                            {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin}}/>)}
+                            <TokenMarkets props={{denom: chainMetadata.base}}/>
                         </Box>
                     </Box>
                 </Box>

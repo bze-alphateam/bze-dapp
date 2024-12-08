@@ -1,7 +1,7 @@
 import {ClickableBox, DefaultBorderedBox} from "@/components";
 import {Box, Stack, Text} from "@interchain-ui/react";
 import {memo, useEffect, useState} from "react";
-import {getAllMarkets, getAllSupplyTokens, getAllTickers, getAssetMarkets, Ticker, Token} from "@/services";
+import {getAllMarkets, getAllSupplyTokens, getAllTickers, getAssetMarkets, isIBCType, Ticker, Token} from "@/services";
 import {MarketSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/market";
 import {marketIdFromDenoms} from "@/utils";
 import {PriceText} from "@/components/common/MarketListItem";
@@ -138,6 +138,9 @@ export const TokenMarkets = memo(({props}: { props: TokenMarketsProps }) => {
 
     return (
         <DefaultBorderedBox mb='$12'>
+            <Box p='$6' mb='$2'>
+                <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Markets</Text>
+            </Box>
             <MarketsCollection props={{
                 markets: markets,
                 tokens: tokens,
