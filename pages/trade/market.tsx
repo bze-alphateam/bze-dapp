@@ -119,6 +119,7 @@ const MarketChart = memo((props: MarketChartProps) => {
                     </Box>
                     <Box display={'flex'} flex={1} minWidth={300} minHeight={470}>
                         <ChartComponent
+                            //@ts-ignore
                             priceData={props.chartData}
                             chartType={props.chartType}
                         ></ChartComponent>
