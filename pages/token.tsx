@@ -1,4 +1,4 @@
-import {DefaultBorderedBox, Layout, TooltippedText} from "@/components";
+import {DefaultBorderedBox, FactoryIcon, Layout, TooltippedText} from "@/components";
 import {
     getTokenAdminAddress,
     getTokenChainMetadata,
@@ -535,9 +535,14 @@ function TokenMetadata({props}: { props: TokenMetadataProps }) {
                     human readable details throughout the application.
                 </Callout>
             }
-            <Box p='$6'>
-                <Text as="h3" fontSize={'xl'} color='$primary200'>Metadata</Text>
-                <Text fontSize={'sm'} color='$primary100'>{verified ? '✅ Verified' : '❌ Not verified'}</Text>
+            <Box display={"flex"} flex={1} flexDirection={'row'} alignItems={'center'}>
+                <Box p='$6'>
+                    <Text as="h3" fontSize={'$xl'} color='$primary200'>Metadata</Text>
+                    <Text fontSize={'$sm'} color='$primary100'>{verified ? '✅ Verified' : '❌ Not verified'}</Text>
+                </Box>
+                <Box p='$6' display={"flex"} flex={1}  justifyContent={"flex-end"}>
+                    <Button variant={"outlined"} intent={"text"} size={"sm"} leftIcon={"coinsLine"}>Factory Token</Button>
+                </Box>
             </Box>
             <Box p='$6'>
                 <TextField

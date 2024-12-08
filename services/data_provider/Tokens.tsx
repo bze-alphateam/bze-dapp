@@ -264,7 +264,7 @@ export function isVerified(denom: string): boolean {
     return VERIFIED_TOKENS[denom] ?? false
 }
 
-function getDenomType(denom: string): string {
+export function getDenomType(denom: string): string {
     if (isIBCType(denom)) {
         return 'IBC';
     }
