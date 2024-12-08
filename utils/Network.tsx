@@ -84,20 +84,16 @@ export async function getChain() {
         return data;
     }
 
-    {/* @ts-ignore */
-    }
+    //@ts-ignore
     data.chain = data.chain.filter((item) => item.chain_id === currentChainId);
-    {/* @ts-ignore */
-    }
+    //@ts-ignore
     let hardcodedAssets = data.assets.filter((item) => item.chain_name === data.base.chainName);
     const chainRegistryAssets = await getChainRegistryBzeAssets();
 
-    {/* @ts-ignore */
-    }
+    //@ts-ignore
     hardcodedAssets[0].assets = mergeAssets(hardcodedAssets[0].assets, chainRegistryAssets)
 
-    {/* @ts-ignore */
-    }
+    //@ts-ignore
     data.assets = hardcodedAssets;
 
     cachedChain.set(currentChainId, data);

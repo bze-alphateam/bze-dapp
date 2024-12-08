@@ -22,8 +22,7 @@ export async function getActiveProposals(): Promise<QueryProposalsResponseSDKTyp
         }
 
         const client = await getRestClient();
-        {/* @ts-ignore */
-        }
+        //@ts-ignore
         let response = await client.cosmos.gov.v1beta1.proposals({proposalStatus: 2});
         let cacheData = {
             params: {...response},

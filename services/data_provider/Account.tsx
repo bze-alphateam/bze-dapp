@@ -40,8 +40,7 @@ export async function getModuleAddress(module: string): Promise<string> {
         }
 
         let parsed = await response.json()
-        {/* @ts-ignore */
-        }
+        //@ts-ignore
         let addy = parsed.account.base_account?.address;
         if (addy === undefined) {
             return "testbz18hsqalgwlzqavrrkfnxmrjmygwyjy8se37kq3x";

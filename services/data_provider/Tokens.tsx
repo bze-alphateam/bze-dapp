@@ -21,8 +21,7 @@ export interface Token {
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {
     try {
         const client = await getRestClient();
-        {/* @ts-ignore */
-        }
+        //@ts-ignore
         let response = await client.cosmos.bank.v1beta1.denomsMetadata({pagination: {limit: Long.ZERO.add(DENOM_METADATA_LIMIT)}});
         return response.metadatas;
     } catch (e) {
@@ -121,8 +120,7 @@ export async function getTokenAdminAddress(denom: string): Promise<string> {
 async function getSupply() {
     try {
         const client = await getRestClient();
-        {/* @ts-ignore */
-        }
+        //@ts-ignore
         let res = await client.cosmos.bank.v1beta1.totalSupply({pagination: {limit: Long.fromNumber(DENOM_METADATA_LIMIT)}})
 
         let allDenomsSupply = res.supply;
