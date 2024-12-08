@@ -58,7 +58,7 @@ export async function getAllTickers(): Promise<Map<string, Ticker>> {
 
         return tickers;
     } catch (e) {
-        console.error("failed to fetch tickrs", e);
+        console.error("failed to fetch tickers", e);
         return new Map();
     }
 }

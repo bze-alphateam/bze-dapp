@@ -23,6 +23,36 @@ function PriceChangeIcon(props: { priceChange: number }) {
     );
 }
 
+interface PriceTextProps {
+    lastPrice: number;
+    quoteDenom: string;
+    priceChange: number;
+}
+
+export function PriceText({props}: {props: PriceTextProps}) {
+    return (
+        <Box flex={1} display={"flex"} flexDirection={"row"}>
+            <Box mb={"$2"}>
+                <Text fontSize={'$sm'} fontWeight={"$semibold"}
+                                 color={getPriceChangeColor(props.priceChange)}>{props.lastPrice} {props.quoteDenom.toUpperCase()}</Text>
+            </Box>
+            <Box>
+                <Text fontSize={'$xs'} fontWeight={"$semibold"}
+                       color={getPriceChangeColor(props.priceChange)}>({props.priceChange > 0.0 ? "+" : ""}{props.priceChange}%)<PriceChangeIcon
+                priceChange={props.priceChange}/></Text>
+            </Box>
+        </Box>
+    );
+}
+
+const getPriceChangeColor = (priceChange: number): string => {
+    if (priceChange === 0.0) {
+        return "$textSecondary";
+    }
+
+    return priceChange > 0.0 ? "$green200" : "$red200";
+};
+
 // needChainSpace={true}
 // isOtherChains={false}
 export default function MarketListItem(props: MarketListItemProps) {
@@ -31,13 +61,13 @@ export default function MarketListItem(props: MarketListItemProps) {
     const [volume, setVolume] = useState(0);
     const [marketPrices, setMarketPrices] = useState<MarketPrices | undefined>();
 
-    const getPriceChangeColor = useMemo((): string => {
-        if (priceChange === 0.0) {
-            return "$textSecondary";
-        }
-
-        return priceChange > 0.0 ? "$green200" : "$red200";
-    }, [priceChange]);
+    // const getPriceChangeColor = useMemo((): string => {
+    //     if (priceChange === 0.0) {
+    //         return "$textSecondary";
+    //     }
+    //
+    //     return priceChange > 0.0 ? "$green200" : "$red200";
+    // }, [priceChange]);
 
     useEffect(() => {
         if (!props.tickers) {
@@ -90,13 +120,11 @@ export default function MarketListItem(props: MarketListItemProps) {
                             <Stack attributes={{width: "10%"}}>
                             </Stack>
                             <Stack space="$0" direction="vertical" attributes={{width: "35%",}} flex={1}>
-                                <Box flex={1} display={"flex"} flexDirection={"row"}>
-                                    <Box mb={"$2"}><Text fontSize={'$sm'} fontWeight={"$semibold"}
-                                                         color={getPriceChangeColor}>{lastPrice} {props.quoteToken?.metadata.display?.toUpperCase()}</Text></Box>
-                                    <Box><Text fontSize={'$xs'} fontWeight={"$semibold"}
-                                               color={getPriceChangeColor}>({priceChange > 0.0 ? "+" : ""}{priceChange}%)<PriceChangeIcon
-                                        priceChange={priceChange}/></Text></Box>
-                                </Box>
+                                <PriceText props={{
+                                    priceChange: priceChange,
+                                    quoteDenom: props.quoteToken?.metadata.display?.toUpperCase(),
+                                    lastPrice: lastPrice,
+                                }} />
                                 {
                                     marketPrices && props.quoteToken && marketPrices.denom.toUpperCase() !== props.quoteToken.metadata.display?.toUpperCase() &&
                                     <Box flex={1} display={"flex"} flexDirection={"row"}>

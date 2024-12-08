@@ -16,6 +16,7 @@ import {bze} from '@bze/bzejs';
 import {useChain, useWallet} from "@cosmos-kit/react";
 import {WalletStatus} from "cosmos-kit";
 import {amountToUAmount, getChainName, prettyAmount, sanitizeNumberInput, uAmountToAmount} from "@/utils";
+import {TokenMarkets} from "@/components/token/TokenMarkets";
 
 interface TokenOwnershipProps extends TokenMetadataProps {
 }
@@ -720,6 +721,9 @@ export default function Token() {
                             <TokenOwnership props={{
                                 chainMetadata: chainMetadata, admin: admin, onUpdate: () => {
                                 }
+                            }}/>
+                            <TokenMarkets props={{
+                                denom: chainMetadata.base,
                             }}/>
                         </Box>
                     </Box>
