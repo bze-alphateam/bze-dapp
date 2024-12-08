@@ -3,6 +3,7 @@ import {uAmountToAmount} from "@/utils";
 import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import {BaseComponentProps, Box, Button, Stack, Text} from "@interchain-ui/react";
 import {useMemo} from "react";
+import {useRouter} from "next/router";
 
 export interface CustomAssetListItemProps extends BaseComponentProps {
     token: Token;
@@ -16,6 +17,17 @@ export interface CustomAssetListItemProps extends BaseComponentProps {
 }
 
 export default function AssetListItem(props: CustomAssetListItemProps) {
+
+    const router = useRouter();
+
+    const onTickerClick = () => {
+        router.push({
+            pathname: '/token',
+            query: {
+                denom: props.token.metadata.base
+            }
+        });
+    }
 
     const prettyDisplayBalance = useMemo(() => {
         if (!props.balance) {
@@ -62,11 +74,13 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                         fontWeight="$semibold"
                         attributes={{marginBottom: "$2"}}
                     >
-                        {props.token.metadata.symbol}
-                    </Text>
-                    <Text fontSize={'$sm'} color="$textSecondary">
                         {props.token.metadata.name}
                     </Text>
+                    <Box>
+                        <Button size={'xs'} intent={'text'} iconSize={'$md'} attributes={{borderWidth: '$sm'}} leftIcon={'coinsLine'} onClick={onTickerClick}>
+                            {props.token.metadata.symbol}
+                        </Button>
+                    </Box>
                 </Stack>
                 <Stack
                     attributes={{

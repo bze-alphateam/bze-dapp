@@ -392,6 +392,7 @@ interface TokenMetadataProps {
     chainMetadata: MetadataSDKType,
     admin: string,
     onUpdate: () => void,
+    logo?: string,
 }
 
 function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
@@ -547,7 +548,13 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
                 </Callout>
             }
             <Box display={"flex"} flex={1} flexDirection={'row'} alignItems={'center'}>
-                <Box p='$6'>
+                {
+                    props.logo &&
+                    <Box p={'$6'}>
+                        <Box as="img" attributes={{src: props.logo}} width={"$14"} height={"$14"}/>
+                    </Box>
+                }
+                <Box p={props.logo ? undefined : '$6'}>
                     <Text as="h3" fontSize={'$xl'} color='$primary200'>Metadata</Text>
                     <Text fontSize={'$sm'} color='$primary100'>{verified ? '✅ Verified' : '❌ Not verified'}</Text>
                 </Box>
@@ -668,6 +675,7 @@ export default function Token() {
     const [loading, setLoading] = useState(true);
     const [chainMetadata, setChainMetadata] = useState<MetadataSDKType>();
     const [admin, setAdmin] = useState('');
+    const [logo, setLogo] = useState<string|undefined>();
 
     const router = useRouter();
     const {query} = router;
@@ -677,9 +685,13 @@ export default function Token() {
             return;
         }
 
+        const allTokens = await getAllSupplyTokens();
+        const token = allTokens.get(denom);
+        if (token && token.logo) {
+            setLogo(token.logo);
+        }
+
         if (!isFactoryType(denom)) {
-            const allTokens = await getAllSupplyTokens();
-            const token = allTokens.get(denom);
             if (token === undefined) {
                 router.push({pathname: '/404'});
                 return;
@@ -738,9 +750,12 @@ export default function Token() {
             {!loading && chainMetadata &&
                 <Box display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}} flex={1}>
                     <TokenChainMetadata props={{
-                        chainMetadata: chainMetadata, admin: admin, onUpdate: () => {
+                        chainMetadata: chainMetadata,
+                        admin: admin,
+                        onUpdate: () => {
                             onMetadataUpdate(chainMetadata?.base)
-                        }
+                        },
+                        logo: logo
                     }}/>
                     <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
                         <Box flexDirection={'row'} flex={1}>

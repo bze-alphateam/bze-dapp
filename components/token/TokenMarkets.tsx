@@ -41,7 +41,7 @@ function MarketBox({props}: {props: MarketBoxProps}) {
 
     return (
         <ClickableBox onClick={onClick}>
-            <Box p={"$6"} m={"$6"} display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"row"}>
+            <Box p={"$4"} m={"$2"} display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"row"}>
                 <Box as="img" attributes={{src: props.base.logo}} width={"$14"} height={"$14"}/>
                 <Box as="img" attributes={{src: props.quote.logo}} width={"$14"} height={"$14"}/>
                 <Box flex={1} justifyContent={"center"} flexDirection={"column"} ml={"$2"}>
@@ -78,7 +78,7 @@ function MarketsCollection({props}: {props: MarketsBoxProps}) {
     }
 
     return (
-        <Box display="flex" flex={1} flexWrap={"wrap"} justifyContent={"space-between"}>
+        <Box display="flex" flex={1} flexWrap={"wrap"} minWidth={"300px"}>
             {props.markets.map(market => {
                 const base = props.tokens.get(market.base);
                 const quote = props.tokens.get(market.quote);
