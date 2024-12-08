@@ -3,13 +3,13 @@ import {DefaultBorderedBox, Layout, TooltippedText} from "@/components";
 import {SearchInput} from "@/components/common/Input";
 import {useEffect, useState} from "react";
 import {
-  getAllMarkets,
-  getAllSupplyTokens,
-  getAllTickers,
-  getTradebinParams,
-  removeAllMarketsCache,
-  Ticker,
-  Token
+    getAllMarkets,
+    getAllSupplyTokens,
+    getAllTickers,
+    getTradebinParams,
+    removeAllMarketsCache,
+    Ticker,
+    Token
 } from "@/services";
 import {getChainName, marketIdFromDenoms, prettyFee, truncateDenom} from "@/utils";
 import {useChain, useWallet} from "@cosmos-kit/react";
@@ -24,6 +24,31 @@ import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import MarketsList from "@/components/common/MarketList";
 import {MarketSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/market";
 import {EXCLUDED_MARKETS} from "@/config/verified";
+
+function BuyWithSkip() {
+    const handleClick = () => {
+        const url = "https://go.skip.build/?src_chain=1&src_asset=ethereum-native&dest_chain=beezee-1&dest_asset=ubze";
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+
+    return (
+        <DefaultBorderedBox flex={1}>
+            <Box display={'flex'} flexDirection={'column'} alignItems='center'>
+                <Box p='$6' mt='$6'>
+                    <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>Don't have BZE yet? No problem!</Text>
+                </Box>
+                <Box p='$6' mb='$6'>
+                    <Text letterSpacing={'$wide'} fontSize={'$md'}>Buy your first BZE coins with assets from other blockchains like Binance Smart Chain, Ethereum, Avalanche, Polygon and more!
+                        Bridging your liquidity to BeeZee network with just a few clicks</Text>
+                </Box>
+            </Box>
+            <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
+                <Button size="sm" intent="primary" onClick={handleClick}>Buy BZE with... Anything</Button>
+            </Box>
+        </DefaultBorderedBox>
+    );
+}
+
 
 const {createMarket} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
@@ -201,7 +226,7 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
     }, []);
 
     return (
-        <Box ml='$6' mb={{desktop: '$0', mobile: '$12'}}>
+        <Box flex={1} ml='$6' mb={{desktop: '$0', mobile: '$12'}}>
             <DefaultBorderedBox>
                 <Box display={'flex'} flexDirection={'column'} alignItems='center'>
                     <Box p='$6' mt='$6'>
@@ -215,7 +240,6 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
                             assets.</Text>
                     </Box>
                 </Box>
-                <Divider/>
                 <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
                     {showForm && walletStatus === WalletStatus.Connected &&
                         <Box>
@@ -499,7 +523,10 @@ export default function Home() {
       </Box> */}
             <Box display='flex' flexDirection={{desktop: 'column', mobile: 'column'}}>
                 <MarketsListing loading={loading} list={list} tokens={allTokens} tickers={tickers}/>
-                <CallToActionBox props={{onMarketCreated: reloadList}}/>
+                <Box flex={1} flexDirection={{desktop: "row", mobile: "column-reverse"}} display={'flex'} justifyContent={'center'} gap={'$6'} flexWrap={'wrap'}>
+                    <CallToActionBox props={{onMarketCreated: reloadList}}/>
+                    <BuyWithSkip/>
+                </Box>
             </Box>
         </Layout>
     );
