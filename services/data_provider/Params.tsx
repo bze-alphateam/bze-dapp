@@ -1,7 +1,7 @@
-import { getRestClient } from "../Client";
-import { QueryParamsResponseSDKType } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
-import { QueryParamsResponseSDKType as TFParams } from "@bze/bzejs/types/codegen/beezee/tokenfactory/query";
-import { QueryParamsResponseSDKType as RewardsParams } from "@bze/bzejs/types/codegen/beezee/rewards/query";
+import {getRestClient} from "../Client";
+import {QueryParamsResponseSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/query";
+import {QueryParamsResponseSDKType as TFParams} from "@bze/bzejs/types/codegen/beezee/tokenfactory/query";
+import {QueryParamsResponseSDKType as RewardsParams} from "@bze/bzejs/types/codegen/beezee/rewards/query";
 
 const TRADEBIN_KEY = 'params:tradebin';
 const FACTORY_KEY = 'params:token_factory';
@@ -10,13 +10,13 @@ const REWARDS_KEY = 'params:rewards';
 const LOCAL_CACHE_TTL = 1000 * 60 * 60 * 4; //4 hours
 
 export async function getTradebinParams(): Promise<QueryParamsResponseSDKType> {
-  let localData = localStorage.getItem(TRADEBIN_KEY);
+    let localData = localStorage.getItem(TRADEBIN_KEY);
     if (null !== localData) {
         let parsed = JSON.parse(localData);
         if (parsed) {
             if (parsed.expiresAt > new Date().getTime()) {
-                
-                return new Promise<QueryParamsResponseSDKType> ((resolve) => {
+
+                return new Promise<QueryParamsResponseSDKType>((resolve) => {
                     resolve({...parsed.params});
                 })
             }
@@ -31,19 +31,19 @@ export async function getTradebinParams(): Promise<QueryParamsResponseSDKType> {
     }
     localStorage.setItem(TRADEBIN_KEY, JSON.stringify(cacheData));
 
-    return new Promise<QueryParamsResponseSDKType> ((resolve) => {
+    return new Promise<QueryParamsResponseSDKType>((resolve) => {
         resolve(response);
     })
 }
 
 export async function getTokenFactoryParams(): Promise<TFParams> {
-  let localData = localStorage.getItem(FACTORY_KEY);
+    let localData = localStorage.getItem(FACTORY_KEY);
     if (null !== localData) {
         let parsed = JSON.parse(localData);
         if (parsed) {
             if (parsed.expiresAt > new Date().getTime()) {
-                
-                return new Promise<TFParams> ((resolve) => {
+
+                return new Promise<TFParams>((resolve) => {
                     resolve({...parsed.params});
                 })
             }
@@ -58,19 +58,19 @@ export async function getTokenFactoryParams(): Promise<TFParams> {
     }
     localStorage.setItem(FACTORY_KEY, JSON.stringify(cacheData));
 
-    return new Promise<TFParams> ((resolve) => {
+    return new Promise<TFParams>((resolve) => {
         resolve(response);
     })
 }
 
 export async function getRewardsParams(): Promise<RewardsParams> {
-  let localData = localStorage.getItem(REWARDS_KEY);
+    let localData = localStorage.getItem(REWARDS_KEY);
     if (null !== localData) {
         let parsed = JSON.parse(localData);
         if (parsed) {
             if (parsed.expiresAt > new Date().getTime()) {
-                
-                return new Promise<RewardsParams> ((resolve) => {
+
+                return new Promise<RewardsParams>((resolve) => {
                     resolve({...parsed.params});
                 })
             }
@@ -85,7 +85,7 @@ export async function getRewardsParams(): Promise<RewardsParams> {
     }
     localStorage.setItem(REWARDS_KEY, JSON.stringify(cacheData));
 
-    return new Promise<RewardsParams> ((resolve) => {
+    return new Promise<RewardsParams>((resolve) => {
         resolve(response);
     })
 }

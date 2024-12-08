@@ -1,34 +1,34 @@
-import { TendermintEvent } from "@/utils";
+import {TendermintEvent} from "@/utils";
 
 export const filterEventsFromWs = (wsData: any, eventType: string, transformer: any): TendermintEvent[] => {
-  if (!wsData.result?.data?.value?.result_end_block?.events) {
-    return [];
-  }
-
-  const allEvents = wsData.result.data.value.result_end_block.events;
-  const result = [];
-  for (let i = 0; i < allEvents.length; i++) {
-    if (allEvents[i].type !== eventType) {
-      continue;
+    if (!wsData.result?.data?.value?.result_end_block?.events) {
+        return [];
     }
 
-    result.push(transformer(allEvents[i]));
-  }
+    const allEvents = wsData.result.data.value.result_end_block.events;
+    const result = [];
+    for (let i = 0; i < allEvents.length; i++) {
+        if (allEvents[i].type !== eventType) {
+            continue;
+        }
+
+        result.push(transformer(allEvents[i]));
+    }
 
 
-  return result;
+    return result;
 }
 
 export const callbacksMultiCallMultiArgs = (callbacks: any[], args: any[]) => {
-  for (let i = 0; i < callbacks.length; i++) {
-    for (let j = 0; j < args.length; j++) {
-      callbacks[i](args[j]);
+    for (let i = 0; i < callbacks.length; i++) {
+        for (let j = 0; j < args.length; j++) {
+            callbacks[i](args[j]);
+        }
     }
-  }
 }
 
 export const callbacksMultiCall = (callbacks: any[]) => {
-  for (let i = 0; i < callbacks.length; i++) {
-    callbacks[i]();
-  }
+    for (let i = 0; i < callbacks.length; i++) {
+        callbacks[i]();
+    }
 }

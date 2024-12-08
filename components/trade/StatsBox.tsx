@@ -4,7 +4,12 @@ import {Icon, Text} from "@interchain-ui/react";
 import {prettyAmount} from "@/utils";
 
 
-export const PriceBox = ({ price, change, denom, marketPrice }: { price: number; change: number, denom: string, marketPrice: MarketPrices|undefined }) => (
+export const PriceBox = ({price, change, denom, marketPrice}: {
+    price: number;
+    change: number,
+    denom: string,
+    marketPrice: MarketPrices | undefined
+}) => (
     <DefaultBorderedBox
         display="flex"
         flexDirection="column"
@@ -20,7 +25,8 @@ export const PriceBox = ({ price, change, denom, marketPrice }: { price: number;
             Price
         </Text>
         <Text fontSize="$xs" fontWeight="$semibold" color={change >= 0 ? "$green200" : "$red200"}>
-            {price} {denom.toUpperCase()} ({change > 0.0 ? "+" : ""}{change}%){change >= 0.0 ? <Icon name="arrowUpS"/> : <Icon name="arrowDownS"/>}
+            {price} {denom.toUpperCase()} ({change > 0.0 ? "+" : ""}{change}%){change >= 0.0 ? <Icon name="arrowUpS"/> :
+            <Icon name="arrowDownS"/>}
         </Text>
         {marketPrice && denom.toUpperCase() !== marketPrice?.denom.toUpperCase() &&
             <Text fontSize="$xs" fontWeight="$thin" color={change >= 0 ? "$green200" : "$red200"}>
@@ -30,7 +36,12 @@ export const PriceBox = ({ price, change, denom, marketPrice }: { price: number;
     </DefaultBorderedBox>
 );
 
-export const StatsBox = ({ title, value, denom, marketPrice }: { title: string; value: string|number, denom: string, marketPrice: MarketPrices|undefined }) => (
+export const StatsBox = ({title, value, denom, marketPrice}: {
+    title: string;
+    value: string | number,
+    denom: string,
+    marketPrice: MarketPrices | undefined
+}) => (
     <DefaultBorderedBox
         display="flex"
         flexDirection="column"
@@ -57,7 +68,12 @@ export const StatsBox = ({ title, value, denom, marketPrice }: { title: string; 
 );
 
 
-export const VolumeBox = ({ title, value, denom, marketPrice }: { title: string; value: string|number, denom: string, marketPrice: MarketPrices|undefined }) => (
+export const VolumeBox = ({title, value, denom, marketPrice}: {
+    title: string;
+    value: string | number,
+    denom: string,
+    marketPrice: MarketPrices | undefined
+}) => (
     <DefaultBorderedBox
         display="flex"
         flexDirection="column"
