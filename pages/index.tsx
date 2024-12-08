@@ -35,7 +35,7 @@ function BuyWithSkip() {
         <DefaultBorderedBox flex={1}>
             <Box display={'flex'} flexDirection={'column'} alignItems='center'>
                 <Box p='$6' mt='$6'>
-                    <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>Don't have BZE yet? No problem!</Text>
+                    <Text fontSize={'$lg'} fontWeight={'$bold'} color='$primary200'>Don&apos;t have BZE yet? No problem!</Text>
                 </Box>
                 <Box p='$6' mb='$6'>
                     <Text letterSpacing={'$wide'} fontSize={'$md'}>Buy your first BZE coins with assets from other blockchains like Binance Smart Chain, Ethereum, Avalanche, Polygon and more!
