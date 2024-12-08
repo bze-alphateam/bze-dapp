@@ -3,6 +3,8 @@ import {BaseComponentProps, Box, Button, Icon, Stack, Text} from "@interchain-ui
 import {useEffect, useMemo, useState} from "react";
 import {marketIdFromDenoms, prettyAmount} from "@/utils";
 import BigNumber from "bignumber.js";
+import {ClickableBox} from "@/components";
+import {useRouter} from "next/router";
 
 export interface MarketListItemProps extends BaseComponentProps {
     withdrawLabel?: string;
@@ -61,13 +63,17 @@ export default function MarketListItem(props: MarketListItemProps) {
     const [volume, setVolume] = useState(0);
     const [marketPrices, setMarketPrices] = useState<MarketPrices | undefined>();
 
-    // const getPriceChangeColor = useMemo((): string => {
-    //     if (priceChange === 0.0) {
-    //         return "$textSecondary";
-    //     }
-    //
-    //     return priceChange > 0.0 ? "$green200" : "$red200";
-    // }, [priceChange]);
+    const router = useRouter();
+
+    const onNameClick = () => {
+        router.push({
+            pathname: '/trade/market',
+            query: {
+                base: props.baseToken?.metadata.base,
+                quote: props.quoteToken?.metadata.base,
+            }
+        });
+    }
 
     useEffect(() => {
         if (!props.tickers) {
@@ -110,9 +116,11 @@ export default function MarketListItem(props: MarketListItemProps) {
                         </Box>
                         <Stack attributes={{alignItems: "center", flex: 1}}>
                             <Stack space="$0" direction="vertical" attributes={{width: "20%"}}>
-                                <Text fontSize={'$sm'} fontWeight="$semibold" attributes={{marginBottom: "$2"}}>
-                                    {props.baseToken.metadata.symbol}/{props.quoteToken.metadata.symbol}
-                                </Text>
+                                <ClickableBox onClick={onNameClick}>
+                                    <Text fontSize={'$sm'} fontWeight="$semibold" attributes={{marginBottom: "$2"}}>
+                                        {props.baseToken.metadata.symbol}/{props.quoteToken.metadata.symbol}
+                                    </Text>
+                                </ClickableBox>
                                 <Text fontSize={'$sm'} color="$textSecondary">
                                     {props.baseToken.verified && props.quoteToken.verified ? '✅ Verified' : '❌ Not verified'}
                                 </Text>
