@@ -65,15 +65,15 @@ export const ChartComponent = (props: ChartProps) => {
 
     const formatByAverage = (avg: number): { precision: number, minMove: number } => {
         if (avg < 0.0001) {
-            return {precision: 7, minMove: 0.000001};
+            return {precision: 7, minMove: 0.0000001};
         } else if (avg < 0.001) {
-            return {precision: 6, minMove: 0.00001};
+            return {precision: 6, minMove: 0.000001};
         } else if (avg < 0.01) {
-            return {precision: 5, minMove: 0.0001};
+            return {precision: 5, minMove: 0.00001};
         } else if (avg < 0.1) {
-            return {precision: 4, minMove: 0.001};
+            return {precision: 4, minMove: 0.0001};
         } else if (avg < 1) {
-            return {precision: 3, minMove: 0.01};
+            return {precision: 3, minMove: 0.001};
         } else {
             return {precision: 2, minMove: 0.01};
         }
