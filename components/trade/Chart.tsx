@@ -80,8 +80,8 @@ export const ChartComponent = (props: ChartProps) => {
     }
 
     const getPriceFormatOptions = useCallback((): { precision: number, minMove: number } => {
-        if (!priceData) {
-            return {precision: 3, minMove: 0.01};
+        if (!priceData || priceData.length === 0) {
+            return {precision: 3, minMove: 0.0001};
         }
 
         const first = priceData[0];
@@ -93,8 +93,8 @@ export const ChartComponent = (props: ChartProps) => {
     }, [priceData]);
 
     const getVolumeFormatOptions = useCallback((): { precision: number, minMove: number } => {
-        if (!priceData) {
-            return {precision: 3, minMove: 0.01};
+        if (!priceData || priceData.length === 0) {
+            return {precision: 3, minMove: 0.0001};
         }
 
         const first = priceData[0];
