@@ -398,7 +398,7 @@ export const networks = {
                 "chain_name": "beezee",
                 "assets": [
                     {
-                        "description": "BeeZee native blockchain",
+                        "description": "BeeZee blockchain native coin",
                         "denom_units": [
                             {
                                 "denom": "ubze",
