@@ -8,6 +8,7 @@ import {ChainProvider} from "@cosmos-kit/react";
 import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interchain-ui/react";
 import {ASSETS, CHAINS} from "@/config";
 import {chains} from "chain-registry";
+import {useCallback} from "react";
 
 
 function CreateCosmosApp({Component, pageProps}: AppProps) {
@@ -19,10 +20,14 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
         }
     };
 
+    const getChains = useCallback(() => {
+        return chains.filter(chain => chain.network_type === "mainnet")
+    }, [chains])
+
     return (
         <ThemeProvider>
             <ChainProvider
-                chains={[...chains, ...CHAINS]}
+                chains={[...getChains(), ...CHAINS]}
                 // @ts-ignore
                 assetLists={ASSETS}
                 wallets={[...keplrWallets]}
