@@ -44,7 +44,7 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
 }
 
 export const useTx = (chainName?: string) => {
-    const {address, getOfflineSigner} = useChain(chainName ?? getChainName());
+    const {address, getOfflineSignerDirect, getOfflineSignerAmino, wallet} = useChain(chainName ?? getChainName());
     const {toast} = useToast();
 
     const tx = async (msgs: Msg[], options: TxOptions) => {
@@ -57,12 +57,22 @@ export const useTx = (chainName?: string) => {
             return;
         }
 
+        const offlineSignerFunc = () => {
+            if (!wallet || wallet.mode !== "ledger") {
+                console.log("wallet signer direct");
+                return getOfflineSignerDirect();
+            }
+
+            console.log("wallet signer amino");
+            return getOfflineSignerAmino();
+        }
+
         keplrSuggestChain(getChainName());
         let client: Awaited<ReturnType<typeof getSigningClient>>;
 
         let fee: StdFee;
         try {
-            client = await getSigningClient(getOfflineSigner(), chainName);
+            client = await getSigningClient(offlineSignerFunc(), chainName);
             if (options?.fee) {
                 fee = options.fee;
             } else {
