@@ -120,11 +120,13 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
 
     const buyOrderClickCallback = useCallback((data: OrderFormData) => {
         props.onOrderClick(data);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const sellOrderClickCallback = useCallback((data: OrderFormData) => {
 
         props.onOrderClick(data);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
 

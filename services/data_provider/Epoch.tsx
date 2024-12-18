@@ -1,13 +1,16 @@
-import {QueryAllStakingRewardResponseSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/query";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
 import {getRestClient} from "@/services";
 import {QueryEpochsInfoResponseSDKType} from "@bze/bzejs/types/codegen/beezee/epochs/query";
-import {bze} from "@bze/bzejs";
-import {EpochInfo} from "@bze/bzejs/types/codegen/beezee/epochs/genesis";
-import {EpochInfoSDKType} from "@bze/bzejs/src/codegen/beezee/epochs/genesis";
+import Long from "long";
 
 const EPOCHS_KEY = "epochs:info";
 const EPOCHS_INFO_TTL = 1000 * 60 * 5;
+
+//using custom type to avoid type checking failure when building
+export interface EpochInfoAppType {
+    identifier: string;
+    current_epoch: Long;
+}
 
 export async function getEpochsInfo(): Promise<QueryEpochsInfoResponseSDKType> {
     try {
@@ -32,7 +35,7 @@ export async function getEpochsInfo(): Promise<QueryEpochsInfoResponseSDKType> {
     }
 }
 
-export async function getCurrentEpoch(identifier: string): Promise<EpochInfoSDKType|undefined> {
+export async function getCurrentEpoch(identifier: string): Promise<EpochInfoAppType|undefined> {
     const all = await getEpochsInfo();
 
     return all.epochs.find((item) => item.identifier === identifier);

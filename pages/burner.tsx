@@ -615,6 +615,7 @@ const RafflesBoxItem = memo((props: { raffle: RaffleBoxRaffle }) => {
         if (props.raffle.withdrawResult) {
             addWithdrawResult(undefined, props.raffle.withdrawResult);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.raffle.withdrawResult])
 
     return (
@@ -833,10 +834,12 @@ function RafflesBox() {
         })
 
         RaffleListener.start();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [address])
 
     useEffect(() => {
         fetchRaffles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
 

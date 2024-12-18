@@ -22,6 +22,7 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
 
     const getChains = useCallback(() => {
         return chains.filter(chain => chain.network_type === "mainnet")
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [chains])
 
     return (
