@@ -471,7 +471,7 @@ export function MyRewards() {
                 }
             </Box>
 
-            {!loading && unlocking.length > 0 &&
+            {!loading && address && unlocking.length > 0 &&
                 <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}>
                     {
                         unlocking.map((u, index) => (
