@@ -327,7 +327,7 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
 
         const prize = new BigNumber(prizeAmount).multipliedBy(duration);
 
-        return `${prize.toString()} ${selectedPrizeDenom?.metadata.display}`;
+        return `${prize.toString()} ${selectedPrizeDenom?.metadata.display.toUpperCase()}`;
     }
 
     useEffect(() => {
@@ -449,9 +449,9 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                                     title="Summary"
                                 >
                                     You are creating a staking reward that will
-                                    distribute {prettyAmount(prizeAmount)} {selectedPrizeDenom?.metadata.display} every
+                                    distribute {prettyAmount(prizeAmount)} {selectedPrizeDenom?.metadata.display.toUpperCase()} every
                                     day, for a period of {duration} days, to all the users that
-                                    stake {minStake !== undefined ? prettyAmount(minStake) : 0} {selectedStakingDenom?.metadata.display} or
+                                    stake {minStake !== undefined ? prettyAmount(minStake) : 0} {selectedStakingDenom?.metadata.display.toUpperCase()} or
                                     more. The staked amounts will be locked for {lock ?? 0} days.
                                 </Callout>
                                 <Callout
@@ -463,6 +463,10 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                                     intent="warning"
                                     title="Warning"
                                 >
+                                    THIS ACTION IS CREATING A NEW STAKING REWARD! IF YOU CAME HERE JUST TO EARN SOME
+                                    COINS FIND A SUITABLE STAKING REWARD BELOW AND STAKE YOUR COINS IN IT.
+                                    THIS FORM IS NOT FOR YOU!<br/><br/>
+
                                     You will pay {createFee} fee for creating the staking reward
                                     and {calculateAmountToPay()} will be captured from your wallet by the blockchain in
                                     order to pay for the rewards. This action can NOT be undone and the staking reward
