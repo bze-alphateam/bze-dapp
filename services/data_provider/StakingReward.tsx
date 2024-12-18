@@ -6,27 +6,24 @@ import {getRestClient} from "../Client";
 import {bze} from '@bze/bzejs';
 import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
+import {getFromCache, setInCache} from "@/services/data_provider/cache";
 
 const SR_KEY = 'SR:LIST';
 const SRP_KEY = 'SRP:LIST:';
 const ADDR_SR_KEY = 'SR_ADDR';
-const SR_TTL = 1000 * 60 * 10; //10 minutes
+const SR_TTL = 1000 * 60 * 5; //10 minutes
 
 const {fromPartial: QueryAllStakingRewardRequestFromPartial} = bze.v1.rewards.QueryAllStakingRewardRequest;
 const {fromPartial: QueryGetStakingRewardParticipantRequestFromPartial} = bze.v1.rewards.QueryGetStakingRewardParticipantRequest;
 
 export async function getStakingRewards(reverse: boolean = true): Promise<QueryAllStakingRewardResponseSDKType> {
     try {
-        let localData = localStorage.getItem(SR_KEY);
+        let localData = getFromCache(SR_KEY);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                if (parsed.expiresAt > new Date().getTime()) {
 
-                    return new Promise<QueryAllStakingRewardResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
@@ -37,15 +34,9 @@ export async function getStakingRewards(reverse: boolean = true): Promise<QueryA
                 limit: 1000
             }
         }));
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + SR_TTL,
-        }
-        localStorage.setItem(SR_KEY, JSON.stringify(cacheData));
+        setInCache(SR_KEY, JSON.stringify(response), SR_TTL);
 
-        return new Promise<QueryAllStakingRewardResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        return response
     } catch (e) {
         console.error(e);
 
@@ -72,16 +63,11 @@ function getStakingRewardsByAddressCacheKey(address: string): string {
 export async function getStakingRewardParticipantByAddress(address: string): Promise<QueryGetStakingRewardParticipantResponseSDKType> {
     try {
         const cacheKey = getStakingRewardParticipantCacheKey(address);
-        let localData = localStorage.getItem(cacheKey);
+        let localData = getFromCache(cacheKey);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                if (parsed.expiresAt > new Date().getTime()) {
-
-                    return new Promise<QueryGetStakingRewardParticipantResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
@@ -90,15 +76,9 @@ export async function getStakingRewardParticipantByAddress(address: string): Pro
             address: address,
             pagination: {limit: 100}
         }));
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + SR_TTL,
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        setInCache(cacheKey, JSON.stringify(response), SR_TTL);
 
-        return new Promise<QueryGetStakingRewardParticipantResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        return response;
     } catch (e) {
         console.error(e);
 
