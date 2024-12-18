@@ -1,31 +1,36 @@
 import {Box, Tabs, Text} from "@interchain-ui/react";
 import {Layout, MyRewards, StakingRewards} from "@/components";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Image from "next/image";
+import {useRouter} from "next/router";
 
 
 export default function Earn() {
-    const tabs = [
-        {
-            label: 'Staking Rewards',
-            content: <StakingRewards/>,
-        },
-        {
-            label: 'Trading Rewards',
-            content: <Text>trading rewards</Text>,
-        },
-        {
-            label: 'My Rewards',
-            content: <Text>my rewards</Text>,
+    const router = useRouter();
+    const { query } = router;
+
+    // Get the initial tab from the URL query or default to 0
+    const [currentTab, setCurrentTab] = useState(Number(query.tab) || 0);
+
+    const onActiveTabChange = (tabIndex: number) => {
+        setCurrentTab(tabIndex);
+        console.log("onActiveTabChange", tabIndex);
+        // Update the URL query parameter without refreshing the page
+        router.push(
+            {
+                pathname: router.pathname,
+                query: { tab: tabIndex },
+            },
+            undefined,
+            { shallow: true } // Prevent full-page reload
+        );
+    };
+
+    useEffect(() => {
+        if (query.tab) {
+            setCurrentTab(Number(query.tab));
         }
-    ];
-
-    const [currentTab, setCurrentTab] = useState(0);
-
-
-    const onActiveTabChange = (arg: any) => {
-        setCurrentTab(arg);
-    }
+    }, [query.tab]);
 
     return (
         <Layout>

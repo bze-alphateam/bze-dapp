@@ -7,7 +7,7 @@ import {
 } from "@/components";
 import {useEffect, useState} from "react";
 import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
-import {getAllSupplyTokens, Token} from "@/services";
+import {getAllSupplyTokens, getHourEpochInfo, Token} from "@/services";
 import {SearchInput} from "@/components/common/Input";
 import {useToast, useTx} from "@/hooks";
 import {
@@ -26,6 +26,8 @@ import {getAddressStakingRewards, resetStakingRewardsCache} from "@/services/dat
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
 import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
+import {PendingUnlockParticipantSDKType} from "@bze/bzejs/src/codegen/beezee/rewards/staking_reward_participant";
+import Long from 'long';
 
 const {joinStaking, exitStaking, claimStakingRewards} = bze.v1.rewards.MessageComposer.withTypeUrl;
 
@@ -279,12 +281,74 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
     );
 }
 
+interface PendingUnlockBoxProps {
+    pending: PendingUnlockParticipantSDKType;
+    token?: Token|undefined;
+    currentEpoch: number;
+}
+
+function PendingUnlockBox({props}: {props: PendingUnlockBoxProps}) {
+    const {pending, token, currentEpoch} = props;
+
+    if (!token) {
+        return null;
+    }
+
+    const displayDenom = token.metadata.denom_units.find((unit) => unit.denom === token.metadata.display);
+    if (!displayDenom) {
+        return null;
+    }
+
+    const getPendingEndEpoch = () => {
+        const split = pending.index.split("/")
+        if (split.length === 0) {
+            return 0;
+        }
+
+        const parsed = parseInt(split[0], 10)
+        if (!parsed) {
+            return 0;
+        }
+
+        return parsed;
+    }
+
+    const getRemainingHours = () => {
+        const pendingEpoch = getPendingEndEpoch();
+
+        return pendingEpoch - currentEpoch;
+    }
+
+    const getRemainingText = () => {
+        const remainingHours = getRemainingHours();
+        const days = Math.floor(remainingHours / 24);
+        if (days >= 2) {
+            return `Unlocking in ${days} days`;
+        }
+
+        if (remainingHours > 1) {
+            return `Unlocking in ${remainingHours} hours`;
+        }
+
+        return `Unlocking in 1 hour`;
+    }
+
+    return (
+        <DefaultBorderedBox m='$6' p='$6'>
+            <Text fontSize={"$md"} color={"$primary300"} fontWeight={"$semibold"}>{prettyAmount(uAmountToAmount(pending.amount, displayDenom.exponent))} {token?.metadata.display.toUpperCase()}</Text>
+            <Text fontSize={"$xs"} fontWeight={"$hairline"}>{getRemainingText()}</Text>
+        </DefaultBorderedBox>
+    );
+}
+
 export function MyRewards() {
     const [loading, setLoading] = useState(true);
     const [rewards, setRewards] = useState<StakingRewardSDKType[]>([]);
     const [filteredRewards, setFilteredRewards] = useState<StakingRewardSDKType[]>([]);
     const [allAssets, setAllAssets] = useState<Map<string, Token>>(new Map());
     const [stakingParticipations, setStakingParticipations] = useState<Map<string, StakingRewardParticipantSDKType>>(new Map());
+    const [unlocking, setUnlocking] = useState<PendingUnlockParticipantSDKType[]>([]);
+    const [currentEpoch, setCurrentEpoch] = useState(0);
 
     const {address} = useChain(getChainName());
 
@@ -297,6 +361,7 @@ export function MyRewards() {
         setRewards(addrRew.rewards);
         setFilteredRewards(addrRew.rewards);
         setStakingParticipations(addrRew.participation);
+        setUnlocking(addrRew.unlocking);
     }
 
     const fetchTokens = async () => {
@@ -332,11 +397,21 @@ export function MyRewards() {
         setFilteredRewards(result);
     }
 
+    const fetchEpoch = async () => {
+        const info = await getHourEpochInfo();
+        if (!info) {
+            return;
+        }
+
+        setCurrentEpoch(Long.fromValue(info.current_epoch).toNumber());
+    }
+
     const initialLoad = async () => {
         setLoading(true);
         await Promise.all([
             fetchStakingRewards(),
-            fetchTokens()
+            fetchTokens(),
+            fetchEpoch(),
         ]);
         setLoading(false);
     }
@@ -371,8 +446,14 @@ export function MyRewards() {
                         ...</Text></Box>
                     :
                     (
-                        address ?
-                            (filteredRewards.length > 0 ?
+                        !address ?
+                            <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}>
+                                <WalletConnectCallout
+                                    props={{text: 'Please connect your wallet to view your rewards'}}/>
+                            </Box>
+                            :
+                            <>
+                                {filteredRewards.length > 0 ?
                                     filteredRewards.map((rew, index) => (
                                         <MyRewardDetail props={{
                                             reward: rew,
@@ -384,15 +465,21 @@ export function MyRewards() {
                                     :
                                     <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1}
                                          justifyContent={'center'}><Text>No rewards found...</Text></Box>
-                            )
-                            :
-                            <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}>
-                                <WalletConnectCallout
-                                    props={{text: 'Please connect your wallet to view your rewards'}}/>
-                            </Box>
+                                }
+                            </>
                     )
                 }
             </Box>
+
+            {!loading && unlocking.length > 0 &&
+                <Box p='$6' m='$6' textAlign={'center'} display={'flex'} flex={1} justifyContent={'center'}>
+                    {
+                        unlocking.map((u, index) => (
+                            <PendingUnlockBox key={u.index} props={{pending: u, token: allAssets.get(u.denom), currentEpoch: currentEpoch}} />
+                        ))
+                    }
+                </Box>
+            }
         </Box>
     );
 }

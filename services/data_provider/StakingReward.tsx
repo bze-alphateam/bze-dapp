@@ -1,4 +1,5 @@
 import {
+    QueryAllPendingUnlockParticipantResponseSDKType,
     QueryAllStakingRewardResponseSDKType,
     QueryGetStakingRewardParticipantResponseSDKType
 } from "@bze/bzejs/types/codegen/beezee/rewards/query";
@@ -7,14 +8,17 @@ import {bze} from '@bze/bzejs';
 import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {PendingUnlockParticipantSDKType} from "@bze/bzejs/src/codegen/beezee/rewards/staking_reward_participant";
 
 const SR_KEY = 'SR:LIST';
 const SRP_KEY = 'SRP:LIST:';
+const SRU_KEY = 'SRU:LIST:';
 const ADDR_SR_KEY = 'SR_ADDR';
 const SR_TTL = 1000 * 60 * 5; //10 minutes
 
 const {fromPartial: QueryAllStakingRewardRequestFromPartial} = bze.v1.rewards.QueryAllStakingRewardRequest;
 const {fromPartial: QueryGetStakingRewardParticipantRequestFromPartial} = bze.v1.rewards.QueryGetStakingRewardParticipantRequest;
+const {fromPartial: QueryAllPendingUnlockParticipantRequestFromPartial} = bze.v1.rewards.QueryAllPendingUnlockParticipantRequest;
 
 export async function getStakingRewards(reverse: boolean = true): Promise<QueryAllStakingRewardResponseSDKType> {
     try {
@@ -49,6 +53,7 @@ export async function resetStakingRewardsCache(address?: string): Promise<void> 
     if (address !== undefined) {
         localStorage.removeItem(getStakingRewardParticipantCacheKey(address));
         localStorage.removeItem(getStakingRewardsByAddressCacheKey(address));
+        localStorage.removeItem(getPendingUnlockCacheKey());
     }
 }
 
@@ -58,6 +63,10 @@ function getStakingRewardParticipantCacheKey(address: string): string {
 
 function getStakingRewardsByAddressCacheKey(address: string): string {
     return `${ADDR_SR_KEY}${address}`
+}
+
+function getPendingUnlockCacheKey(): string {
+    return SRU_KEY
 }
 
 export async function getStakingRewardParticipantByAddress(address: string): Promise<QueryGetStakingRewardParticipantResponseSDKType> {
@@ -86,9 +95,44 @@ export async function getStakingRewardParticipantByAddress(address: string): Pro
     }
 }
 
+export async function getAddressPendingUnlock(address: string): Promise<PendingUnlockParticipantSDKType[]> {
+    const all = await getPendingUnlockParticipants();
+    if (!all || all.list.length === 0) {
+        return [];
+    }
+
+    return all.list.filter((item) => item.address === address);
+}
+
+export async function getPendingUnlockParticipants(): Promise<QueryAllPendingUnlockParticipantResponseSDKType> {
+    try {
+        const cacheKey = getPendingUnlockCacheKey();
+        let localData = getFromCache(cacheKey);
+        if (null !== localData) {
+            let parsed = JSON.parse(localData);
+            if (parsed) {
+                return parsed;
+            }
+        }
+
+        const client = await getRestClient();
+        let response = await client.bze.v1.rewards.allPendingUnlockParticipant(QueryAllPendingUnlockParticipantRequestFromPartial({
+            pagination: {limit: 1000}
+        }));
+        setInCache(cacheKey, JSON.stringify(response), SR_TTL);
+
+        return response;
+    } catch (e) {
+        console.error(e);
+
+        return {list: []};
+    }
+}
+
 export interface AddressStakingRewards {
     rewards: StakingRewardSDKType[];
     participation: Map<string, StakingRewardParticipantSDKType>;
+    unlocking: PendingUnlockParticipantSDKType[];
 }
 
 export async function getAddressStakingRewards(address: string): Promise<AddressStakingRewards> {
@@ -96,14 +140,13 @@ export async function getAddressStakingRewards(address: string): Promise<Address
         const rewards: StakingRewardSDKType[] = [];
         const participation: Map<string, StakingRewardParticipantSDKType> = new Map();
 
-        const participantRewards = await getStakingRewardParticipantByAddress(address);
+        const [participantRewards, pending] = await Promise.all([getStakingRewardParticipantByAddress(address), getAddressPendingUnlock(address)]);
         if (participantRewards.list.length === 0) {
-            let empty = {
+            return {
                 rewards: rewards,
                 participation: participation,
+                unlocking: pending,
             }
-
-            return empty;
         }
 
         const allRewards = await getStakingRewards();
@@ -121,6 +164,7 @@ export async function getAddressStakingRewards(address: string): Promise<Address
             resolve({
                 rewards: rewards,
                 participation: participation,
+                unlocking: pending,
             });
         })
     } catch (e) {
@@ -129,6 +173,7 @@ export async function getAddressStakingRewards(address: string): Promise<Address
         return {
             rewards: [],
             participation: new Map(),
+            unlocking: [],
         }
     }
 }
