@@ -319,7 +319,7 @@ export default function MarketPair() {
     }, [marketId, historyOrders, myOrders, activeOrders]);
 
     const getTotalVolume = useMemo(() => {
-        if (chartData === undefined) {
+        if (!chartData) {
             return "0";
         }
 
