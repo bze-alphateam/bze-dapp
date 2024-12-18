@@ -86,7 +86,12 @@ export async function getTradingViewIntervals(market: string, minutes: number, l
             return [];
         }
 
-        return await resp.json();
+        const jsonResponse =  await resp.json();
+        if (!jsonResponse) {
+            return [];
+        }
+
+        return jsonResponse;
     } catch (e) {
         console.error("failed to fetch trading view intervals", e);
         return [];
