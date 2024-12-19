@@ -4,7 +4,7 @@ import {QueryEpochsInfoResponseSDKType} from "@bze/bzejs/types/codegen/beezee/ep
 import Long from "long";
 
 const EPOCHS_KEY = "epochs:info";
-const EPOCHS_INFO_TTL = 1000 * 60 * 5;
+const EPOCHS_INFO_TTL = 60 * 5;
 
 //using custom type to avoid type checking failure when building
 export interface EpochInfoAppType {

@@ -14,7 +14,7 @@ const SR_KEY = 'SR:LIST';
 const SRP_KEY = 'SRP:LIST:';
 const SRU_KEY = 'SRU:LIST:';
 const ADDR_SR_KEY = 'SR_ADDR';
-const SR_TTL = 1000 * 60 * 5; //10 minutes
+const SR_TTL = 60 * 5; //10 minutes
 
 const {fromPartial: QueryAllStakingRewardRequestFromPartial} = bze.v1.rewards.QueryAllStakingRewardRequest;
 const {fromPartial: QueryGetStakingRewardParticipantRequestFromPartial} = bze.v1.rewards.QueryGetStakingRewardParticipantRequest;

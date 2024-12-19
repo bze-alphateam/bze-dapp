@@ -4,14 +4,14 @@
  * @returns {string | null} - The data if available and not expired, otherwise null.
  */
 export const getFromCache = (key: string): string | null => {
-    const cachedItem = localStorage.getItem(key);
+    const cachedItem = localStorage.getItem(prefixedKey(key));
     if (cachedItem) {
         const item = JSON.parse(cachedItem);
         const now = new Date().getTime();
         if (item.expiry && now < item.expiry) {
             return item.data;
         }
-        localStorage.removeItem(key);
+        localStorage.removeItem(prefixedKey(key));
     }
 
     return null;
@@ -30,5 +30,9 @@ export const setInCache = (key: string, data: string, ttl: number): void => {
         data: data,
         expiry: expiry
     };
-    localStorage.setItem(key, JSON.stringify(item));
+    localStorage.setItem(prefixedKey(key), JSON.stringify(item));
+}
+
+const prefixedKey = (key: string): string => {
+    return `p1:${key}`;
 }
