@@ -38,5 +38,5 @@ export const removeFromCache = (key: string): void => {
 }
 
 const prefixedKey = (key: string): string => {
-    return `p1:${key}`;
+    return `p2:${key}`;
 }
