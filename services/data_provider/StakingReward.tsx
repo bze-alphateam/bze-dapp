@@ -7,7 +7,7 @@ import {getRestClient} from "../Client";
 import {bze} from '@bze/bzejs';
 import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
-import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {getFromCache, removeFromCache, setInCache} from "@/services/data_provider/cache";
 import {PendingUnlockParticipantSDKType} from "@bze/bzejs/src/codegen/beezee/rewards/staking_reward_participant";
 
 const SR_KEY = 'SR:LIST';
@@ -49,11 +49,11 @@ export async function getStakingRewards(reverse: boolean = true): Promise<QueryA
 }
 
 export async function resetStakingRewardsCache(address?: string): Promise<void> {
-    localStorage.removeItem(SR_KEY);
+    removeFromCache(SR_KEY);
     if (address !== undefined) {
-        localStorage.removeItem(getStakingRewardParticipantCacheKey(address));
-        localStorage.removeItem(getStakingRewardsByAddressCacheKey(address));
-        localStorage.removeItem(getPendingUnlockCacheKey());
+        removeFromCache(getStakingRewardParticipantCacheKey(address));
+        removeFromCache(getStakingRewardsByAddressCacheKey(address));
+        removeFromCache(getPendingUnlockCacheKey());
     }
 }
 

@@ -33,6 +33,10 @@ export const setInCache = (key: string, data: string, ttl: number): void => {
     localStorage.setItem(prefixedKey(key), JSON.stringify(item));
 }
 
+export const removeFromCache = (key: string): void => {
+    localStorage.removeItem(prefixedKey(key));
+}
+
 const prefixedKey = (key: string): string => {
     return `p1:${key}`;
 }
