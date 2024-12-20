@@ -9,10 +9,10 @@ import {
 } from "@bze/bzejs/types/codegen/beezee/tradebin/query";
 import {getRestClient} from "../Client";
 import {bze} from '@bze/bzejs';
-import {getFromCache, setInCache} from "./cache";
+import {getFromCache, removeFromCache, setInCache} from "./cache";
 
 const ALL_MARKETS_KEY = 'markets:list';
-const ALL_MARKETS_CACHE_TTL = 1000 * 60 * 5; //5 minutes
+const ALL_MARKETS_CACHE_TTL = 60 * 5; //5 minutes
 const CACHE_TTL_IN_SECONDS = 5 * 60;
 
 const ORDER_TYPE_BUY = 'buy';
@@ -70,30 +70,21 @@ export async function getMarketHistory(marketId: string): Promise<QueryMarketHis
 export async function getAllMarkets(): Promise<QueryAllMarketResponseSDKType> {
     try {
         const cacheKey = ALL_MARKETS_KEY;
-        let localData = localStorage.getItem(cacheKey);
+        let localData = getFromCache(cacheKey);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                if (parsed.expiresAt > new Date().getTime()) {
 
-                    return new Promise<QueryAllMarketResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
         const client = await getRestClient();
         let response = await client.bze.tradebin.v1.marketAll(QueryMarketsFromPartial({pagination: {limit: 500}}));
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + ALL_MARKETS_CACHE_TTL,
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
-        return new Promise<QueryAllMarketResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        setInCache(cacheKey, JSON.stringify(response), ALL_MARKETS_CACHE_TTL);
+
+        return response;
     } catch (e) {
         console.error(e);
 
@@ -102,7 +93,7 @@ export async function getAllMarkets(): Promise<QueryAllMarketResponseSDKType> {
 }
 
 export async function removeAllMarketsCache() {
-    localStorage.removeItem(ALL_MARKETS_KEY);
+    removeFromCache(ALL_MARKETS_KEY);
 }
 
 export async function getAddressMarketOrders(marketId: string, address: string): Promise<QueryUserMarketOrdersResponseSDKType> {
@@ -124,16 +115,12 @@ export async function getAddressMarketOrders(marketId: string, address: string):
 export async function getMarketOrder(marketId: string, orderType: string, orderId: string): Promise<QueryMarketOrderResponseSDKType> {
     try {
         const cacheKey = `${ALL_MARKETS_KEY}${marketId}:${orderType}:${orderId}`;
-        let localData = localStorage.getItem(cacheKey);
+        let localData = getFromCache(cacheKey);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                if (parsed.expiresAt > new Date().getTime()) {
 
-                    return new Promise<QueryMarketOrderResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
@@ -143,11 +130,8 @@ export async function getMarketOrder(marketId: string, orderType: string, orderI
             orderType: orderType,
             orderId: orderId
         }));
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + ALL_MARKETS_CACHE_TTL,
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+
+        setInCache(cacheKey, JSON.stringify(response), ALL_MARKETS_CACHE_TTL);
 
         return response;
     } catch (e) {

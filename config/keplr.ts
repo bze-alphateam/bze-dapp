@@ -1,3 +1,5 @@
+import {getFromCache, setInCache} from "@/services/data_provider/cache";
+
 const MAINNET_CHAIN_INFO_FALLBACK = {
     "chainId": "beezee-1",
     "chainName": "BeeZee",
@@ -120,11 +122,9 @@ const TESTNET_CHAIN_INFO_FALLBACK = {
 
 async function getKeplrMainnetChainInfo() {
     const localKey = 'ci:keplr:mainnet';
-    const expKey = 'ci:keplr:mainnet:expire';
     // Check if cache exists and is valid
-    const cachedData = localStorage.getItem(localKey);
-    const cacheExpiry = localStorage.getItem(expKey);
-    if (cachedData && cacheExpiry && new Date().getTime() < new Date(parseInt(cacheExpiry)).getTime()) {
+    const cachedData = getFromCache(localKey);
+    if (cachedData) {
         return JSON.parse(cachedData);
     }
 
@@ -139,11 +139,7 @@ async function getKeplrMainnetChainInfo() {
 
         const json = await response.json();
         // Cache the new data
-        localStorage.setItem(localKey, JSON.stringify(json));
-        //save expiration
-        const expiryDate = new Date();
-        expiryDate.setMinutes(expiryDate.getMinutes() + (60 * 24));
-        localStorage.setItem(expKey, expiryDate.getTime().toString());
+        setInCache(localKey, JSON.stringify(json), 60 * 60 * 24);
 
         return json;
     } catch (error) {
@@ -154,11 +150,9 @@ async function getKeplrMainnetChainInfo() {
 
 async function getKeplrTestnetChainInfo() {
     const localKey = 'ci:keplr:testnet';
-    const expKey = 'ci:keplr:testnet:expire';
     // Check if cache exists and is valid
-    const cachedData = localStorage.getItem(localKey);
-    const cacheExpiry = localStorage.getItem(expKey);
-    if (cachedData && cacheExpiry && new Date().getTime() < new Date(parseInt(cacheExpiry)).getTime()) {
+    const cachedData = getFromCache(localKey);
+    if (cachedData) {
         return JSON.parse(cachedData);
     }
 
@@ -173,11 +167,7 @@ async function getKeplrTestnetChainInfo() {
 
         const json = await response.json();
         // Cache the new data
-        localStorage.setItem(localKey, JSON.stringify(json));
-        //save expiration
-        const expiryDate = new Date();
-        expiryDate.setMinutes(expiryDate.getMinutes() + (60 * 24));
-        localStorage.setItem(expKey, expiryDate.getTime().toString());
+        setInCache(localKey, JSON.stringify(json), 60 * 60 * 24);
 
         return json;
     } catch (error) {

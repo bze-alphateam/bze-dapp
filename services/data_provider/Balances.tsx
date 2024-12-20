@@ -1,37 +1,28 @@
 import {QuerySpendableBalancesResponseSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/query";
 import {getRestClient} from "../Client";
+import {getFromCache, removeFromCache, setInCache} from "@/services/data_provider/cache";
 
 const BALANCES_KEY = 'bank:balances:';
 
-const BALANCES_CACHE_TTL = 1000 * 60 * 15; //15 minutes
+const BALANCES_CACHE_TTL = 60 * 15; //15 minutes
 
 export async function getAddressBalances(address: string): Promise<QuerySpendableBalancesResponseSDKType> {
     try {
         const cacheKey = `${BALANCES_KEY}${address}`;
-        let localData = localStorage.getItem(cacheKey);
+        let localData = getFromCache(cacheKey);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                if (parsed.expiresAt > new Date().getTime()) {
-
-                    return new Promise<QuerySpendableBalancesResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
         const client = await getRestClient();
         let response = await client.cosmos.bank.v1beta1.spendableBalances({address: address});
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + BALANCES_CACHE_TTL,
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
-        return new Promise<QuerySpendableBalancesResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        setInCache(cacheKey, JSON.stringify(response), BALANCES_CACHE_TTL);
+
+        return response;
     } catch (e) {
         console.error(e);
 
@@ -41,5 +32,5 @@ export async function getAddressBalances(address: string): Promise<QuerySpendabl
 
 export async function removeBalancesCache(address: string) {
     const cacheKey = `${BALANCES_KEY}${address}`;
-    localStorage.removeItem(cacheKey);
+    removeFromCache(cacheKey);
 }

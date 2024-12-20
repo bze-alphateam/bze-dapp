@@ -2,6 +2,7 @@ import {GetBlockByHeightResponseSDKType} from "@bze/bzejs/types/codegen/cosmos/b
 import {getRestClient, getRpcURL} from "../Client";
 import Long from "long";
 import {TendermintEvent} from "@/utils";
+import {getFromCache, setInCache} from "@/services/data_provider/cache";
 
 type FailoverBlockTimes = {
     [key: string]: string;
@@ -20,26 +21,21 @@ const BLOCK_KEY = 'tendermint:block:';
 export async function getBlockDetailsByHeight(height: Long): Promise<GetBlockByHeightResponseSDKType> {
     try {
         const cacheKey = BLOCK_KEY + height;
-        let localData = localStorage.getItem(cacheKey);
+        let localData = getFromCache(cacheKey);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                return new Promise<GetBlockByHeightResponseSDKType>((resolve) => {
-                    resolve({...parsed.params});
-                })
+
+                return parsed;
             }
         }
 
         const client = await getRestClient();
         let response = await client.cosmos.base.tendermint.v1beta1.getBlockByHeight({height: height});
-        let cacheData = {
-            params: {...response},
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
-        return new Promise<GetBlockByHeightResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        setInCache(cacheKey, JSON.stringify(response), 9999999);
+
+        return response;
     } catch (e) {
         console.error(e);
         return {};
@@ -80,8 +76,7 @@ export async function getBlockResults(height: number): Promise<BlockResults | un
             return undefined
         }
 
-        const blockResults = await response.json();
-        return blockResults;
+        return await response.json();
     } catch (error) {
         console.error("Failed to fetch block results:", error);
         throw error;
