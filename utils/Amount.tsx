@@ -160,3 +160,20 @@ export const sanitizeNumberInput = (input: string) => {
 
     return sanitized;
 }
+
+export const sanitizeIntegerInput = (input: string): string => {
+    if (input.length === 0) {
+        return "";
+    }
+
+    // Regular expression to match all characters not allowed in an integer number (digits only)
+    const sanitized = input.replace(/[^0-9]/g, '');
+
+    // Parse the sanitized string as an integer and return it
+    const parsed = parseInt(sanitized, 10); // Return 0 if parsing fails
+    if (!parsed) {
+        return "1";
+    }
+
+    return `${parsed}`;
+}

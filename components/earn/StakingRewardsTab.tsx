@@ -13,7 +13,7 @@ import {
     isGreaterOrEqualToZero, isGreaterThan,
     isGreaterThanZero,
     prettyAmount,
-    prettyFee,
+    prettyFee, sanitizeIntegerInput,
     sanitizeNumberInput, uAmountToAmount
 } from "@/utils";
 import BigNumber from "bignumber.js";
@@ -31,7 +31,7 @@ import {
     getStakingTokenBalance
 } from "@/components/earn/common";
 
-const {createStakingReward, joinStaking} = bze.v1.rewards.MessageComposer.withTypeUrl;
+const {createStakingReward, updateStakingReward} = bze.v1.rewards.MessageComposer.withTypeUrl;
 
 export interface StakingRewardDetailProps {
     reward: StakingRewardSDKType;
@@ -42,18 +42,25 @@ export interface StakingRewardDetailProps {
 
 function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
     const [showForm, setShowForm] = useState(false);
+    const [showDonateForm, setShowDonateForm] = useState(false);
     const [amount, setAmount] = useState<string | undefined>();
+    const [extendInput, setExtendInput] = useState<string | undefined>();
     const [submitPending, setSubmitPending] = useState(false);
 
     const [estimatedApr, setEstimatedApr] = useState<BigNumber | undefined>();
 
     const [stakingToken, setStakingToken] = useState<Token>();
     const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
+    const [prizeDisplayDenom, setPrizeDisplayDenom] = useState<DenomUnitSDKType>();
     const [prizeToken, setPrizeToken] = useState<Token>();
 
     const {toast} = useToast();
     const {tx} = useTx();
     const {address} = useChain(getChainName());
+
+    const onExtendInputChange = (days: string) => {
+        setExtendInput(days);
+    }
 
     const onAmountChange = (amount: string) => {
         amountChangeHandler(amount, props, setAmount, setEstimatedApr, prizeToken);
@@ -98,6 +105,44 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
         setSubmitPending(false);
     };
 
+    const submitExtendDonation = async () => {
+        if (stakingToken === undefined || extendInput === undefined || stakingDisplayDenom === undefined) {
+            return;
+        }
+
+        setSubmitPending(true);
+        const parsedDays = parseInt(extendInput, 10);
+        if (parsedDays < 1 || parsedDays > 3650) {
+            toast({
+                title: 'Invalid input',
+                description: "Number of days must be between 0 and 3651",
+                type: 'error'
+            });
+
+            setSubmitPending(false);
+
+            return;
+        }
+
+        const msg = updateStakingReward({
+            creator: address ?? "",
+            rewardId: props.reward.reward_id,
+            duration: extendInput,
+        });
+
+        await tx([msg], {
+            toast: {
+                description: 'Staking reward successfully extended',
+            },
+            onSuccess: () => {
+                props.refreshList ? props.refreshList() : null;
+                setShowDonateForm(false);
+            }
+        });
+
+        setSubmitPending(false);
+    };
+
     const stakingTokenBalance = () => {
         if (!address) {
             return "0";
@@ -106,9 +151,27 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
         return getStakingTokenBalance(props, stakingDisplayDenom, stakingToken);
     }
 
+    const getDonateButtonText = () => {
+        if (!extendInput || !prizeDisplayDenom) {
+            return "Donate";
+        }
+
+        const intDays = parseInt(extendInput);
+        if (intDays < 1) {
+            return "Donate";
+        }
+
+        const totalAmount = new BigNumber(extendInput).multipliedBy(props.reward.prize_amount);
+
+        return `Donate ${prettyAmount(uAmountToAmount(totalAmount.toNumber(), prizeDisplayDenom.exponent))} ${prizeDisplayDenom.denom.toUpperCase()}`;
+    }
+
     useEffect(() => {
         let pToken = props.tokens.get(props.reward.prize_denom);
         setPrizeToken(pToken);
+        if (pToken) {
+            setPrizeDisplayDenom(pToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === pToken?.metadata.display));
+        }
         let sToken = props.tokens.get(props.reward.staking_denom);
         setStakingToken(sToken);
         if (sToken) {
@@ -117,20 +180,25 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
 
     }, [props]);
 
-    if (prizeToken === undefined || stakingToken === undefined || prizeToken.metadata.display === "" || stakingToken.metadata.display === "") {
+    if (prizeToken === undefined || stakingToken === undefined || !prizeDisplayDenom || !stakingDisplayDenom) {
         return <></>
     }
 
     return (
         <StakingRewardDetailsBox prizeToken={prizeToken} stakingToken={stakingToken} reward={props.reward}>
-            {!showForm ?
-                <Box display={'flex'} flex={1} flexDirection={'row'} alignItems={'center'} justifyContent={'center'}
+            {!showForm && !showDonateForm &&
+                <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-around'}
                      mt={'$6'} flexWrap={'wrap'}>
                     <Button size='sm' intent="primary" onClick={() => {
                         setShowForm(true)
                     }} disabled={props.reward.payouts >= props.reward.duration}>Stake</Button>
+                    <Button size='sm' intent="primary" onClick={() => {
+                        setShowDonateForm(true)
+                    }} disabled={props.reward.payouts >= props.reward.duration}>Donate</Button>
                 </Box>
-                :
+            }
+            {
+                showForm &&
                 <Box mt={'$6'} justifyContent={'center'}>
                     <TextField
                         size='sm'
@@ -163,6 +231,56 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
                                 disabled={submitPending}>Cancel</Button>
                         <Button size='sm' intent="primary" onClick={submitStake}
                                 isLoading={submitPending}>Stake</Button>
+                    </Box>
+                </Box>
+            }
+            {showDonateForm &&
+                <Box>
+                    {props.reward.lock > 0 &&
+                        <Box display={'flex'} flex={1} textAlign={"center"} justifyContent={'center'} flexDirection={"column"}>
+                            <Callout
+                                attributes={{
+                                    maxWidth: '350px',
+                                    marginTop: '$6'
+                                }}
+                                iconName="informationLine"
+                                intent="info"
+                                title="Donate & Contribute"
+                            >
+                                You can donate {prizeDisplayDenom.denom.toUpperCase()} to extend the duration of this staking reward by a number of days, showing your support for the participating stakers.
+                            </Callout>
+                            <TextField
+                                size='sm'
+                                id="stake_extend"
+                                label={"Days"}
+                                onChange={(e) => {
+                                    onExtendInputChange(sanitizeIntegerInput(e.target.value))
+                                }}
+                                placeholder="Days to extend"
+                                value={extendInput ?? ""}
+                                type="text"
+                                inputMode="numeric"
+                                disabled={submitPending}
+                            />
+                            <Callout
+                                attributes={{
+                                    maxWidth: '350px',
+                                    marginTop: '$6'
+                                }}
+                                iconName="errorWarningFill"
+                                intent="error"
+                                title="Attention"
+                            >
+                                YOU WILL PAY {prettyAmount(uAmountToAmount(props.reward.prize_amount, prizeDisplayDenom.exponent))} {prizeDisplayDenom.denom.toUpperCase()} for each day. <br/><br/>
+                                This action can NOT be undone!
+                            </Callout>
+                        </Box>
+                    }
+                    <Box mt='$6' display='flex' flexDirection={'row'} justifyContent={'space-around'}>
+                        <Button size='sm' intent="secondary" onClick={() => {setShowDonateForm(false)}}
+                                disabled={submitPending}>Cancel</Button>
+                        <Button size='sm' intent="primary" onClick={submitExtendDonation}
+                                isLoading={submitPending}>{getDonateButtonText()}</Button>
                     </Box>
                 </Box>
             }
