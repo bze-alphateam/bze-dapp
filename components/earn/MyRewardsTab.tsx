@@ -1,5 +1,6 @@
 import {Box, Button, Callout, Divider, Text, TextField} from "@interchain-ui/react";
 import {
+    ClickableBox,
     DefaultBorderedBox,
     StakingRewardDetailProps,
     StakingRewardDetailsBox,
@@ -13,7 +14,7 @@ import {useToast, useTx} from "@/hooks";
 import {
     amountToUAmount,
     calculateApr,
-    getChainName,
+    getChainName, isGreaterThan,
     isGreaterThanZero,
     prettyAmount,
     sanitizeNumberInput,
@@ -28,6 +29,14 @@ import WalletConnectCallout from "@/components/wallet/WalletCallout";
 import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
 import {PendingUnlockParticipantSDKType} from "@bze/bzejs/src/codegen/beezee/rewards/staking_reward_participant";
 import Long from 'long';
+import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
+import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {
+    amountChangeHandler,
+    createStakingMessage,
+    getStakingAmountErrors,
+    getStakingTokenBalance
+} from "@/components/earn/common";
 
 const {joinStaking, exitStaking, claimStakingRewards} = bze.v1.rewards.MessageComposer.withTypeUrl;
 
@@ -45,9 +54,8 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
     const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
     const [prizeDisplayDenom, setPrizeDisplayDenom] = useState<DenomUnitSDKType>();
     const [claimable, setClaimable] = useState(new BigNumber(0));
-    const [amount, setAmount] = useState<string>("");
+    const [amount, setAmount] = useState<string|undefined>("");
 
-    const [shouldEstimateApr, setShouldEstimateApr] = useState(false);
     const [estimatedApr, setEstimatedApr] = useState<BigNumber | undefined>();
 
     const {tx} = useTx();
@@ -55,26 +63,7 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
     const {toast} = useToast();
 
     const onAmountChange = (amount: string) => {
-        setAmount(amount);
-        if (!shouldEstimateApr || !prizeToken) {
-            return;
-        }
-
-        const pDisplay = prizeToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === prizeToken.metadata.display);
-        if (!pDisplay) {
-            return;
-        }
-
-        const amountNum = new BigNumber(amountToUAmount(amount, pDisplay.exponent));
-        if (!amountNum.gt(0)) {
-            setEstimatedApr(undefined);
-            return;
-        }
-
-        const staked = new BigNumber(props.reward.staked_amount);
-        const apr = calculateApr(props.reward.prize_amount, staked.plus(amountNum));
-
-        setEstimatedApr(apr);
+        amountChangeHandler(amount, props, setAmount, setEstimatedApr, prizeToken);
     }
 
     const cancelUnstake = () => {
@@ -140,10 +129,11 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
         }
 
         setSubmitPending(true);
-        if (!isGreaterThanZero(amount)) {
+        const amountErr = getStakingAmountErrors(amount, getStakingTokenBalance(props, stakingDisplayDenom, stakingToken));
+        if (amountErr) {
             toast({
-                title: 'Invalid staking amount',
-                description: 'Please insert positive amount',
+                title: 'Invalid amount',
+                description: amountErr,
                 type: 'error'
             });
 
@@ -152,12 +142,7 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
             return;
         }
 
-        const convertedAmount = amountToUAmount(amount, stakingDisplayDenom.exponent);
-        const msg = joinStaking({
-            amount: convertedAmount,
-            creator: address ?? "",
-            rewardId: props.reward.reward_id,
-        });
+        const msg = createStakingMessage(amount, stakingDisplayDenom, props.reward.reward_id, address);
 
         await tx([msg], {
             toast: {
@@ -171,6 +156,10 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
 
         setSubmitPending(false);
     };
+
+    const stakingTokenBalance = () => {
+        return getStakingTokenBalance(props, stakingDisplayDenom, stakingToken);
+    }
 
     useEffect(() => {
         let pToken = props.tokens.get(props.reward.prize_denom);
@@ -192,7 +181,6 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
             setClaimable(rewardsToClaim);
         }
 
-        setShouldEstimateApr(props.reward.prize_denom === props.reward.staking_denom);
     }, [props]);
 
     if (prizeToken === undefined || stakingToken === undefined) {
@@ -221,7 +209,7 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
                         }} disabled={submitPending || props.reward.payouts >= props.reward.duration}>Stake</Button>
                         <Button size='sm' intent="primary" onClick={() => {
                             claim()
-                        }} isLoading={submitPending}>Claim</Button>
+                        }} isLoading={submitPending} disabled={claimable.lte(0)}>Claim</Button>
                     </Box>
                 }
                 {confirmUnstake &&
@@ -265,6 +253,16 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
                             inputMode="numeric"
                             disabled={submitPending}
                         />
+                        <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>
+                            <Box>
+                                <Text fontWeight={'$hairline'} fontSize={'$xs'}>Available</Text>
+                            </Box>
+                            <ClickableBox onClick={() => onAmountChange(stakingTokenBalance())}>
+                                <Box>
+                                    <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>{prettyAmount(stakingTokenBalance())} {stakingToken.metadata.symbol.toUpperCase()}</Text>
+                                </Box>
+                            </ClickableBox>
+                        </Box>
                         {estimatedApr &&
                             <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected
                                 ARP ~{estimatedApr.toString()}%</Text>}
@@ -349,6 +347,7 @@ export function MyRewards() {
     const [stakingParticipations, setStakingParticipations] = useState<Map<string, StakingRewardParticipantSDKType>>(new Map());
     const [unlocking, setUnlocking] = useState<PendingUnlockParticipantSDKType[]>([]);
     const [currentEpoch, setCurrentEpoch] = useState(0);
+    const [balances, setBalances] = useState<CoinSDKType[]>([]);
 
     const {address} = useChain(getChainName());
 
@@ -406,18 +405,32 @@ export function MyRewards() {
         setCurrentEpoch(Long.fromValue(info.current_epoch).toNumber());
     }
 
+    const fetchBalances = async () => {
+        if (!address) {
+            return;
+        }
+
+        const bal = await getAddressBalances(address);
+
+        setBalances(bal.balances);
+    }
+
     const initialLoad = async () => {
         setLoading(true);
         await Promise.all([
             fetchStakingRewards(),
             fetchTokens(),
             fetchEpoch(),
+            fetchBalances(),
         ]);
         setLoading(false);
     }
 
     const forceListRefresh = async () => {
-        await resetStakingRewardsCache(address);
+        if (address) {
+            await resetStakingRewardsCache(address);
+            removeBalancesCache(address);
+        }
         initialLoad();
     }
 
@@ -459,7 +472,8 @@ export function MyRewards() {
                                             reward: rew,
                                             tokens: allAssets,
                                             participant: stakingParticipations.get(rew.reward_id),
-                                            refreshList: forceListRefresh
+                                            refreshList: forceListRefresh,
+                                            balances: balances,
                                         }} key={index}/>
                                     ))
                                     :

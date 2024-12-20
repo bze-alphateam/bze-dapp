@@ -25,7 +25,12 @@ export function amountToUAmount(amount: string | number, noOfDecimals: number): 
 }
 
 export function prettyAmount(amount: number | string): string {
-    return Intl.NumberFormat('en', {notation: 'standard'}).format(new BigNumber(amount).toNumber());
+    const num = new BigNumber(amount)
+    if (num.isNaN()) {
+        return "0";
+    }
+
+    return Intl.NumberFormat('en', {notation: 'standard'}).format(num.toNumber());
 }
 
 export function prettyFee(fee: string): string {
@@ -59,6 +64,10 @@ export const isGreaterOrEqualToZero = (val: number | string | undefined) => {
 };
 
 export const isGreaterOrEqualThan = (val: number | string | undefined, compare: number | string | undefined) => {
+    return new BigNumber(val || 0).gte(compare || 0);
+};
+
+export const isGreaterThan = (val: number | string | undefined, compare: number | string | undefined) => {
     return new BigNumber(val || 0).gte(compare || 0);
 };
 

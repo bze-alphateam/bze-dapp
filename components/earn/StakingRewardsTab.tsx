@@ -1,5 +1,5 @@
 import {Box, Button, Callout, FieldLabel, Text, TextField} from "@interchain-ui/react";
-import {DefaultBorderedBox, StakingRewardDetailsBox} from "@/components";
+import {ClickableBox, DefaultBorderedBox, StakingRewardDetailsBox} from "@/components";
 import {useEffect, useState} from "react";
 import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {getAllSupplyTokens, getRewardsParams, getTokenDisplayDenom, Token} from "@/services";
@@ -10,11 +10,11 @@ import {
     amountToUAmount,
     calculateApr,
     getChainName,
-    isGreaterOrEqualToZero,
+    isGreaterOrEqualToZero, isGreaterThan,
     isGreaterThanZero,
     prettyAmount,
     prettyFee,
-    sanitizeNumberInput
+    sanitizeNumberInput, uAmountToAmount
 } from "@/utils";
 import BigNumber from "bignumber.js";
 import {DeliverTxResponse} from "@cosmjs/stargate";
@@ -22,6 +22,14 @@ import {bze} from '@bze/bzejs';
 import {useChain} from "@cosmos-kit/react";
 import {getStakingRewards, resetStakingRewardsCache} from "@/services/data_provider/StakingReward";
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
+import {
+    amountChangeHandler,
+    createStakingMessage,
+    getStakingAmountErrors,
+    getStakingTokenBalance
+} from "@/components/earn/common";
 
 const {createStakingReward, joinStaking} = bze.v1.rewards.MessageComposer.withTypeUrl;
 
@@ -29,6 +37,7 @@ export interface StakingRewardDetailProps {
     reward: StakingRewardSDKType;
     tokens: Map<string, Token>;
     refreshList?: () => void;
+    balances?: CoinSDKType[];
 }
 
 function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
@@ -36,10 +45,10 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
     const [amount, setAmount] = useState<string | undefined>();
     const [submitPending, setSubmitPending] = useState(false);
 
-    const [shouldEstimateApr, setShouldEstimateApr] = useState(false);
     const [estimatedApr, setEstimatedApr] = useState<BigNumber | undefined>();
 
     const [stakingToken, setStakingToken] = useState<Token>();
+    const [stakingDisplayDenom, setStakingDisplayDenom] = useState<DenomUnitSDKType>();
     const [prizeToken, setPrizeToken] = useState<Token>();
 
     const {toast} = useToast();
@@ -47,26 +56,7 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
     const {address} = useChain(getChainName());
 
     const onAmountChange = (amount: string) => {
-        setAmount(amount);
-        if (!shouldEstimateApr || !prizeToken) {
-            return;
-        }
-
-        const pDisplay = prizeToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === prizeToken.metadata.display);
-        if (!pDisplay) {
-            return;
-        }
-
-        const amountNum = new BigNumber(amountToUAmount(amount, pDisplay.exponent));
-        if (!amountNum.gt(0)) {
-            setEstimatedApr(undefined);
-            return;
-        }
-
-        const staked = new BigNumber(props.reward.staked_amount);
-        const apr = calculateApr(props.reward.prize_amount, staked.plus(amountNum));
-
-        setEstimatedApr(apr);
+        amountChangeHandler(amount, props, setAmount, setEstimatedApr, prizeToken);
     }
 
     const cancelForm = () => {
@@ -75,15 +65,16 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
     }
 
     const submitStake = async () => {
-        if (stakingToken === undefined || amount === undefined) {
+        if (stakingToken === undefined || amount === undefined || stakingDisplayDenom === undefined) {
             return;
         }
 
         setSubmitPending(true);
-        if (!isGreaterThanZero(amount)) {
+        const amountErr = getStakingAmountErrors(amount, getStakingTokenBalance(props, stakingDisplayDenom, stakingToken));
+        if (amountErr) {
             toast({
-                title: 'Invalid staking amount',
-                description: 'Please insert positive amount',
+                title: 'Invalid amount',
+                description: amountErr,
                 type: 'error'
             });
 
@@ -92,17 +83,11 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
             return;
         }
 
-        const stakingDenomUnit = await getTokenDisplayDenom(stakingToken.metadata.base, stakingToken);
-        const convertedAmount = amountToUAmount(amount, stakingDenomUnit.exponent);
-        const msg = joinStaking({
-            amount: convertedAmount,
-            creator: address ?? "",
-            rewardId: props.reward.reward_id,
-        });
+        const msg = createStakingMessage(amount, stakingDisplayDenom, props.reward.reward_id, address);
 
         await tx([msg], {
             toast: {
-                description: 'Successfully joined staking reward',
+                description: 'Stake successfully added',
             },
             onSuccess: () => {
                 props.refreshList ? props.refreshList() : null;
@@ -113,11 +98,22 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
         setSubmitPending(false);
     };
 
-    useEffect(() => {
-        setPrizeToken(props.tokens.get(props.reward.prize_denom));
-        setStakingToken(props.tokens.get(props.reward.staking_denom));
+    const stakingTokenBalance = () => {
+        if (!address) {
+            return "0";
+        }
 
-        setShouldEstimateApr(props.reward.prize_denom === props.reward.staking_denom);
+        return getStakingTokenBalance(props, stakingDisplayDenom, stakingToken);
+    }
+
+    useEffect(() => {
+        let pToken = props.tokens.get(props.reward.prize_denom);
+        setPrizeToken(pToken);
+        let sToken = props.tokens.get(props.reward.staking_denom);
+        setStakingToken(sToken);
+        if (sToken) {
+            setStakingDisplayDenom(sToken.metadata.denom_units.find((denom: DenomUnitSDKType) => denom.denom === sToken?.metadata.display));
+        }
 
     }, [props]);
 
@@ -149,6 +145,16 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
                         inputMode="numeric"
                         disabled={submitPending}
                     />
+                    <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>
+                        <Box>
+                            <Text fontWeight={'$hairline'} fontSize={'$xs'}>Available</Text>
+                        </Box>
+                        <ClickableBox onClick={() => onAmountChange(stakingTokenBalance())}>
+                            <Box>
+                                <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>{prettyAmount(stakingTokenBalance())} {stakingToken.metadata.symbol.toUpperCase()}</Text>
+                            </Box>
+                        </ClickableBox>
+                    </Box>
                     {estimatedApr &&
                         <Text fontWeight={'$hairline'} fontSize={'$xs'} textAlign={'center'} color={'$textWarning'}>Expected
                             ARP ~{estimatedApr.toString()}%</Text>}
@@ -500,6 +506,7 @@ export function StakingRewards() {
     const [filteredRewards, setFilteredRewards] = useState<StakingRewardSDKType[]>([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [allAssets, setAllAssets] = useState<Map<string, Token>>(new Map());
+    const [balances, setBalances] = useState<CoinSDKType[]>([]);
 
     const {address} = useChain(getChainName());
 
@@ -549,24 +556,39 @@ export function StakingRewards() {
         setFilteredRewards(result);
     }
 
+    const fetchBalances = async () => {
+        if (!address) {
+            return;
+        }
+
+        const bal = await getAddressBalances(address);
+
+        setBalances(bal.balances);
+    }
+
     const initialLoad = async () => {
         setLoading(true);
         await Promise.all([
             fetchStakingRewards(),
-            fetchTokens()
+            fetchTokens(),
+            fetchBalances()
         ]);
         setLoading(false);
     }
 
     const forceListRefresh = async () => {
-        await resetStakingRewardsCache(address);
+        if (address) {
+            await resetStakingRewardsCache(address);
+            removeBalancesCache(address);
+        }
+
         initialLoad();
     }
 
     useEffect(() => {
         initialLoad();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [address]);
 
     return (
         <Box>
@@ -608,7 +630,7 @@ export function StakingRewards() {
                     (filteredRewards.length > 0 ?
                             filteredRewards.map((rew, index) => (
                                 <StakingRewardDetail
-                                    props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh}}
+                                    props={{reward: rew, tokens: allAssets, refreshList: forceListRefresh, balances: balances}}
                                     key={index}/>
                             ))
                             :

@@ -123,9 +123,7 @@ async function getSupply() {
         //@ts-ignore
         let res = await client.cosmos.bank.v1beta1.totalSupply({pagination: {limit: Long.fromNumber(DENOM_METADATA_LIMIT)}})
 
-        let allDenomsSupply = res.supply;
-
-        return allDenomsSupply;
+        return res.supply;
     } catch (e) {
         console.error(e);
 

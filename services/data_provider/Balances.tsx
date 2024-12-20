@@ -4,7 +4,7 @@ import {getFromCache, removeFromCache, setInCache} from "@/services/data_provide
 
 const BALANCES_KEY = 'bank:balances:';
 
-const BALANCES_CACHE_TTL = 60 * 15; //15 minutes
+const BALANCES_CACHE_TTL = 60 * 5; //15 minutes
 
 export async function getAddressBalances(address: string): Promise<QuerySpendableBalancesResponseSDKType> {
     try {
