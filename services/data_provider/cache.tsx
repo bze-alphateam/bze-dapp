@@ -37,6 +37,34 @@ export const removeFromCache = (key: string): void => {
     localStorage.removeItem(prefixedKey(key));
 }
 
+export const getKeyExpiry = (key: string): Date | null => {
+    const cachedItem = localStorage.getItem(prefixedKey(key));
+    if (cachedItem) {
+        const item = JSON.parse(cachedItem);
+        if (item.expiry) {
+            return item.expiry;
+        }
+    }
+
+    return null;
+}
+
+export const setKeyExpiry = (key: string, expiry: Date): boolean => {
+    const cachedItem = localStorage.getItem(prefixedKey(key));
+    if (cachedItem) {
+        const item = JSON.parse(cachedItem);
+        if (item) {
+            item.expiry = expiry;
+            localStorage.setItem(prefixedKey(key), JSON.stringify(item));
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 const prefixedKey = (key: string): string => {
-    return `p2:${key}`;
+    return `p3:${key}`;
 }

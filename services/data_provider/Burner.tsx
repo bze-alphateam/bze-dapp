@@ -5,7 +5,7 @@ import {getModuleAddress} from "./Account";
 import {getAddressBalances} from "./Balances";
 import {getCurrentuDenom, transformAttributes} from "@/utils";
 import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
-import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {getFromCache, getKeyExpiry, removeFromCache, setInCache, setKeyExpiry} from "@/services/data_provider/cache";
 import {getBlockResults} from "@/services";
 
 export interface NextBurning {
@@ -40,49 +40,37 @@ const RAFFLE_CACHE_TTL = 60; // 1 minute
 let cacheExpireAt: number = 0;
 
 async function resetBurnedCoinsCache(until: Date): Promise<void> {
-    let localData = localStorage.getItem(BURNED_KEY);
+    let localData = getFromCache(BURNED_KEY);
     if (null === localData) {
         return;
     }
 
+    let expiry = getKeyExpiry(BURNED_KEY);
     let parsed = JSON.parse(localData);
-    if (parsed && parsed.expiresAt !== until) {
-        parsed.expiresAt = until.getTime();
-        cacheExpireAt = parsed.expiresAt
-        localStorage.setItem(BURNED_KEY, JSON.stringify(parsed));
+    if (parsed && expiry !== until) {
+        setKeyExpiry(BURNED_KEY, until);
+        cacheExpireAt = until.getTime();
     }
 }
 
 
 export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSDKType> {
     try {
-        let localData = localStorage.getItem(BURNED_KEY);
+        let localData = getFromCache(BURNED_KEY);
         if (null !== localData) {
             let parsed = JSON.parse(localData);
             if (parsed) {
-                cacheExpireAt = parsed.expiresAt;
-                if (parsed.expiresAt > new Date().getTime()) {
 
-                    return new Promise<QueryAllBurnedCoinsResponseSDKType>((resolve) => {
-                        resolve({...parsed.params});
-                    })
-                }
+                return parsed;
             }
         }
 
         const client = await getRestClient();
         //@ts-ignore
         let response = await client.bze.burner.v1.allBurnedCoins({pagination: {reverse: true}});
-        let cacheData = {
-            params: {...response},
-            expiresAt: new Date().getTime() + LOCAL_CACHE_TTL,
-        }
-        cacheExpireAt = cacheData.expiresAt;
-        localStorage.setItem(BURNED_KEY, JSON.stringify(cacheData));
+        setInCache(BURNED_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
 
-        return new Promise<QueryAllBurnedCoinsResponseSDKType>((resolve) => {
-            resolve(response);
-        })
+        return response;
     } catch (e) {
         console.error(e);
         return FAILOVER_DATA;
@@ -130,7 +118,7 @@ export async function getNextBurning(): Promise<NextBurning | undefined> {
     //if we have a proposal that will burn coins, set the TTL for all burned coins listing response at voting time end.
     //this way the cache is available until that moment and we are sure it will reset right after the voting period ended
     if (checkDate.getTime() !== cacheExpireAt) {
-        resetBurnedCoinsCache(checkDate);
+        await resetBurnedCoinsCache(checkDate);
     }
 
     return {
@@ -165,7 +153,7 @@ export async function getRaffles(): Promise<RaffleSDKType[]> {
 }
 
 export async function removeRafflessCache() {
-    localStorage.removeItem(RAFFLES_KEY);
+    removeFromCache(RAFFLES_KEY);
 }
 
 
