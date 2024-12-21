@@ -35,7 +35,6 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
                 walletConnectOptions={{
                     signClient: {
                         projectId: "7e8510ae772ef527bd711c9bc02f0cb7",
-                        relayUrl: "wss://relay.walletconnect.org",
                         metadata: {
                             name: "BeeZee dApp",
                             description: "DEX & More",
