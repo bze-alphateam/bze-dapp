@@ -34,13 +34,15 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
                 wallets={[...keplrWallets]}
                 walletConnectOptions={{
                     signClient: {
-                        projectId: "a8510432ebb71e6948cfd6cde54b70f7",
+                        projectId: "7e8510ae772ef527bd711c9bc02f0cb7",
                         relayUrl: "wss://relay.walletconnect.org",
                         metadata: {
-                            name: "CosmosKit Template",
-                            description: "CosmosKit dapp template",
-                            url: "https://docs.cosmology.zone/cosmos-kit/",
-                            icons: [],
+                            name: "BeeZee dApp",
+                            description: "DEX & More",
+                            url: "https://app.getbze.com",
+                            icons: [
+                                "https://app.getbze.com/logo_320px.png",
+                            ],
                         },
                     },
                 }}
