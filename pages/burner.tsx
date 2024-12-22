@@ -327,8 +327,8 @@ function Contribute({onContributeSuccess}: ContributeProps) {
                     </Callout>
                 </Box>
             }
-            <Box p='$6' flexDirection={'row'} display={'flex'} flex={1} justifyContent={'space-evenly'}
-                 alignItems={'center'} width={'100%'}>
+            <Box p='$6' flexDirection={{desktop: 'row', mobile: "column"}} display={'flex'} flex={1} justifyContent={'space-evenly'}
+                 alignItems={'center'} width={'100%'} gap={"$4"}>
                 {
                     showForm ?
                         <>
@@ -346,12 +346,16 @@ function Contribute({onContributeSuccess}: ContributeProps) {
                                 intent={'default'}
                                 disabled={submitPending}
                             />
-                            <Box><Button size="sm" intent="secondary" onClick={() => {
-                                closeForm()
-                            }} isLoading={submitPending}>Cancel</Button></Box>
-                            <Box><Button size="sm" intent="primary" onClick={() => {
-                                onSubmit()
-                            }} isLoading={submitPending}>Burn</Button></Box>
+                            <Box>
+                                <Button size="sm" intent="secondary" onClick={() => {
+                                    closeForm()
+                                }} isLoading={submitPending}>Cancel</Button>
+                            </Box>
+                            <Box>
+                                <Button size="sm" intent="primary" onClick={() => {
+                                    onSubmit()
+                                }} isLoading={submitPending}>Burn</Button>
+                            </Box>
                         </> :
                         <Button size="sm" intent="primary" onClick={() => {
                             setShowForm(true)
