@@ -26,7 +26,7 @@
     "@tanstack/react-query": "^5.36.2",
     "axios": "0.28.0",
     "bignumber.js": "^9.1.2",
-    "chain-registry": "1.25.4",
+    "chain-registry": "^1.69.70",
     "cosmos-kit": "^2.23.1",
     "framer-motion": "9.0.7",
     "interchain-query": "^1.10.7",

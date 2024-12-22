@@ -6,9 +6,9 @@ import {SignerOptions} from "cosmos-kit";
 import {wallets as keplrWallets} from '@cosmos-kit/keplr';
 import {ChainProvider} from "@cosmos-kit/react";
 import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interchain-ui/react";
-import {ASSETS, CHAINS} from "@/config";
-import {chains} from "chain-registry";
+import {ASSETS, CHAINS, getMainnetChains, getTestnetChains} from "@/config";
 import {useCallback} from "react";
+import {isTestnet} from "@/utils";
 
 
 function CreateCosmosApp({Component, pageProps}: AppProps) {
@@ -21,14 +21,19 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
     };
 
     const getChains = useCallback(() => {
-        return chains.filter(chain => chain.network_type === "mainnet")
+        if (isTestnet()) {
+            return getTestnetChains();
+        }
+
+        return getMainnetChains();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chains])
+    }, [])
 
     return (
         <ThemeProvider>
             <ChainProvider
-                chains={[...getChains(), ...CHAINS]}
+                // @ts-ignore
+                chains={getChains()}
                 // @ts-ignore
                 assetLists={ASSETS}
                 wallets={[...keplrWallets]}

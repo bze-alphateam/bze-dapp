@@ -10,7 +10,7 @@ export * from './Market';
 export * from './Tendermint';
 
 export function getLogo(from: Asset | Chain) {
-    return from.logo_URIs?.svg || from.logo_URIs?.png || from.logo_URIs?.jpeg;
+    return from.logo_URIs?.svg || from.logo_URIs?.png;
 }
 
 export function getChainLogo(name: string) {

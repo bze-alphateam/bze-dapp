@@ -8,6 +8,7 @@ const BZE_TESTNET_2_SUGGEST_CHAIN = {
     chain_name: "BeeZee Testnet",
     pretty_name: 'BeeZee Testnet',
     network_type: 'mainnet',
+    chain_type: "cosmos",
     bech32_prefix: BZE_PREFIX_TESTNET,
     status: "live",
     slip44: 118,
@@ -95,6 +96,7 @@ export const networks = {
                 "status": "live",
                 "network_type": "mainnet",
                 "pretty_name": "BeeZee",
+                "chain_type": "cosmos",
                 "chain_id": "beezee-1",
                 "bech32_prefix": "bze",
                 "daemon_name": "bzed",
@@ -967,4 +969,12 @@ export function getNetwork(chainId: string) {
     }
 
     return networks.mainnet;
+}
+
+export function getTestnetChains() {
+    return [BZE_TESTNET_2_SUGGEST_CHAIN];
+}
+
+export function getMainnetChains(): string[] {
+    return ["beezee", "archway", "osmosis", "omniflixhub", "jackal", "noble",]
 }

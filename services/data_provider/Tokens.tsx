@@ -3,7 +3,7 @@ import {getRestClient} from "../Client";
 import Long from 'long';
 import {getChain, getLastCharsAfterSlash, MAINNET_UDENOM, TESTNET_UDENOM} from "@/utils";
 import {EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS} from "@/config/verified";
-import {IBCTrace} from '@chain-registry/types';
+import {IbcTransition} from "@chain-registry/types/assetlist.schema";
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -15,7 +15,7 @@ export interface Token {
     type: string,
     coingekoId?: string,
     stableCoin?: boolean,
-    ibcTrace?: IBCTrace,
+    ibcTrace?: IbcTransition,
 }
 
 async function getChainMetadatas(): Promise<MetadataSDKType[]> {

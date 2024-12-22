@@ -37,7 +37,7 @@
     js-tokens "^4.0.0"
     picocolors "^1.0.0"
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3", "@babel/runtime@^7.21.0":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.18.3":
   version "7.24.4"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.24.4.tgz#de795accd698007a66ba44add6cc86542aff1edd"
   integrity sha512-dkxf7+hn8mFBwKjs9bvBlArzLVxVbS8usaPUDd5p2a9JCL9tB8OaOVN1isD4+Xyk4ns89/xeOmbQvgdK7IIVdA==
@@ -125,13 +125,6 @@
   version "0.46.11"
   resolved "https://registry.yarnpkg.com/@chain-registry/types/-/types-0.46.11.tgz#68efa85ba5ed4d451218a515a06239594b4125dd"
   integrity sha512-ASeCtZ3i6g4buyP/43qRnkJo2w50bpX6hsZOapkwOYqAGY83ZE+NZMUcv0UUsiVBHKqC3hAWTLjFNF5q7GR4Gg==
-
-"@chain-registry/types@^0.17.1":
-  version "0.17.1"
-  resolved "https://registry.npmjs.org/@chain-registry/types/-/types-0.17.1.tgz#0ac7bda6178d3917834578627f232a247fe5def8"
-  integrity sha512-O0CgrtJgIlqXvZm1CqDZe/7jZz068O/uuCIoyDXCegFHK03rdHacKcDGwEIUuI0MNUf8YV3jdE4xHQMSAX+79w==
-  dependencies:
-    "@babel/runtime" "^7.21.0"
 
 "@chain-registry/types@^0.45.1":
   version "0.45.86"
@@ -4435,13 +4428,12 @@ caniuse-lite@^1.0.30001579:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001617.tgz#809bc25f3f5027ceb33142a7d6c40759d7a901eb"
   integrity sha512-mLyjzNI9I+Pix8zwcrpxEbGlfqOkF9kM3ptzmKNw5tizSyYwMe+nGLTqMK9cO+0E+Bh6TsBxNAaHWEM8xwSsmA==
 
-chain-registry@1.25.4:
-  version "1.25.4"
-  resolved "https://registry.npmjs.org/chain-registry/-/chain-registry-1.25.4.tgz#6d1546cd6070201809ba255924a407ad71116311"
-  integrity sha512-QxBSg4lLR4CXqDgratAAqelw3K/WdROKNvq+IThuirXMfCcuL6wNPVunlvz3gPPdnyAA6D+dSZ4ky4ZWavDcOg==
+chain-registry@^1.69.70:
+  version "1.69.70"
+  resolved "https://registry.yarnpkg.com/chain-registry/-/chain-registry-1.69.70.tgz#daa80fc3663e5a7593a47aadc22a7940a7d213b3"
+  integrity sha512-RtmHGB/jQol2JBY3wD1RGGXhz0HX9fNxRRNZRCG162a/NZCVqDPrFZiYkwLVLlhqidAT0u0BqcHL1KnYjBo61w==
   dependencies:
-    "@babel/runtime" "^7.21.0"
-    "@chain-registry/types" "^0.17.1"
+    "@chain-registry/types" "^0.50.40"
 
 chalk@^2.4.2:
   version "2.4.2"
