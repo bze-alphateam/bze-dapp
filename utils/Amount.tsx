@@ -149,7 +149,8 @@ export const calculateApr = (dailyAmount: string | number | BigNumber, staked: s
 export const sanitizeNumberInput = (input: string) => {
     // Regular expression to match all characters not allowed in a non-negative number
     // Allow digits and a single decimal point
-    let sanitized = input.replace(/[^0-9.]/g, '');
+    let sanitized = input.replace(/[^0-9.,]/g, '');
+    sanitized = sanitized.replace(",", ".");
 
     // Ensure only one decimal point is present
     const parts = sanitized.split('.');

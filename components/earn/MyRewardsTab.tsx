@@ -12,10 +12,7 @@ import {getAllSupplyTokens, getHourEpochInfo, Token} from "@/services";
 import {SearchInput} from "@/components/common/Input";
 import {useToast, useTx} from "@/hooks";
 import {
-    amountToUAmount,
-    calculateApr,
-    getChainName, isGreaterThan,
-    isGreaterThanZero,
+    getChainName,
     prettyAmount,
     sanitizeNumberInput,
     uAmountToAmount
@@ -250,7 +247,8 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
                             placeholder="Amount"
                             value={amount ?? ""}
                             type="text"
-                            inputMode="numeric"
+                            //@ts-ignore
+                            inputMode="decimal"
                             disabled={submitPending}
                         />
                         <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>

@@ -210,7 +210,8 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
                         placeholder="Amount"
                         value={amount ?? ""}
                         type="text"
-                        inputMode="numeric"
+                        //@ts-ignore
+                        inputMode="decimal"
                         disabled={submitPending}
                     />
                     <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>
@@ -494,7 +495,8 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                             placeholder="Amount"
                             value={prizeAmount ?? ""}
                             type="text"
-                            inputMode="numeric"
+                            //@ts-ignore
+                            inputMode="decimal"
                             disabled={validForm}
                         />
                     </Box>
@@ -511,7 +513,7 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                             id="duration"
                             label="Reward duration"
                             onChange={(e) => {
-                                setDuration(sanitizeNumberInput(e.target.value))
+                                setDuration(sanitizeIntegerInput(e.target.value))
                             }}
                             placeholder="No. of days"
                             value={duration ? `${duration}` : ""}
@@ -538,7 +540,8 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                             placeholder="Min stake amount"
                             value={minStake ? `${minStake}` : ""}
                             type="text"
-                            inputMode="numeric"
+                            //@ts-ignore
+                            inputMode="decimal"
                             disabled={validForm}
                         />
                     </Box>
@@ -548,7 +551,7 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
                             id="lock"
                             label="Unstake lock"
                             onChange={(e) => {
-                                setLock(sanitizeNumberInput(e.target.value))
+                                setLock(sanitizeIntegerInput(e.target.value))
                             }}
                             placeholder="No. of days"
                             value={lock ? `${lock}` : ""}

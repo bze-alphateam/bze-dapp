@@ -335,7 +335,8 @@ function Contribute({onContributeSuccess}: ContributeProps) {
                             <TextField
                                 id="fund-burner-amount"
                                 type="text"
-                                inputMode="numeric"
+                                //@ts-ignore
+                                inputMode="decimal"
                                 label={""}
                                 size="sm"
                                 onChange={(e) => {
@@ -345,6 +346,9 @@ function Contribute({onContributeSuccess}: ContributeProps) {
                                 value={amount}
                                 intent={'default'}
                                 disabled={submitPending}
+                                inputAttributes={{
+                                    pattern: "[0-9]*[.]?[0-9]*",
+                                }}
                             />
                             <Box>
                                 <Button size="sm" intent="secondary" onClick={() => {

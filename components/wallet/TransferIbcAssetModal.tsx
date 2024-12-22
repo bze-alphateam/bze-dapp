@@ -171,7 +171,8 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
                     <TextField
                         id="fund-burner-amount"
                         type="text"
-                        inputMode="numeric"
+                        //@ts-ignore
+                        inputMode="decimal"
                         size="sm"
                         onChange={(e) => {
                             setAmount(sanitizeNumberInput(e.target.value))

@@ -16,7 +16,14 @@ import {useToast, useTx} from "@/hooks";
 import {bze} from '@bze/bzejs';
 import {useChain, useWallet} from "@cosmos-kit/react";
 import {WalletStatus} from "cosmos-kit";
-import {amountToUAmount, getChainName, prettyAmount, sanitizeNumberInput, uAmountToAmount} from "@/utils";
+import {
+    amountToUAmount,
+    getChainName,
+    prettyAmount,
+    sanitizeIntegerInput,
+    sanitizeNumberInput,
+    uAmountToAmount
+} from "@/utils";
 import {TokenMarkets} from "@/components/token/TokenMarkets";
 import {DenomUnit} from "cosmjs-types/cosmos/bank/v1beta1/bank";
 
@@ -358,7 +365,8 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
                             <TextField
                                 id="burn-mint-amount"
                                 type="text"
-                                inputMode="numeric"
+                                //@ts-ignore
+                                inputMode="decimal"
                                 label={""}
                                 size="sm"
                                 onChange={(e) => {
@@ -622,7 +630,7 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
                     }
                     size="sm"
                     onChange={(e) => {
-                        setDecimals(sanitizeNumberInput(e.target.value))
+                        setDecimals(sanitizeIntegerInput(e.target.value))
                     }}
                     placeholder="Number of decimals"
                     value={decimals}

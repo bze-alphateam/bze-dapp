@@ -395,7 +395,8 @@ export function OrderForms(props: OrderFormsProps) {
                     placeholder=""
                     value={price}
                     type="text"
-                    inputMode="numeric"
+                    //@ts-ignore
+                    inputMode="decimal"
                     intent={'default'}
                     disabled={isPendingSubmit}
                     startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text
@@ -414,7 +415,8 @@ export function OrderForms(props: OrderFormsProps) {
                 <TextField
                     id="amount"
                     type="text"
-                    inputMode="numeric"
+                    //@ts-ignore
+                    inputMode="decimal"
                     size="sm"
                     onChange={(e) => {
                         onAmountChange(sanitizeNumberInput(e.target.value))
@@ -432,7 +434,8 @@ export function OrderForms(props: OrderFormsProps) {
                 <TextField
                     id="total"
                     type="text"
-                    inputMode="numeric"
+                    //@ts-ignore
+                    inputMode="decimal"
                     size="sm"
                     onChange={(e) => {
                         onTotalChange(sanitizeNumberInput(e.target.value))
