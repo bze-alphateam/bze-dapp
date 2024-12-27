@@ -4,6 +4,7 @@ import "@interchain-ui/react/styles";
 import type {AppProps} from "next/app";
 import {SignerOptions} from "cosmos-kit";
 import {wallets as keplrWallets} from '@cosmos-kit/keplr';
+import {wallets as leapWallets} from '@cosmos-kit/leap';
 import {ChainProvider} from "@cosmos-kit/react";
 import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interchain-ui/react";
 import {ASSETS, CHAINS, getMainnetChains, getTestnetChains} from "@/config";
@@ -36,7 +37,7 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
                 chains={getChains()}
                 // @ts-ignore
                 assetLists={ASSETS}
-                wallets={[...keplrWallets]}
+                wallets={[...keplrWallets, ...leapWallets]}
                 walletConnectOptions={{
                     signClient: {
                         projectId: "7e8510ae772ef527bd711c9bc02f0cb7",

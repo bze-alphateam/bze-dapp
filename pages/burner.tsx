@@ -346,9 +346,6 @@ function Contribute({onContributeSuccess}: ContributeProps) {
                                 value={amount}
                                 intent={'default'}
                                 disabled={submitPending}
-                                inputAttributes={{
-                                    pattern: "[0-9]*[.]?[0-9]*",
-                                }}
                             />
                             <Box>
                                 <Button size="sm" intent="secondary" onClick={() => {

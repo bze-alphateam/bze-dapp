@@ -1,5 +1,6 @@
 import {MouseEventHandler} from "react";
 import {Button as UIButton, IconName} from "@interchain-ui/react";
+import {stringTruncateFromCenter} from "@/utils";
 
 export type ButtonProps = {
     text?: string;
@@ -47,7 +48,7 @@ export const ButtonConnect = (
 
 export const ButtonConnected = (
     {text = "My Wallet", onClick = noop}: ConnectProps,
-) => <Button text={text} icon="walletFilled" onClick={onClick}/>;
+) => <Button text={stringTruncateFromCenter(text, 16)} icon="walletFilled" onClick={onClick}/>;
 
 export const ButtonDisconnected = (
     {text = "Connect Wallet", onClick = noop}: ConnectProps,
