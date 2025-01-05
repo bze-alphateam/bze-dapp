@@ -81,6 +81,7 @@ const BZE_TESTNET_2_SUGGEST_CHAIN = {
 };
 
 export const networks = {
+    //TODO: get mainnet from https://raw.githubusercontent.com/faneaatiku/chain-registry/refs/heads/bze-dapp/beezee/assetlist.json
     mainnet: {
         base: {
             explorerBaseUrl: 'https://ping.pub/beezee',
@@ -789,6 +790,56 @@ export const networks = {
                                 }
                             }
                         ]
+                    },
+                    {
+                        "description": "AtomOne native coin",
+                        "denom_units": [
+                            {
+                                "denom": "ibc/B2219CA05421EA988F83E5E824BF69362E80A6A87503EFD18B92C91C9E03763D",
+                                "exponent": 0,
+                                "aliases": [
+                                    "uatone"
+                                ]
+                            },
+                            {
+                                "denom": "atone",
+                                "exponent": 6,
+                                "aliases": []
+                            }
+                        ],
+                        "type_asset": "ics20",
+                        "base": "ibc/B2219CA05421EA988F83E5E824BF69362E80A6A87503EFD18B92C91C9E03763D",
+                        "name": "Atone",
+                        "display": "atone",
+                        "symbol": "ATONE",
+                        "traces": [
+                            {
+                                "type": "ibc",
+                                "counterparty": {
+                                    "chain_name": "atomone",
+                                    "base_denom": "uatone",
+                                    "channel_id": "channel-1"
+                                },
+                                "chain": {
+                                    "channel_id": "channel-6",
+                                    "path": "transfer/channel-6/uatone"
+                                }
+                            }
+                        ],
+                        "images": [
+                            {
+                                "image_sync": {
+                                    "chain_name": "atomone",
+                                    "base_denom": "uatone"
+                                },
+                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.png",
+                                "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.svg"
+                            }
+                        ],
+                        "logo_URIs": {
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.png",
+                            "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.svg"
+                        }
                     }
                 ]
             }
@@ -976,5 +1027,5 @@ export function getTestnetChains() {
 }
 
 export function getMainnetChains(): string[] {
-    return ["beezee", "archway", "osmosis", "omniflixhub", "jackal", "noble",]
+    return ["beezee", "archway", "osmosis", "omniflixhub", "jackal", "noble", "atomone"]
 }

@@ -99,7 +99,7 @@ export const useTx = (chainName?: string) => {
 
         if (client) {
             await client
-                .signAndBroadcast(address, msgs, fee, undefined)
+                .signAndBroadcast(address, msgs, fee, "app.getbze.com")
                 .then((res: any) => {
                     if (isDeliverTxSuccess(res)) {
                         if (options.onSuccess) options.onSuccess(res);
