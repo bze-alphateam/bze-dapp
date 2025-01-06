@@ -1088,7 +1088,7 @@ export const CHAINS = [
 
 export const ASSETS = [
     ...networks.mainnet.assets,
-    ...networks.testnet.assets,
+    // ...networks.testnet.assets,
 ];
 
 export function getNetwork(chainId: string) {

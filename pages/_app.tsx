@@ -7,7 +7,7 @@ import {wallets as keplrWallets} from '@cosmos-kit/keplr';
 import {wallets as leapWallets} from '@cosmos-kit/leap';
 import {ChainProvider} from "@cosmos-kit/react";
 import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interchain-ui/react";
-import {ASSETS, CHAINS, getMainnetChains, getTestnetChains} from "@/config";
+import {getMainnetChains, getTestnetChains, networks} from "@/config";
 import {useCallback} from "react";
 import {isTestnet} from "@/utils";
 
@@ -20,6 +20,16 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
             return 'direct'
         }
     };
+
+    const getAssets = useCallback(() => {
+        if (isTestnet()) {
+            return networks.testnet.assets
+        }
+
+        return networks.mainnet.assets
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
 
     const getChains = useCallback(() => {
         if (isTestnet()) {
@@ -36,7 +46,7 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
                 // @ts-ignore
                 chains={getChains()}
                 // @ts-ignore
-                assetLists={ASSETS}
+                assetLists={getAssets()}
                 wallets={[...keplrWallets, ...leapWallets]}
                 walletConnectOptions={{
                     signClient: {
