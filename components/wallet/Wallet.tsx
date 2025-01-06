@@ -23,7 +23,11 @@ export function Wallet() {
         message,
         connect,
         openView,
+        assets,
     } = useChain(getChainName());
+
+    console.log("assets", assets);
+    console.log("message", message);
 
     const ConnectButton = {
         [WalletStatus.Connected]: <ButtonConnected onClick={openView} text={username}/>,

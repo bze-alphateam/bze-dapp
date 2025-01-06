@@ -26,6 +26,8 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
             return networks.testnet.assets
         }
 
+        console.log("networks.mainnet.assets", networks.mainnet.assets);
+
         return networks.mainnet.assets
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
