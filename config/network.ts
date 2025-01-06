@@ -401,7 +401,8 @@ export const networks = {
                 "chain_name": "beezee",
                 "assets": [
                     {
-                        "description": "BeeZee blockchain native coin",
+                        "description": "BeeZee network native coin",
+                        "extended_description": "Powered by BZE Coin, BeeZee Network offers users access to decentralized services through a variety of applications built on a fast and cost-efficient blockchain.",
                         "denom_units": [
                             {
                                 "denom": "ubze",
@@ -429,10 +430,16 @@ export const networks = {
                                     "primary_color_hex": "#079fd7"
                                 }
                             }
-                        ]
+                        ],
+                        "type_asset": "sdk.coin",
+                        "socials": {
+                            "website": "https://getbze.com/",
+                            "twitter": "https://x.com/BZEdgeCoin"
+                        }
                     },
                     {
                         "description": "Vidulum App Token",
+                        "extended_description": "Vidulum App is your one stop, multi-currency crypto web wallet. Hold, earn, and own your crypto assets in non-custodial fashion from any device, anytime.",
                         "denom_units": [
                             {
                                 "denom": "factory/bze13gzq40che93tgfm9kzmkpjamah5nj0j73pyhqk/uvdl",
@@ -460,7 +467,12 @@ export const networks = {
                                     "primary_color_hex": "#3454bc"
                                 }
                             }
-                        ]
+                        ],
+                        "type_asset": "sdk.coin",
+                        "socials": {
+                            "website": "https://vidulum.app/",
+                            "twitter": "https://x.com/VidulumApp"
+                        }
                     },
                     {
                         "description": "OSMO from Osmosis",
@@ -532,13 +544,70 @@ export const networks = {
                         "display": "C2M",
                         "symbol": "C2M",
                         "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/beezee/factory/bze15pqjgk4la0mfphwddce00d05n3th3u66n3ptcv/c2m.png"
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/c2m.png"
                         },
                         "images": [
                             {
-                                "png": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/beezee/factory/bze15pqjgk4la0mfphwddce00d05n3th3u66n3ptcv/c2m.png",
+                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/c2m.png",
                                 "theme": {
                                     "primary_color_hex": "#FEFEFE"
+                                }
+                            }
+                        ],
+                        "type_asset": "sdk.coin"
+                    },
+                    {
+                        "description": "The native token of Archway network",
+                        "denom_units": [
+                            {
+                                "denom": "ibc/C00D101A3572A5374E23F11944463D1325319E255D7C824B33AF2F927F532348",
+                                "exponent": 0,
+                                "aliases": [
+                                    "aarch"
+                                ]
+                            },
+                            {
+                                "denom": "uarch",
+                                "exponent": 12
+                            },
+                            {
+                                "denom": "arch",
+                                "exponent": 18
+                            }
+                        ],
+                        "type_asset": "ics20",
+                        "base": "ibc/C00D101A3572A5374E23F11944463D1325319E255D7C824B33AF2F927F532348",
+                        "name": "Archway",
+                        "display": "arch",
+                        "symbol": "ARCH",
+                        "traces": [
+                            {
+                                "type": "ibc",
+                                "counterparty": {
+                                    "chain_name": "archway",
+                                    "base_denom": "aarch",
+                                    "channel_id": "channel-147"
+                                },
+                                "chain": {
+                                    "channel_id": "channel-2",
+                                    "path": "transfer/channel-2/aarch"
+                                }
+                            }
+                        ],
+                        "logo_URIs": {
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/archway/images/arch.png",
+                            "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/archway/images/arch.svg"
+                        },
+                        "images": [
+                            {
+                                "image_sync": {
+                                    "chain_name": "archway",
+                                    "base_denom": "aarch"
+                                },
+                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/archway/images/arch.png",
+                                "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/archway/images/arch.svg",
+                                "theme": {
+                                    "primary_color_hex": "#fc4c04"
                                 }
                             }
                         ]
@@ -584,16 +653,17 @@ export const networks = {
                                     "chain_name": "noble",
                                     "base_denom": "uusdc"
                                 },
-                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.png",
-                                "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.svg",
+                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/usdc.png",
+                                "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/usdc.svg",
                                 "theme": {
-                                    "primary_color_hex": "#2474cc"
+                                    "circle": true,
+                                    "primary_color_hex": "#2775CA"
                                 }
                             }
                         ],
                         "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.png",
-                            "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/noble/images/USDCoin.svg"
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/usdc.png",
+                            "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/usdc.svg"
                         }
                     },
                     {
@@ -614,11 +684,11 @@ export const networks = {
                         "display": "Spice",
                         "symbol": "SPICE",
                         "logo_URIs": {
-                            "png": "/spice_no_bg.png"
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/spice.png"
                         },
                         "images": [
                             {
-                                "png": "/spice_no_bg.png",
+                                "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/spice.png",
                                 "theme": {
                                     "primary_color_hex": "#e5ba44"
                                 }
