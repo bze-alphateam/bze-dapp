@@ -930,6 +930,7 @@ export const networks = {
                 assets: [
                     {
                         "description": "BeeZee native blockchain",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": TESTNET_COIN_MIN_DENOM,
@@ -952,6 +953,7 @@ export const networks = {
                     },
                     {
                         "description": "BitcoinZ wrapped on BZE network",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/bitcoinz",
@@ -974,6 +976,7 @@ export const networks = {
                     },
                     {
                         "description": "A test denomination created by Faneatiku",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku1",
@@ -993,6 +996,7 @@ export const networks = {
                     },
                     {
                         "description": "A test denomination created by Faneatiku",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku2",
@@ -1012,6 +1016,7 @@ export const networks = {
                     },
                     {
                         "description": "Stefan's token",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku3",
@@ -1026,6 +1031,7 @@ export const networks = {
                     },
                     {
                         "description": "Celestia",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
@@ -1048,6 +1054,7 @@ export const networks = {
                     },
                     {
                         "description": "Vidulum token",
+                        "type_asset": "sdk.coin",
                         "denom_units": [
                             {
                                 "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
