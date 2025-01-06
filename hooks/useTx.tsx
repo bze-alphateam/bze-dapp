@@ -67,7 +67,6 @@ export const useTx = (chainName?: string) => {
             return getOfflineSignerAmino();
         }
 
-        keplrSuggestChain(getChainName());
         let client: Awaited<ReturnType<typeof getSigningClient>>;
 
         let fee: StdFee;

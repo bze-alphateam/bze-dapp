@@ -7,9 +7,9 @@ import {wallets as keplrWallets} from '@cosmos-kit/keplr';
 import {wallets as leapWallets} from '@cosmos-kit/leap';
 import {ChainProvider} from "@cosmos-kit/react";
 import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interchain-ui/react";
-import {getMainnetChains, getTestnetChains, networks} from "@/config";
-import {useCallback} from "react";
-import {isTestnet} from "@/utils";
+import {getMainnetChains, getTestnetChains, keplrSuggestChain, networks} from "@/config";
+import {useCallback, useEffect} from "react";
+import {getChainName, isTestnet} from "@/utils";
 
 
 function CreateCosmosApp({Component, pageProps}: AppProps) {
@@ -40,6 +40,10 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
 
         return getMainnetChains();
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        keplrSuggestChain(getChainName());
     }, [])
 
     return (
