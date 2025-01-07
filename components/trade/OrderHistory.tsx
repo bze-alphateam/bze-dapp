@@ -6,7 +6,7 @@ import {useChain} from "@cosmos-kit/react";
 import {Box, Button, Skeleton, Stack, Text, useColorModeValue} from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
-import {memo, useEffect, useState} from "react";
+import {memo, useEffect, useMemo, useState} from "react";
 import {bze} from '@bze/bzejs';
 import {MarketPairTokens} from "./ActiveOrders";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -20,6 +20,14 @@ interface HistoryBoxItemProps {
 
 function HistoryBoxItem(props: HistoryBoxItemProps) {
     const [time, setTime] = useState("");
+
+    const getColor = useMemo(() => {
+        return props.orderType === 'buy' ? '$red300' : '$green200';
+    }, [props.orderType])
+
+    const getOrderType = useMemo(() => {
+        return props.orderType === 'buy' ? "sell" : "buy";
+    }, [props.orderType])
 
     useEffect(() => {
         const intl = new Intl.DateTimeFormat("en-US", {
@@ -38,16 +46,16 @@ function HistoryBoxItem(props: HistoryBoxItemProps) {
         <Stack space={'$2'} attributes={{marginBottom: "$0", flex: 1}} justify={'center'}>
             <Box width={'5%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text fontSize={'$sm'}
-                      color={props.orderType === 'buy' ? '$green200' : '$red300'}>{props.orderType}</Text>
+                      color={getColor}>{getOrderType}</Text>
             </Box>
             <Box width={'40%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-                <Text fontSize={'$sm'} color={props.orderType === 'buy' ? '$green200' : '$red300'}>{props.price}</Text>
+                <Text fontSize={'$sm'} color={getColor}>{props.price}</Text>
             </Box>
             <Box width={'30%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
-                <Text fontSize={'$sm'} color={props.orderType === 'buy' ? '$green200' : '$red300'}>{props.amount}</Text>
+                <Text fontSize={'$sm'} color={getColor}>{props.amount}</Text>
             </Box>
             <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
-                <Text fontSize={'$sm'} color={props.orderType === 'buy' ? '$green200' : '$red300'}>{time}</Text>
+                <Text fontSize={'$sm'} color={getColor}>{time}</Text>
             </Box>
         </Stack>
     )
