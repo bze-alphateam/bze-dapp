@@ -59,11 +59,9 @@ export const useTx = (chainName?: string) => {
 
         const offlineSignerFunc = () => {
             if (!wallet || wallet.mode !== "ledger") {
-                console.log("wallet signer direct");
                 return getOfflineSignerDirect();
             }
 
-            console.log("wallet signer amino");
             return getOfflineSignerAmino();
         }
 

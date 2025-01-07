@@ -14,7 +14,6 @@ export default function Earn() {
 
     const onActiveTabChange = (tabIndex: number) => {
         setCurrentTab(tabIndex);
-        console.log("onActiveTabChange", tabIndex);
         // Update the URL query parameter without refreshing the page
         router.push(
             {
