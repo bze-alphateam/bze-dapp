@@ -95,7 +95,7 @@ export const VolumeBox = ({title, marketPrice, ticker, tokens}: {
         }
 
         return `${formatUsdAmount(marketPrice.quote.multipliedBy(ticker?.quote_volume ?? "0"))} ${marketPrice.denom.toUpperCase()}`
-    }, [marketPrice])
+    }, [marketPrice, ticker])
 
     return (
         <DefaultBorderedBox
