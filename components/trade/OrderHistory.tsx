@@ -1,6 +1,6 @@
 import {useToast, useTx} from "@/hooks";
 import {getMarketOrder, HistoryOrder} from "@/services";
-import {getChainName, uAmountToAmount, uPriceToPrice} from "@/utils";
+import {getChainName, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice} from "@/utils";
 import {HistoryOrderSDKType, OrderReferenceSDKType, OrderSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import {useChain} from "@cosmos-kit/react";
 import {Box, Button, Skeleton, Stack, Text, useColorModeValue} from "@interchain-ui/react";
@@ -15,6 +15,7 @@ interface HistoryBoxItemProps {
     orderType: string;
     price: string | number;
     amount: string | number;
+    quoteAmount: string | number;
     time: Date;
 }
 
@@ -48,13 +49,16 @@ function HistoryBoxItem(props: HistoryBoxItemProps) {
                 <Text fontSize={'$sm'}
                       color={getColor}>{getOrderType}</Text>
             </Box>
-            <Box width={'40%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text fontSize={'$sm'} color={getColor}>{props.price}</Text>
             </Box>
-            <Box width={'30%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text fontSize={'$sm'} color={getColor}>{props.amount}</Text>
             </Box>
-            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+                <Text fontSize={'$sm'} color={getColor}>{props.quoteAmount}</Text>
+            </Box>
+            <Box width={'20%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
                 <Text fontSize={'$sm'} color={getColor}>{time}</Text>
             </Box>
         </Stack>
@@ -71,13 +75,16 @@ function HistoryBoxHeader(props: HistoryBoxHeaderProps) {
             <Box width={'5%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text color={'$primary200'}>Order</Text>
             </Box>
-            <Box width={'40%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text color={'$primary200'}>Price({props.tokens.quoteToken.metadata.display.toUpperCase()})</Text>
             </Box>
-            <Box width={'30%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
                 <Text color={'$primary200'}>Amount({props.tokens.baseToken.metadata.display.toUpperCase()})</Text>
             </Box>
-            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
+            <Box width={'25%'} display={'flex'} flex={1} justifyContent={'flex-start'}>
+                <Text color={'$primary200'}>Amount({props.tokens.quoteToken.metadata.display.toUpperCase()})</Text>
+            </Box>
+            <Box width={'20%'} display={'flex'} flex={1} justifyContent={'flex-end'}>
                 <Text color={'$primary200'}>Time</Text>
             </Box>
         </Stack>
@@ -99,7 +106,7 @@ function MyHistoryListRow(props: MyHistoryListRowProps) {
 
     return (
         <HistoryBoxItem orderType={props.order.order_type} price={props.order.price} amount={props.order.base_volume}
-                        time={time}/>
+                        time={time} quoteAmount={props.order.quote_volume}/>
     );
 }
 
@@ -150,19 +157,22 @@ function OrderHistoryListRow(props: OrderHistoryListRowProps) {
     const [price, setPrice] = useState("");
     const [amount, setAmount] = useState("");
     const [time, setTime] = useState<Date>(new Date());
+    const [quoteAmount, setQuoteAmount] = useState("");
 
     useEffect(() => {
-        const p = uPriceToPrice(new BigNumber(props.order.price), props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
-        setPrice(p);
+        const p = uPriceToBigNumberPrice(new BigNumber(props.order.price), props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
+        setPrice(p.toString());
         const a = uAmountToAmount(props.order.amount, props.baseTokenDisplayDenom.exponent);
         setAmount(a);
         const execAt = new Date(parseInt(props.order.executed_at.toString()) * 1000);
+
+        setQuoteAmount(p.multipliedBy(a).toString());
 
         setTime(execAt);
     }, [props])
 
     return (
-        <HistoryBoxItem orderType={props.order.order_type} price={price} amount={amount} time={time}/>
+        <HistoryBoxItem orderType={props.order.order_type} price={price} amount={amount} time={time} quoteAmount={quoteAmount}/>
     );
 }
 
