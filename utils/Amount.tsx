@@ -68,7 +68,7 @@ export const isGreaterOrEqualThan = (val: number | string | undefined, compare: 
 };
 
 export const isGreaterThan = (val: number | string | undefined, compare: number | string | undefined) => {
-    return new BigNumber(val || 0).gte(compare || 0);
+    return new BigNumber(val || 0).gt(compare || 0);
 };
 
 export const calculateTotalAmount = (price: string, amount: string, decimals: number): string => {

@@ -257,7 +257,7 @@ function MyRewardDetail({props}: { props: MyRewardDetailProps }) {
                             </Box>
                             <ClickableBox onClick={() => onAmountChange(stakingTokenBalance())}>
                                 <Box>
-                                    <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>{prettyAmount(stakingTokenBalance())} {stakingToken.metadata.symbol.toUpperCase()}</Text>
+                                    <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>{stakingTokenBalance()} {stakingToken.metadata.symbol.toUpperCase()}</Text>
                                 </Box>
                             </ClickableBox>
                         </Box>
