@@ -1,7 +1,9 @@
-import {formatUsdAmount, MarketPrices} from "@/services";
+import {formatUsdAmount, MarketPrices, Ticker} from "@/services";
 import {DefaultBorderedBox} from "@/components";
 import {Icon, Text} from "@interchain-ui/react";
 import {prettyAmount} from "@/utils";
+import {useMemo} from "react";
+import {MarketPairTokens} from "@/components/trade/ActiveOrders";
 
 
 export const PriceBox = ({price, change, denom, marketPrice}: {
@@ -68,33 +70,56 @@ export const StatsBox = ({title, value, denom, marketPrice}: {
 );
 
 
-export const VolumeBox = ({title, value, denom, marketPrice}: {
+export const VolumeBox = ({title, marketPrice, ticker, tokens}: {
     title: string;
-    value: string | number,
-    denom: string,
     marketPrice: MarketPrices | undefined
-}) => (
-    <DefaultBorderedBox
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        p="$4"
-        border="1px solid"
-        borderColor="$gray200"
-        borderRadius="$md"
-        width={{desktop: '24%', mobile: '100%'}}
-    >
-        <Text fontSize="$xs" fontWeight="$thin">
-            {title}
-        </Text>
-        <Text fontSize="$xs" fontWeight="$semibold" color="$primary200">
-            {prettyAmount(value)} {denom.toUpperCase()}
-        </Text>
-        {marketPrice && denom.toUpperCase() !== marketPrice?.denom.toUpperCase() &&
-            <Text fontSize="$xs" fontWeight="$thin" color="$primary200">
-                (~{formatUsdAmount(marketPrice.base.multipliedBy(value))} {marketPrice.denom.toUpperCase()})
-            </Text>
+    ticker?: Ticker | undefined
+    tokens?: MarketPairTokens | undefined
+}) => {
+
+    const getDenom = useMemo(() => {
+        return tokens?.baseTokenDisplayDenom.denom ?? ""
+    }, [tokens])
+
+    const getValue = useMemo(() => {
+        if (!ticker) {
+            return "0";
         }
-    </DefaultBorderedBox>
-);
+
+        return ticker.base_volume;
+    }, [ticker])
+
+    const getUsdValue = useMemo(() => {
+        if (!marketPrice) {
+            return "0";
+        }
+
+        return `${formatUsdAmount(marketPrice.quote.multipliedBy(ticker?.quote_volume ?? "0"))} ${marketPrice.denom.toUpperCase()}`
+    }, [marketPrice])
+
+    return (
+        <DefaultBorderedBox
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p="$4"
+            border="1px solid"
+            borderColor="$gray200"
+            borderRadius="$md"
+            width={{desktop: '24%', mobile: '100%'}}
+        >
+            <Text fontSize="$xs" fontWeight="$thin">
+                {title}
+            </Text>
+            <Text fontSize="$xs" fontWeight="$semibold" color="$primary200">
+                {prettyAmount(getValue)} {getDenom.toUpperCase()}
+            </Text>
+            {marketPrice && ticker && getDenom.toUpperCase() !== marketPrice?.denom.toUpperCase() &&
+                <Text fontSize="$xs" fontWeight="$thin" color="$primary200">
+                    (~{getUsdValue})
+                </Text>
+            }
+        </DefaultBorderedBox>
+    )
+}

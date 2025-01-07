@@ -455,8 +455,8 @@ export default function MarketPair() {
                          mt="$4">
                         <PriceBox price={ticker ? ticker.last_price : 0} change={ticker ? ticker.change : 0}
                                   denom={tokens?.quoteTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
-                        <VolumeBox title="24h Volume" value={ticker ? ticker.base_volume : "0"}
-                                   denom={tokens?.baseTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
+                        <VolumeBox title="24h Volume"
+                                   marketPrice={marketPrices} ticker={ticker} tokens={tokens} />
                         <StatsBox title="24h High" value={ticker ? ticker.high : "0"}
                                   denom={tokens?.quoteTokenDisplayDenom.denom ?? ""} marketPrice={marketPrices}/>
                         <StatsBox title="24h Low" value={ticker ? ticker?.low : "0"}
