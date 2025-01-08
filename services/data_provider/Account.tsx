@@ -23,10 +23,7 @@ export async function getModuleAddress(module: string): Promise<string> {
         const cacheKey = `${MODULE_ADDRESS_KEY}${module}`;
         let localData = getFromCache(cacheKey);
         if (null !== localData) {
-            let parsed = JSON.parse(localData);
-            if (parsed) {
-                return parsed.address;
-            }
+            return localData;
         }
 
         const url = getRestURL();
@@ -42,7 +39,7 @@ export async function getModuleAddress(module: string): Promise<string> {
             return "testbz18hsqalgwlzqavrrkfnxmrjmygwyjy8se37kq3x";
         }
 
-        setInCache(cacheKey, JSON.stringify(addy), BALANCES_CACHE_TTL);
+        setInCache(cacheKey, addy, BALANCES_CACHE_TTL);
 
         return addy;
     } catch (e) {
