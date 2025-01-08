@@ -10,7 +10,7 @@ import {EXCLUDED_MARKETS} from "@/config/verified";
 
 function EmptyTokenMarkets({props}: {props: {text: string}}) {
     return (
-        <Box p={"$12"} m={"$6"} justifyContent={"center"} textAlign={"center"}>
+        <Box p={"$6"} m={"$2"} justifyContent={"center"} textAlign={"center"}>
             <Text>
                 {props.text}
             </Text>

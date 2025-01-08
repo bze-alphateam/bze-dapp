@@ -127,7 +127,8 @@ function TokenList() {
                 action: modalProps.action,
                 onClick: modalProps.onClick,
                 token: modalProps.token,
-                tokenDisplayDenom: modalProps.tokenDisplayDenom
+                tokenDisplayDenom: modalProps.tokenDisplayDenom,
+                bzeBalances: userBalances,
             }}/>}
             <Box
                 display='flex'
@@ -154,30 +155,15 @@ function TokenList() {
                         list={
                             filtered.map((token, i) => {
                                 const showWithdraw = () => {
-                                    return isFactoryType(token.metadata.base) || (isIBCType(token.metadata.base) && token.ibcTrace !== undefined);
+                                    return isIBCType(token.metadata.base) && token.ibcTrace !== undefined;
                                 }
 
                                 const onWithdraw = () => {
                                     if (!isIBCType(token.metadata.base)) {
-                                        router.push({
-                                            pathname: '/token',
-                                            query: {
-                                                denom: token.metadata.base
-                                            }
-                                        });
-
                                         return;
                                     }
 
                                     openModal(token, "withdraw");
-                                }
-
-                                const withdrawLabel = () => {
-                                    if (isIBCType(token.metadata.base)) {
-                                        return "Withdraw";
-                                    }
-
-                                    return 'View';
                                 }
 
                                 const showDeposit = () => {
@@ -196,7 +182,7 @@ function TokenList() {
                                     token: token,
                                     onWithdraw: onWithdraw,
                                     showWithdraw: showWithdraw(),
-                                    withdrawLabel: withdrawLabel(),
+                                    withdrawLabel: "Withdraw",
                                     showDeposit: showDeposit(),
                                     depositLabel: 'Deposit',
                                     onDeposit: onDeposit,

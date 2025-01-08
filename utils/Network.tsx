@@ -108,3 +108,24 @@ export function getMinDenom(): string {
 export function getChainName(): string {
     return process.env.NEXT_PUBLIC_CHAIN_NAME ?? CHAIN_NAME;
 }
+
+export function prettyChainName(chainName: string): string {
+    switch (chainName) {
+        case getChainName():
+            return "BeeZee";
+        case 'archway':
+            return "Archway";
+        case 'osmosis':
+            return "Osmosis";
+        case 'noble':
+            return "Noble";
+        case 'jackal':
+            return "Jackal";
+        case 'omniflixhub':
+            return "OmniFlix";
+        case 'atomone':
+            return "AtomOne";
+        default:
+            return "??";
+    }
+}

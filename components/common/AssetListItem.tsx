@@ -83,16 +83,10 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                     </Box>
                 </Stack>
                 <Stack
-                    attributes={{
-                        width: "25%",
-                    }}
-                >
-                </Stack>
-                <Stack
                     space="$0"
                     direction="vertical"
                     attributes={{
-                        width: "25%",
+                        width: "20%",
                     }}
                 >
                     <Text
@@ -110,7 +104,7 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                     space="$0"
                     direction="vertical"
                     attributes={{
-                        width: "25%",
+                        width: "30%",
                     }}
                 >
                     {props.balance &&
@@ -140,6 +134,7 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                             intent="text"
                             size="sm"
                             onClick={(event) => props?.onDeposit?.(event)}
+                            leftIcon={'plusRound'}
                         >
                             {props.depositLabel}
                         </Button>
@@ -150,10 +145,18 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                             intent="text"
                             size="sm"
                             onClick={(event) => props?.onWithdraw?.(event)}
+                            leftIcon={'minusRound'}
                         >
                             {props.withdrawLabel}
                         </Button>
                     }
+                    <Button
+                        intent="secondary"
+                        size="sm"
+                        onClick={(event) => onTickerClick()}
+                    >
+                        {"View"}
+                    </Button>
                 </Stack>
             </Stack>
         </Stack>

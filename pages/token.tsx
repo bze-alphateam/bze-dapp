@@ -1,4 +1,4 @@
-import {DefaultBorderedBox, FactoryIcon, Layout, TooltippedText} from "@/components";
+import {DefaultBorderedBox, FactoryIcon, Layout, TooltippedText, WalletBalances} from "@/components";
 import {
     getAllSupplyTokens, getDenomType,
     getTokenAdminAddress,
@@ -25,7 +25,7 @@ import {
     uAmountToAmount
 } from "@/utils";
 import {TokenMarkets} from "@/components/token/TokenMarkets";
-import {DenomUnit} from "cosmjs-types/cosmos/bank/v1beta1/bank";
+import { Token } from "@/services";
 
 interface TokenOwnershipProps {
     admin: string;
@@ -684,8 +684,10 @@ export default function Token() {
     const [chainMetadata, setChainMetadata] = useState<MetadataSDKType>();
     const [admin, setAdmin] = useState('');
     const [logo, setLogo] = useState<string|undefined>();
+    const [token, setToken] = useState<Token|undefined>();
 
     const router = useRouter();
+    const {address} = useChain(getChainName());
     const {query} = router;
 
     const fetchChainMetadata = async (denom: string | undefined) => {
@@ -696,6 +698,7 @@ export default function Token() {
         const allTokens = await getAllSupplyTokens();
         const token = allTokens.get(denom);
         if (token && token.logo) {
+            setToken(token);
             setLogo(token.logo);
         }
 
@@ -770,6 +773,7 @@ export default function Token() {
                             <TokenSupply props={{metadata: chainMetadata, admin: admin}}/>
                             {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin}}/>)}
                             <TokenMarkets props={{denom: chainMetadata.base}}/>
+                            {address && token && <WalletBalances props={{token: token}} />}
                         </Box>
                     </Box>
                 </Box>

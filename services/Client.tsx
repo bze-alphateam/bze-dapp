@@ -37,6 +37,55 @@ export async function getRestClient() {
     return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
 }
 
+export function getArchwayRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_ARCHWAY !== undefined ? process.env.NEXT_PUBLIC_REST_URL_ARCHWAY : '';
+}
+
+export function getOsmosisRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_OSMOSIS !== undefined ? process.env.NEXT_PUBLIC_REST_URL_OSMOSIS : '';
+}
+
+export function getNobleRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_NOBLE !== undefined ? process.env.NEXT_PUBLIC_REST_URL_NOBLE : '';
+}
+
+export function getJackalRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_JACKAL !== undefined ? process.env.NEXT_PUBLIC_REST_URL_JACKAL : '';
+}
+
+export function getOmniFlixRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_FLIX !== undefined ? process.env.NEXT_PUBLIC_REST_URL_FLIX : '';
+}
+
+export function getAtomOneRestURL(): string {
+    return process.env.NEXT_PUBLIC_REST_URL_ATOMONE !== undefined ? process.env.NEXT_PUBLIC_REST_URL_ATOMONE : '';
+}
+
+export async function getCounterpartyRestClient(chainName: string) {
+    if (chainName === "" || chainName === getChainName()) {
+        return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
+    }
+
+    switch (chainName) {
+        case getChainName():
+            return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
+        case 'archway':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getArchwayRestURL()})
+        case 'osmosis':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getOsmosisRestURL()})
+        case 'noble':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getNobleRestURL()})
+        case 'jackal':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getJackalRestURL()})
+        case 'omniflixhub':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getOmniFlixRestURL()})
+        case 'atomone':
+            return bze.ClientFactory.createLCDClient({restEndpoint: getAtomOneRestURL()})
+        default:
+            return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
+    }
+}
+
 export async function getSigningClient(offlineSigner: any, chainName?: string): Promise<Awaited<ReturnType<typeof getSigningBzeClient>>> {
     switch (chainName) {
         case getChainName():

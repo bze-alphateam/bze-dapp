@@ -1,14 +1,24 @@
 import {UseDisclosureReturn, useToast, useTx} from "@/hooks";
-import {BasicModal, Box, Button, Callout, TextField} from "@interchain-ui/react";
+import {BasicModal, Box, Button, Callout, Text, TextField} from "@interchain-ui/react";
 import {Token} from "@/services";
-import {useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
-import {amountToUAmount, getChainName, sanitizeNumberInput, toUpperFirstLetter} from "@/utils";
+import {
+    amountToUAmount,
+    getChainName,
+    prettyChainName,
+    sanitizeNumberInput,
+    toUpperFirstLetter,
+    uAmountToAmount
+} from "@/utils";
 import BigNumber from "bignumber.js";
 import {ibc} from '@bze/bzejs';
 import Long from 'long';
 import {coin} from '@cosmjs/stargate';
 import {useChain} from "@cosmos-kit/react";
+import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {ClickableBox} from "@/components";
+import {getAddressCounterpartyBalances} from "@/services/data_provider/Balances";
 
 export const IBC_ACTION_WITHDRAW = 'withdraw';
 export const IBC_ACTION_DEPOSIT = 'deposit';
@@ -25,11 +35,13 @@ export interface TransferIbcAssetModalProps {
     tokenDisplayDenom: DenomUnitSDKType;
     action: string;
     onClick: (token: Token) => void;
+    bzeBalances?: CoinSDKType[];
 }
 
 export default function TransferIbcAssetModal({props}: { props: TransferIbcAssetModalProps }) {
     const [amount, setAmount] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [availableBalance, setAvailableBalance] = useState<CoinSDKType|undefined>();
 
     const {tx: depositTx} = useTx(props.token.ibcTrace?.counterparty.chain_name);
     const {tx: withdrawTx} = useTx();
@@ -141,11 +153,40 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
 
     const informationText = useMemo(() => {
         if (props.action === IBC_ACTION_WITHDRAW) {
-            return `This action will withdraw ${props.tokenDisplayDenom.denom.toUpperCase()} coins from BeeZee blockchain to ${toUpperFirstLetter(props.token.ibcTrace?.counterparty.chain_name ?? "")} via IBC.`;
+            return `This action will withdraw ${props.tokenDisplayDenom.denom.toUpperCase()} coins from BeeZee blockchain to ${prettyChainName(props.token.ibcTrace?.counterparty.chain_name ?? "")} blockchain via IBC.`;
         }
 
-        return `This action will deposit ${props.tokenDisplayDenom.denom.toUpperCase()} coins to BeeZee blockchain via IBC.`;
+        return `This action will deposit ${props.tokenDisplayDenom.denom.toUpperCase()} coins from ${prettyChainName(props.token.ibcTrace?.counterparty.chain_name ?? "")} blockchain to BeeZee blockchain via IBC.`;
     }, [props.action, props.tokenDisplayDenom, props.token]);
+
+    const availableBalanceText = useMemo(() => {
+        if (props.action === IBC_ACTION_DEPOSIT) {
+            return `Available on ${prettyChainName(props.token.ibcTrace?.counterparty.chain_name ?? "")} blockchain`
+        }
+
+        return `Available on BeeZee blockchain`
+    }, [props.action, props.token]);
+
+    const getAvailableBalance = async () => {
+        if (!props.token || !tokenChainAddress) {
+            return;
+        }
+
+        if (props.action === IBC_ACTION_WITHDRAW) {
+            setAvailableBalance(props.bzeBalances?.find((item) => item.denom === props.token.metadata.base))
+
+            return;
+        }
+
+        return setAvailableBalance((await getAddressCounterpartyBalances(tokenChainAddress, props.token)).find((item) => item.denom === props.token.metadata.base));
+    };
+
+    useEffect(() => {
+        setAvailableBalance(undefined);
+        setIsLoading(true);
+        getAvailableBalance().then(() => setIsLoading(false)).catch(() => setIsLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props, tokenChainAddress])
 
     return (
         <BasicModal
@@ -167,7 +208,7 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
                         {informationText}
                     </Callout>
                 </Box>
-                <Box display='flex' flexDirection={'row'} p='$4' justifyContent={'space-evenly'} alignItems={'center'}>
+                <Box display='flex' flexDirection={'column'} p='$4' justifyContent={'space-evenly'} >
                     <TextField
                         id="fund-burner-amount"
                         type="text"
@@ -182,10 +223,36 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
                         intent={'default'}
                         disabled={isLoading}
                     />
-                    <Box><Button size="sm" intent="secondary" onClick={onClose}
-                                 isLoading={isLoading}>Cancel</Button></Box>
-                    <Box><Button size="sm" intent="primary" onClick={onPressClick}
-                                 isLoading={isLoading}>{toUpperFirstLetter(props.action)}</Button></Box>
+                    {!isLoading && availableBalance &&
+                        <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>
+                            <Box>
+                                <Text fontWeight={'$hairline'} fontSize={'$xs'}>{availableBalanceText}</Text>
+                            </Box>
+                            <ClickableBox onClick={() => setAmount(uAmountToAmount(availableBalance.amount, props.tokenDisplayDenom.exponent))}>
+                                <Box>
+                                    <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>{uAmountToAmount(availableBalance.amount, props.tokenDisplayDenom.exponent)} {props.tokenDisplayDenom.denom.toUpperCase()}</Text>
+                                </Box>
+                            </ClickableBox>
+                        </Box>
+                    }
+                    {!isLoading && !availableBalance &&
+                        <Box p={"$2"} display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'} flexWrap={'wrap'}>
+                            <Box>
+                                <Text fontWeight={'$hairline'} fontSize={'$xs'}>Available</Text>
+                            </Box>
+                            <Box>
+                                <Text fontWeight={'$hairline'} fontSize={'$xs'} color={'$primary100'}>Unknown</Text>
+                            </Box>
+                        </Box>
+                    }
+                    <Box flex={1} display={"flex"} flexDirection={'row'} justifyContent={'space-evenly'} p={"$4"}>
+                        <Box><Button size="sm" intent="secondary" onClick={onClose}
+                                     isLoading={isLoading}>Cancel</Button>
+                        </Box>
+                        <Box><Button size="sm" intent="primary" onClick={onPressClick}
+                                     isLoading={isLoading}>{toUpperFirstLetter(props.action)}</Button>
+                        </Box>
+                    </Box>
                 </Box>
             </Box>
         </BasicModal>
