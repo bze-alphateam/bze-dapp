@@ -30,7 +30,7 @@ function TokenList() {
             token: selectedToken,
             tokenDisplayDenom: await getTokenDisplayDenom(selectedToken.metadata.base, selectedToken),
             action: action,
-            onClick: () => {
+            onSuccess: () => {
             },
         }
 
@@ -125,7 +125,7 @@ function TokenList() {
             {modalProps && <TransferIbcAssetModal props={{
                 control: ibcModalDisclosure,
                 action: modalProps.action,
-                onClick: modalProps.onClick,
+                onSuccess: modalProps.onSuccess,
                 token: modalProps.token,
                 tokenDisplayDenom: modalProps.tokenDisplayDenom,
                 bzeBalances: userBalances,

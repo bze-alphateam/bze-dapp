@@ -4,12 +4,10 @@ import {getFromCache, removeFromCache, setInCache} from "@/services/data_provide
 import {MetadataSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import {IbcTransition} from "@chain-registry/types/assetlist.schema";
 import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
-import {isNativeType} from "@/services";
-import {MAINNET_OSMOSIS_IBC_DENOM, MAINNET_UDENOM} from "@/utils";
 
 const BALANCES_KEY = 'bank:balances:';
 
-const BALANCES_CACHE_TTL = 60 * 5; //15 minutes
+const BALANCES_CACHE_TTL = 30;
 
 export interface CounterpartyToken {
     metadata: MetadataSDKType,
@@ -46,21 +44,13 @@ export async function removeBalancesCache(address: string) {
 }
 
 // fetches the balances from token counterparty chain and builds an array of CoinSDKType by replacing the original denom
-// with our IBC denom. This is helpful when wanting to display the balance of an IBC denom on our chain on the original chain
-// if provided token is ubze (mainnet!!) it returns the balance on osmosis
+// with our chain (ibc, native) denom.
 export async function getAddressCounterpartyBalances(address: string, token: CounterpartyToken): Promise<CoinSDKType[]> {
-    let counterpartyChainName = ""
-    let base = "";
-    if (token.metadata.base === MAINNET_UDENOM) {
-        counterpartyChainName = "osmosis";
-        base = MAINNET_OSMOSIS_IBC_DENOM;
-    } else {
-        if (!token || !token.ibcTrace || token.ibcTrace.type !== "ibc" || !token.ibcTrace.counterparty) {
-            return [];
-        }
-        counterpartyChainName = token.ibcTrace.counterparty.chain_name;
-        base = token.ibcTrace.counterparty.base_denom;
+    if (!token || !token.ibcTrace || token.ibcTrace.type !== "ibc" || !token.ibcTrace.counterparty) {
+        return [];
     }
+    const counterpartyChainName = token.ibcTrace.counterparty.chain_name;
+    const counterpartyBase = token.ibcTrace.counterparty.base_denom;
 
     try {
         const client = await getCounterpartyRestClient(counterpartyChainName);
@@ -72,14 +62,14 @@ export async function getAddressCounterpartyBalances(address: string, token: Cou
 
         //already checked that token.ibcTrace is not undefined
         //@ts-ignore
-        const found = response.balances.find((item) => item.denom === base);
+        const found = response.balances.find((item) => item.denom === counterpartyBase);
         if (!found) {
             return [];
         }
 
         return [
             {
-                denom: token.metadata.base === MAINNET_UDENOM ? MAINNET_UDENOM : token.metadata.base,
+                denom: token.metadata.base,
                 amount: found.amount,
             }
         ];

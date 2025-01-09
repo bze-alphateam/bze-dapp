@@ -205,7 +205,7 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
                     continue;
                 }
 
-                let meta = {
+                let meta: Token = {
                     metadata: {
                         base: current.denom,
                         denom_units: [],
@@ -246,6 +246,8 @@ export async function getAllSupplyTokens(): Promise<Map<string, Token>> {
                         // @ts-ignore
                         meta.ibcTrace = ibcTrace;
                     }
+                } else if (isNativeType(current.denom)) {
+                    meta.ibcTrace = getBzeOsmosisIbcTrace();
                 }
 
                 allSupplyTokens.set(chainAsset.base, meta)
@@ -312,4 +314,20 @@ export function sortAssets(assets: Token[]): Token[] {
 
         return token1.metadata.name > token2.metadata.name ? 1 : -1;
     });
+}
+
+
+function getBzeOsmosisIbcTrace(): IbcTransition {
+    return {
+        "type": "ibc",
+        "counterparty": {
+            "chain_name": "osmosis",
+            "base_denom": "ibc/C822645522FC3EECF817609AA38C24B64D04F5C267A23BCCF8F2E3BC5755FA88",
+            "channel_id": "channel-340"
+        },
+        "chain": {
+            "channel_id": "channel-0",
+            "path": "transfer/channel-0/ibc/C822645522FC3EECF817609AA38C24B64D04F5C267A23BCCF8F2E3BC5755FA88"
+        }
+    }
 }

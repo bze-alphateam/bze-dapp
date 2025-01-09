@@ -1,7 +1,7 @@
 import {UseDisclosureReturn, useToast, useTx} from "@/hooks";
 import {BasicModal, Box, Button, Callout, Text, TextField} from "@interchain-ui/react";
 import {Token} from "@/services";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import {
     amountToUAmount,
@@ -34,7 +34,7 @@ export interface TransferIbcAssetModalProps {
     token: Token;
     tokenDisplayDenom: DenomUnitSDKType;
     action: string;
-    onClick: (token: Token) => void;
+    onSuccess: () => void;
     bzeBalances?: CoinSDKType[];
 }
 
@@ -85,6 +85,7 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
             onSuccess: async () => {
                 setAmount("");
                 props.control.onClose();
+                props.onSuccess();
             }
         });
         setIsLoading(false);
@@ -111,6 +112,7 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
             onSuccess: async () => {
                 setAmount("");
                 props.control.onClose();
+                props.onSuccess();
             }
         });
         setIsLoading(false);
