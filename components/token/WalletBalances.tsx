@@ -168,7 +168,7 @@ export const WalletBalances = memo(({props}: { props: WalletBalancesProps }) => 
     }, [props, address]);
 
     return (
-        <DefaultBorderedBox>
+        <DefaultBorderedBox mb={{desktop: '$0', mobile: '$12'}}>
             {modalProps && <TransferIbcAssetModal props={{
                 control: ibcModalDisclosure,
                 action: modalProps.action,
