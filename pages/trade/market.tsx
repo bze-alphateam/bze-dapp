@@ -27,7 +27,14 @@ import {
   TradeViewChart,
 } from "@/services";
 import BigNumber from "bignumber.js";
-import {addDebounce, getChainName, marketIdFromDenoms, prettyAmount, uPriceToBigNumberPrice,} from "@/utils";
+import {
+    addDebounce,
+    addMultipleDebounce,
+    getChainName,
+    marketIdFromDenoms,
+    prettyAmount,
+    uPriceToBigNumberPrice,
+} from "@/utils";
 import {useChain} from "@cosmos-kit/react";
 import {HistoryOrderSDKType, OrderReferenceSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import {
@@ -311,9 +318,10 @@ export default function MarketPair() {
         }
 
         loadMarketPrice();
-        addDebounce("fetchTicker", 500, fetchTickers);
+        //we're bouncing 2 times calls to aggregator, in case it is slow
+        addMultipleDebounce("fetchTicker", 500, fetchTickers, 2);
         if (address) {
-            addDebounce("fetchMyHistory", 500, () => fetchMyHistory(marketId, address));
+            addMultipleDebounce("fetchMyHistory", 500, () => fetchMyHistory(marketId, address), 2);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [marketId, historyOrders, myOrders, activeOrders]);

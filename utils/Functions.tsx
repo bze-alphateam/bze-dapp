@@ -1,6 +1,11 @@
 let debounces: Map<string, NodeJS.Timeout> = new Map();
 const MAX_DENOM_LEN = 16;
 
+export async function addMultipleDebounce(name: string, delay: number, callback: () => void, times: number): Promise<void> {
+    for (let index = 1; index <= times; index++) {
+        addDebounce(`${name}-${index}`, delay * index, callback);
+    }
+}
 
 export async function addDebounce(name: string, delay: number, callback: () => void): Promise<void> {
     cancelDebounce(name);
