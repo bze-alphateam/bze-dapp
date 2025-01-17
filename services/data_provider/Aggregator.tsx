@@ -14,6 +14,8 @@ export interface HistoryOrder {
     "quote_volume": string | number;
     "executed_at": string;
     "order_type": string;
+    "maker": string;
+    "taker": string;
 }
 
 export interface Ticker {

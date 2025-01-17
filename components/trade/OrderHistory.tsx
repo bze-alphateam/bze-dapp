@@ -2,11 +2,11 @@ import {useToast, useTx} from "@/hooks";
 import {getMarketOrder, HistoryOrder} from "@/services";
 import {getChainName, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice} from "@/utils";
 import {HistoryOrderSDKType, OrderReferenceSDKType, OrderSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import {useChain} from "@cosmos-kit/react";
+import {useChain, useWallet} from "@cosmos-kit/react";
 import {Box, Button, Skeleton, Stack, Text, useColorModeValue} from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
-import {memo, useEffect, useMemo, useState} from "react";
+import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {bze} from '@bze/bzejs';
 import {MarketPairTokens} from "./ActiveOrders";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -98,6 +98,23 @@ interface MyHistoryListRowProps {
 function MyHistoryListRow(props: MyHistoryListRowProps) {
     const [time, setTime] = useState<Date>(new Date());
 
+    const {address} = useChain(getChainName());
+
+    //if I am a market maker then order_type === order_type
+    //otherwise it should be inversed
+    const getOrderType = useMemo(() => {
+        if (!address) {
+            return props.order.order_type;
+        }
+
+        if (address === props.order.taker) {
+            return props.order.order_type;
+        }
+
+        return props.order.order_type === 'buy' ? 'sell' : 'buy';
+
+    }, [props.order.order_type, props.order.taker, address])
+
     useEffect(() => {
         const execAt = new Date(parseInt(props.order.executed_at));
 
@@ -105,7 +122,7 @@ function MyHistoryListRow(props: MyHistoryListRowProps) {
     }, [props])
 
     return (
-        <HistoryBoxItem orderType={props.order.order_type} price={props.order.price} amount={props.order.base_volume}
+        <HistoryBoxItem orderType={getOrderType} price={props.order.price} amount={props.order.base_volume}
                         time={time} quoteAmount={props.order.quote_volume}/>
     );
 }

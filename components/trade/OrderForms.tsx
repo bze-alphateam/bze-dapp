@@ -381,7 +381,8 @@ export function OrderForms(props: OrderFormsProps) {
                         }}
                     >
                         <Text color={'$primary200'}
-                              fontWeight={'$semibold'}>{prettyAmount(isBuy ? quoteBalance : baseBalance)} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom.toUpperCase() : props.tokens.baseTokenDisplayDenom.denom.toUpperCase()}</Text>
+                              fontWeight={'$semibold'}>{isBuy ? quoteBalance : baseBalance} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom.toUpperCase() : props.tokens.baseTokenDisplayDenom.denom.toUpperCase()}
+                        </Text>
                     </Box>
                 }
             </Box>
