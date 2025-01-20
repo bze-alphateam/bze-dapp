@@ -393,25 +393,31 @@ export function OrderForms(props: OrderFormsProps) {
                     onChange={(e) => {
                         onPriceChange(sanitizeNumberInput(e.target.value))
                     }}
-                    placeholder=""
+                    placeholder="Price"
                     value={price}
                     type="text"
                     //@ts-ignore
                     inputMode="decimal"
                     intent={'default'}
                     disabled={isPendingSubmit}
-                    startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text
-                        fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text></Box>}
-                    endAddon={<Box width={'$16'} pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'}
-                                                                                                        fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display.toUpperCase()}</Text></Box>}
+                    startAddon={
+                        <Box width={'$16'} pr={'$2'} alignItems={'center'} display={{mobile: 'none', desktop: 'flex'}}>
+                            <Text fontSize={'$sm'} fontWeight={'$hairline'}>Price</Text>
+                        </Box>
+                    }
+                    endAddon={
+                        <Box width={'$16'} pl={'$2'} display={'flex'} alignItems={'center'}>
+                            <Text fontSize={'$sm'} fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display.toUpperCase()}</Text>
+                        </Box>}
                 />
                 {
                     props.marketPrices &&
                     parseFloat(price) > 0 &&
                     props.marketPrices.denom !== props.tokens.baseTokenDisplayDenom.denom &&
                     props.marketPrices.denom !== props.tokens.quoteTokenDisplayDenom.denom &&
-                    <Box textAlign={'center'} mb={'$2'}><Text fontSize={'$xs'}
-                                                              fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(price).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text></Box>
+                    <Box textAlign={'center'} mb={'$2'}>
+                        <Text fontSize={'$xs'} fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(price).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text>
+                    </Box>
                 }
                 <TextField
                     id="amount"
@@ -422,11 +428,11 @@ export function OrderForms(props: OrderFormsProps) {
                     onChange={(e) => {
                         onAmountChange(sanitizeNumberInput(e.target.value))
                     }}
-                    placeholder=""
+                    placeholder="Amount"
                     value={amount}
                     intent={'default'}
                     disabled={isPendingSubmit}
-                    startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text
+                    startAddon={<Box width={'$16'} pr={'$2'} alignItems={'center'} display={{mobile: 'none', desktop: 'flex'}}><Text
                         fontSize={'$sm'} fontWeight={'$hairline'}>Amount</Text></Box>}
                     endAddon={<Box width={'$16'} pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'}
                                                                                                         fontWeight={'$bold'}>{props.tokens.baseToken.metadata.display.toUpperCase()}</Text></Box>}
@@ -441,11 +447,11 @@ export function OrderForms(props: OrderFormsProps) {
                     onChange={(e) => {
                         onTotalChange(sanitizeNumberInput(e.target.value))
                     }}
-                    placeholder=""
+                    placeholder="Total"
                     value={total}
                     intent={'default'}
                     disabled={isPendingSubmit}
-                    startAddon={<Box width={'$16'} pr={'$2'} display={'flex'} alignItems={'center'}><Text
+                    startAddon={<Box width={'$16'} pr={'$2'} display={{mobile: 'none', desktop: 'flex'}} alignItems={'center'}><Text
                         fontSize={'$sm'} fontWeight={'$hairline'}>Total</Text></Box>}
                     endAddon={<Box width={'$16'} pl={'$2'} display={'flex'} alignItems={'center'}><Text fontSize={'$sm'}
                                                                                                         fontWeight={'$bold'}>{props.tokens.quoteToken.metadata.display.toUpperCase()}</Text></Box>}
