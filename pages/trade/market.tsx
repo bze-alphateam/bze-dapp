@@ -459,7 +459,7 @@ export default function MarketPair() {
                             fontSize={'$2xl'} color={'$primary300'}
                             as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
                     </Box>
-                    <DefaultBorderedBox mb={"$6"} mt="$4" display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={"row"} mr={"$6"}>
+                    <DefaultBorderedBox mb={"$6"} mt="$4" display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}} mr={"$6"}>
                         <Box flex={1} display={"flex"} p={"$6"}>
                             <Text fontSize={'$xl'} fontWeight={'$bold'}>$FLIX - $USDC Trading Campaign 🚀</Text>
                         </Box>

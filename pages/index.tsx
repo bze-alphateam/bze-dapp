@@ -530,7 +530,7 @@ export default function Home() {
                     <Text as="h1" fontSize={'$2xl'}>Trade</Text>
                 </Box>
             </Box>
-            <DefaultBorderedBox ml={"$6"} mb={"$6"} display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={"row"}>
+            <DefaultBorderedBox ml={"$6"} mb={"$6"} display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}}>
                 <Box flex={1} display={"flex"} p={"$6"}>
                     <Text fontSize={'$xl'} fontWeight={'$bold'}>$FLIX - $USDC Trading Campaign 🚀</Text>
                 </Box>
