@@ -319,9 +319,9 @@ export default function MarketPair() {
 
         loadMarketPrice();
         //we're bouncing 2 times calls to aggregator, in case it is slow
-        addMultipleDebounce("fetchTicker", 500, fetchTickers, 2);
+        addMultipleDebounce("fetchTicker", 1000, fetchTickers, 2);
         if (address) {
-            addMultipleDebounce("fetchMyHistory", 500, () => fetchMyHistory(marketId, address), 2);
+            addMultipleDebounce("fetchMyHistory", 1000, () => fetchMyHistory(marketId, address), 2);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [marketId, historyOrders, myOrders, activeOrders]);
