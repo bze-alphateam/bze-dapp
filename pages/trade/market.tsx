@@ -459,6 +459,18 @@ export default function MarketPair() {
                             fontSize={'$2xl'} color={'$primary300'}
                             as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
                     </Box>
+                    <DefaultBorderedBox mb={"$6"} mt="$4" display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={"row"} mr={"$6"}>
+                        <Box flex={1} display={"flex"} p={"$6"}>
+                            <Text fontSize={'$xl'} fontWeight={'$bold'}>$FLIX - $USDC Trading Campaign 🚀</Text>
+                        </Box>
+                        <Box flex={1} display={"flex"} p={"$6"} flexDirection={"column"}>
+                            <Text fontSize={'$md'} fontWeight={'$bold'}>💰 Rewards Pool: 400,000 $BZE + 2,000 $FLIX</Text>
+                            <Text fontSize={'$md'} fontWeight={'$bold'}>📅 Duration: Jan 20, 2 PM UTC – Jan 25, 2 PM UTC</Text>
+                        </Box>
+                        <Box flex={1} display={"flex"} p={"$6"} justifyContent={"flex-end"}>
+                            <Button size={"sm"} intent={"secondary"} rightIcon={"externalLinkLine"} onClick={() => window.open("https://x.com/FlixFanatics/status/1881332778144501943", "_blank", "noopener,noreferrer")}>Read More</Button>
+                        </Box>
+                    </DefaultBorderedBox>
                     <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4"
                          mt="$4">
                         <PriceBox price={ticker ? ticker.last_price : 0} change={ticker ? ticker.change : 0}
