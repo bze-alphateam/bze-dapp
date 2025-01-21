@@ -36,7 +36,7 @@ export default function Earn() {
             <Box display='flex' flexDirection={'row'} alignItems={'center'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>Earn Crypto</Text>
-                </Box>x
+                </Box>
             </Box>
             <DefaultBorderedBox mb={"$6"} display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}} mx={{desktop: "$6"}}>
                 <Box flex={1} display={"flex"} p={"$6"}>
