@@ -538,7 +538,7 @@ export default function Home() {
                     <Text fontSize={'$md'} fontWeight={'$bold'}>💰 Rewards Pool: 400,000 $BZE + 2,000 $FLIX</Text>
                     <Text fontSize={'$md'} fontWeight={'$bold'}>📅 Duration: Jan 20, 2 PM UTC – Jan 25, 2 PM UTC</Text>
                 </Box>
-                <Box flex={1} display={"flex"} p={"$6"} justifyContent={"space-between"}>
+                <Box display={"flex"} p={"$6"} gap={"$2"} flexDirection={{mobile: 'row', desktop: 'row'}} justifyContent={"flex-end"}>
                     <Button size={"sm"} intent={"text"} onClick={() => onCampaignClick()}>Trade FLIX</Button>
                     <Button size={"sm"} intent={"secondary"} rightIcon={"externalLinkLine"} onClick={() => window.open("https://x.com/FlixFanatics/status/1881332778144501943", "_blank", "noopener,noreferrer")}>Read More</Button>
                 </Box>

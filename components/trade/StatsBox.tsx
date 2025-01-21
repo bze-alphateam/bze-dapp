@@ -21,7 +21,7 @@ export const PriceBox = ({price, change, denom, marketPrice}: {
         border="1px solid"
         borderColor="$gray200"
         borderRadius="$md"
-        width={{desktop: '24%', mobile: '100%'}}
+        width={{desktop: '25%', mobile: '100%'}}
     >
         <Text fontSize="$xs" fontWeight="$thin">
             Price
@@ -53,7 +53,7 @@ export const StatsBox = ({title, value, denom, marketPrice}: {
         border="1px solid"
         borderColor="$gray200"
         borderRadius="$md"
-        width={{desktop: '24%', mobile: '100%'}}
+        width={{desktop: '25%', mobile: '100%'}}
     >
         <Text fontSize="$xs" fontWeight="$thin">
             {title}
@@ -107,7 +107,7 @@ export const VolumeBox = ({title, marketPrice, ticker, tokens}: {
             border="1px solid"
             borderColor="$gray200"
             borderRadius="$md"
-            width={{desktop: '24%', mobile: '100%'}}
+            width={{desktop: '25%', mobile: '100%'}}
         >
             <Text fontSize="$xs" fontWeight="$thin">
                 {title}
