@@ -308,9 +308,9 @@ function MarketsListing(props: MarketListProps) {
         const aTicker = props.tickers?.get(marketIdFromDenoms(a.base, a.quote));
         const bTicker = props.tickers?.get(marketIdFromDenoms(b.base, b.quote));
         if (aTicker && bTicker) {
-            if (aQuoteToken?.stableCoin && !bQuoteToken?.stableCoin) {
+            if (aQuoteToken?.stableCoin && !bQuoteToken?.stableCoin && aTicker.quote_volume > 0) {
                 return -1;
-            } else if (!aQuoteToken?.stableCoin && bQuoteToken?.stableCoin) {
+            } else if (!aQuoteToken?.stableCoin && bQuoteToken?.stableCoin && bTicker.quote_volume) {
                 return 1;
             }
 

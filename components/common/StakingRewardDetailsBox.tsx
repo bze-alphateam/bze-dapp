@@ -90,12 +90,19 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
             return result;
         }
         result.dailyRewards = `${prettyAmount(uAmountToAmount(props.reward.prize_amount, pDisplay.exponent))} ${pDisplay.denom}`;
-        result.lock = `${props.reward.lock} days`
+        result.lock = `${props.reward.lock} day`
+        if (props.reward.lock > 1) {
+            result.lock += "s" //add plural
+        }
 
         const remaining = new BigNumber(props.reward.duration).minus(props.reward.payouts);
-        result.remainingPeriod = `${remaining.toString()} days`
+        result.remainingPeriod = `${remaining.toString()} day`
+        if (remaining.gt(1)) {
+            result.remainingPeriod += "s" //add plural
+        }
 
         if (remaining.lte(0)) {
+            result.remainingPeriod = "0"
             result.status = "Finished";
             result.statusColor = '$textDanger';
         }
@@ -156,7 +163,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
                 props={{name: 'Reward:', value: props.prizeToken.metadata.display.toUpperCase()}}/>
             <StakingRewardDetailsBoxRow props={{name: 'Daily distribution:', value: dailyRewards.toUpperCase()}}/>
             <StakingRewardDetailsBoxRow props={{name: 'Min stake:', value: minStaking.toUpperCase()}}/>
-            <StakingRewardDetailsBoxRow props={{name: 'Lock:', value: lock}}/>
+            <StakingRewardDetailsBoxRow props={{name: 'Unstake lock:', value: lock}}/>
             <StakingRewardDetailsBoxRow props={{name: 'Remaining:', value: remainingPeriod}}/>
             <StakingRewardDetailsBoxRow props={{name: 'Staked:', value: totalStaked.toUpperCase()}}/>
             <StakingRewardDetailsBoxRow props={{
