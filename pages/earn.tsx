@@ -1,5 +1,5 @@
-import {Box, Tabs, Text} from "@interchain-ui/react";
-import {Layout, MyRewards, StakingRewards} from "@/components";
+import {Box, Button, Tabs, Text} from "@interchain-ui/react";
+import {DefaultBorderedBox, Layout, MyRewards, StakingRewards} from "@/components";
 import {useEffect, useState} from "react";
 import Image from "next/image";
 import {useRouter} from "next/router";
@@ -36,8 +36,19 @@ export default function Earn() {
             <Box display='flex' flexDirection={'row'} alignItems={'center'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>Earn Crypto</Text>
-                </Box>
+                </Box>x
             </Box>
+            <DefaultBorderedBox mb={"$6"} display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}} mx={{desktop: "$6"}}>
+                <Box flex={1} display={"flex"} p={"$6"}>
+                    <Text fontSize={'$xl'} fontWeight={'$bold'}>Want to stake BZE? 💰</Text>
+                </Box>
+                <Box flex={1} display={"flex"} p={"$6"} flexDirection={"column"}>
+                    <Text fontSize={'$sm'} fontWeight={'$bold'}>Delegate your BZE to network validators and be part of BeeZee.</Text>
+                </Box>
+                <Box display={"flex"} p={"$6"} gap={"$2"} flexDirection={{mobile: 'row', desktop: 'row'}} justifyContent={"flex-end"}>
+                    <Button size={"sm"} intent={"secondary"} rightIcon={"externalLinkLine"} onClick={() => window.open("https://staking.getbze.com", "_blank", "noopener,noreferrer")}>To Staking</Button>
+                </Box>
+            </DefaultBorderedBox>
             <Box
                 display='flex'
                 flexDirection={{desktop: 'row', mobile: 'row'}}

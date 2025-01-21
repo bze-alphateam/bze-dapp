@@ -61,6 +61,29 @@ export function Sidebar() {
     );
 }
 
+function TopBarItem({icon, text, path, target = '_self'}: {
+    icon: string,
+    text: string,
+    path: string,
+    target?: string
+}) {
+    const router = useRouter();
+    const textColor = useColorModeValue("black", "white");
+    const isActive = router.pathname === path;
+
+    return (
+        <NextLink href={path}
+                  style={{textDecoration: 'none'}}
+                  target={target}>
+            <Box p={"$2"} backgroundColor={isActive ? '$divider' : 'transparent'}
+                 boxShadow={isActive ? '$dark-lg' : 'transparent'} mx="$4" mt="$6" borderRadius='$xl'>
+                <Text fontSize={{desktop: '$lg', mobile: '$sm'}}>
+                    {SidebarIcon({type: icon, color: textColor})} {text}
+                </Text>
+            </Box>
+        </NextLink>
+    );
+}
 
 export function Topbar() {
     return (
@@ -75,14 +98,14 @@ export function Topbar() {
                     flexDirection={"row"}
                     justifyContent={'center'}
                     flexWrap={'wrap'}
-                    mb='$6'
+                    mb='$2'
                 >
-                    <SidebarItem icon="trade" text="Trade" path="/"/>
-                    <SidebarItem icon="assets" text="Assets" path="/assets"/>
-                    <SidebarItem icon="rewards" text="Earn" path="/earn"/>
-                    <SidebarItem icon="factory" text="Token Factory" path="/factory"/>
-                    <SidebarItem icon="burner" text="Burner" path="/burner"/>
-                    <SidebarItem icon="chain-params" text="Chain Params" path="/chain-params"/>
+                    <TopBarItem icon="trade" text="Trade" path="/"/>
+                    <TopBarItem icon="assets" text="Assets" path="/assets"/>
+                    <TopBarItem icon="rewards" text="Earn" path="/earn"/>
+                    <TopBarItem icon="factory" text="Token Factory" path="/factory"/>
+                    <TopBarItem icon="burner" text="Burner" path="/burner"/>
+                    <TopBarItem icon="chain-params" text="Chain Params" path="/chain-params"/>
                 </Box>
                 <Divider/>
             </Box>
