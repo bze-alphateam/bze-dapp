@@ -10,6 +10,7 @@ import {Box, ThemeProvider, Toaster, useColorModeValue, useTheme,} from "@interc
 import {getMainnetChains, getTestnetChains, keplrSuggestChain, networks} from "@/config";
 import {useCallback, useEffect} from "react";
 import {getChainName, isTestnet} from "@/utils";
+import {SessionOptions} from "@cosmos-kit/core";
 
 
 function CreateCosmosApp({Component, pageProps}: AppProps) {
@@ -20,6 +21,10 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
             return 'direct'
         }
     };
+
+    const sessionOptions: SessionOptions = {
+        duration: 48 * 60 * 60 * 1000,
+    }
 
     const getAssets = useCallback(() => {
         if (isTestnet()) {
@@ -67,6 +72,7 @@ function CreateCosmosApp({Component, pageProps}: AppProps) {
                 }}
                 // @ts-ignore
                 signerOptions={signerOptions}
+                sessionOptions={sessionOptions}
             >
                 <Box
                     className={themeClass}
