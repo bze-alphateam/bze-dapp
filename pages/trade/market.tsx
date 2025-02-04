@@ -459,18 +459,6 @@ export default function MarketPair() {
                             fontSize={'$2xl'} color={'$primary300'}
                             as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
                     </Box>
-                    <DefaultBorderedBox mb={"$6"} mt="$4" display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}} mr={{desktop: "$6"}}>
-                        <Box flex={1} display={"flex"} p={"$6"}>
-                            <Text fontSize={'$xl'} fontWeight={'$bold'}>$FLIX - $USDC Trading Campaign 🚀</Text>
-                        </Box>
-                        <Box flex={1} display={"flex"} p={"$6"} flexDirection={"column"}>
-                            <Text fontSize={'$md'} fontWeight={'$bold'}>💰 Rewards Pool: 400,000 $BZE + 2,000 $FLIX</Text>
-                            <Text fontSize={'$md'} fontWeight={'$bold'}>📅 Campaign ended. Prizes will be sent soon</Text>
-                        </Box>
-                        <Box display={"flex"} p={"$6"} gap={"$2"} flexDirection={{mobile: 'row', desktop: 'row'}} justifyContent={"flex-end"}>
-                            <Button size={"sm"} intent={"secondary"} rightIcon={"externalLinkLine"} onClick={() => window.open("https://docs.google.com/spreadsheets/d/1Tk5ObUcEwvtDFy51i6-2qEQAhEaD0zDZq4H_hG9pK9E/edit?usp=sharing", "_blank", "noopener,noreferrer")}>Winners</Button>
-                        </Box>
-                    </DefaultBorderedBox>
                     <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4"
                          mt="$4" mr={{desktop: "$6"}}>
                         <PriceBox price={ticker ? ticker.last_price : 0} change={ticker ? ticker.change : 0}

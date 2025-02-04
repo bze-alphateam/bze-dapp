@@ -499,18 +499,6 @@ export default function Home() {
         fetchList();
     }
 
-    const router = useRouter();
-
-    const onCampaignClick = () => {
-        router.push({
-            pathname: '/trade/market',
-            query: {
-                base: "ibc/FF39851E73089ACBD0B09BDF62FA3C67FBD77A2CD97CD159DBCE9C770561F8AF",
-                quote: "ibc/6490A7EAB61059BFC1CDDEB05917DD70BDF3A611654162A1A47DB930D40D8AF4",
-            }
-        });
-    }
-
     useEffect(() => {
         fetchList();
         const refreshInterval = setInterval(() => {
@@ -529,19 +517,6 @@ export default function Home() {
                     <Text as="h1" fontSize={'$2xl'}>Trade</Text>
                 </Box>
             </Box>
-            <DefaultBorderedBox ml={{desktop: "$6"}} mb={"$6"} display='flex' flex={1} justifyContent={'center'} alignItems={'center'} flexDirection={{mobile: 'column', desktop: 'row'}}>
-                <Box flex={1} display={"flex"} p={"$6"}>
-                    <Text fontSize={'$xl'} fontWeight={'$bold'}>$FLIX - $USDC Trading Campaign 🚀</Text>
-                </Box>
-                <Box flex={1} display={"flex"} p={"$6"} flexDirection={"column"}>
-                    <Text fontSize={'$md'} fontWeight={'$bold'}>💰 Rewards Pool: 400,000 $BZE + 2,000 $FLIX</Text>
-                    <Text fontSize={'$md'} fontWeight={'$bold'}>📅 Campaign ended. Prizes will be sent soon</Text>
-                </Box>
-                <Box display={"flex"} p={"$6"} gap={"$2"} flexDirection={{mobile: 'row', desktop: 'row'}} justifyContent={"flex-end"}>
-                    <Button size={"sm"} intent={"text"} onClick={() => onCampaignClick()}>Trade FLIX</Button>
-                    <Button size={"sm"} intent={"secondary"} rightIcon={"externalLinkLine"} onClick={() => window.open("https://docs.google.com/spreadsheets/d/1Tk5ObUcEwvtDFy51i6-2qEQAhEaD0zDZq4H_hG9pK9E/edit?usp=sharing", "_blank", "noopener,noreferrer")}>Winners</Button>
-                </Box>
-            </DefaultBorderedBox>
             <Box display='flex' flexDirection={{desktop: 'column', mobile: 'column'}}>
                 <MarketsListing loading={loading} list={list} tokens={allTokens} tickers={tickers}/>
                 <Box flex={1} flexDirection={{desktop: "row", mobile: "column-reverse"}} display={'flex'} justifyContent={'center'} gap={'$6'} flexWrap={'wrap'}>
