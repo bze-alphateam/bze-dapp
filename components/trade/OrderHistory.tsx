@@ -345,6 +345,46 @@ interface MyOrdersProps {
 }
 
 export function MyOrdersList(props: MyOrdersProps) {
+    const [loading, setLoading] = useState(false);
+
+    const {toast} = useToast();
+    const {address} = useChain(getChainName());
+    const {tx} = useTx();
+
+    const onCancelAll = async () => {
+        if (address === undefined) {
+            toast({
+                type: 'error',
+                title: 'Please connect your wallet',
+            });
+
+            return;
+        }
+
+        setLoading(true);
+        const msgs = [];
+        for (const ord of props.orders) {
+            const msg = cancelOrder({
+                creator: address,
+                marketId: ord.market_id,
+                orderId: ord.id,
+                orderType: ord.order_type,
+            });
+
+            msgs.push(msg);
+        }
+
+        await tx(msgs, {
+            toast: {
+                description: 'All orders cancelled'
+            },
+            onSuccess: () => {
+                props.onOrderCancelled ? props.onOrderCancelled() : null;
+            }
+        });
+
+        setLoading(false);
+    }
 
     return (
         <Box display={'flex'} flex={1} flexDirection={'column'} maxHeight={'250px'} overflowY={'scroll'}>
@@ -375,11 +415,20 @@ export function MyOrdersList(props: MyOrdersProps) {
                         ))
                         :
                         <Box display={'flex'} flex={1} justifyContent={'center'} alignItems={'center'}><Text>No orders
-                            found...</Text></Box>
+                            found...</Text>
+                        </Box>
                 )
                 :
                 <Box display={'flex'} flex={1} justifyContent={'center'}
-                     alignItems={'center'}><Text>Loading...</Text></Box>
+                     alignItems={'center'}><Text>Loading...</Text>
+                </Box>
+            }
+            {!props.loading && props.orders.length > 0 &&
+                <Box display={'flex'} flex={1} justifyContent={'flex-end'} alignItems={'center'}>
+                    <Box>
+                        <Button size="xs" intent="text" isLoading={loading} onClick={onCancelAll}>Cancel all</Button>
+                    </Box>
+                </Box>
             }
         </Box>
     );
