@@ -4,7 +4,7 @@ import {coins, DeliverTxResponse, isDeliverTxSuccess, StdFee} from '@cosmjs/star
 import {type CustomToast, useToast} from './useToast';
 import {keplrSuggestChain} from '@/config';
 import {getSigningClient} from '@/services';
-import {getChainName, getMinDenom} from '@/utils';
+import {getChainName, getMinDenom, prettyError} from '@/utils';
 
 interface Msg {
     typeUrl: string;
@@ -107,7 +107,7 @@ export const useTx = (chainName?: string) => {
                     } else {
                         toast({
                             title: TxStatus.Failed,
-                            description: res?.rawLog,
+                            description: prettyError(res?.rawLog),
                             type: 'error',
                             duration: 10000,
                         });
@@ -117,7 +117,7 @@ export const useTx = (chainName?: string) => {
                     console.log(err);
                     toast({
                         title: TxStatus.Failed,
-                        description: err?.message,
+                        description: prettyError(err?.message),
                         type: 'error',
                         duration: 10000,
                     });

@@ -56,6 +56,7 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
                     as="img"
                     attributes={{
                         src: props.token.logo,
+                        onError: (e: { currentTarget: { src: string; }; }) => (e.currentTarget.src = "/token_placeholder.png"),
                     }}
                     width={"$14"}
                     height={"$14"}
