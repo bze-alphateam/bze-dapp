@@ -26,6 +26,7 @@ import {
 } from "@/utils";
 import {TokenMarkets} from "@/components/token/TokenMarkets";
 import { Token } from "@/services";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 interface TokenOwnershipProps {
     admin: string;
@@ -503,6 +504,7 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
                 setDisabled(true);
                 props.onUpdate();
             },
+            useDirectSign: true,
         });
 
         setPendingSubmit(false);
@@ -559,7 +561,7 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
                 {
                     props.logo &&
                     <Box p={'$6'}>
-                        <Box as="img" attributes={{src: props.logo}} width={"$14"} height={"$14"}/>
+                        <LogoWithFallback src={props.logo} width={"$14"} height={"$14"}/>
                     </Box>
                 }
                 <Box p={props.logo ? undefined : '$6'}>

@@ -15,6 +15,7 @@ interface TxOptions {
     fee?: StdFee | null;
     toast?: Partial<CustomToast>;
     onSuccess?: (res: DeliverTxResponse) => void;
+    useDirectSign?: boolean;
 }
 
 export enum TxStatus {
@@ -44,7 +45,7 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
 }
 
 export const useTx = (chainName?: string) => {
-    const {address, getOfflineSignerAmino} = useChain(chainName ?? getChainName());
+    const {address, getOfflineSignerAmino, getOfflineSignerDirect} = useChain(chainName ?? getChainName());
     const {toast} = useToast();
 
     const tx = async (msgs: Msg[], options: TxOptions) => {
@@ -58,6 +59,10 @@ export const useTx = (chainName?: string) => {
         }
 
         const offlineSignerFunc = () => {
+            if (options.useDirectSign) {
+                return getOfflineSignerDirect();
+            }
+
             //use amino in order to allow Ledger signing
             return getOfflineSignerAmino();
         }

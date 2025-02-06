@@ -4,6 +4,7 @@ import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import {BaseComponentProps, Box, Button, Stack, Text} from "@interchain-ui/react";
 import {useMemo} from "react";
 import {useRouter} from "next/router";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 export interface CustomAssetListItemProps extends BaseComponentProps {
     token: Token;
@@ -52,12 +53,8 @@ export default function AssetListItem(props: CustomAssetListItemProps) {
             className={props.className}
         >
             <Box width="$19">
-                <Box
-                    as="img"
-                    attributes={{
-                        src: props.token.logo,
-                        onError: (e: { currentTarget: { src: string; }; }) => (e.currentTarget.src = "/token_placeholder.png"),
-                    }}
+                <LogoWithFallback
+                    src={props.token.logo}
                     width={"$14"}
                     height={"$14"}
                 />

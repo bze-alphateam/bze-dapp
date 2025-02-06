@@ -6,6 +6,7 @@ import {Box, Icon, Text} from "@interchain-ui/react";
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import BigNumber from "bignumber.js";
 import {calculateApr, prettyAmount, uAmountToAmount} from "@/utils";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 export interface StakingRewardDetailsBoxRowProps {
     name: string,
@@ -125,11 +126,8 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
         <DefaultBorderedBox m='$6' p='$6' flexDirection={'column'}>
             <Box display={'flex'} flex={1} flexDirection={'row'} justifyContent={'space-between'} alignItems={'center'}
                  minWidth={{desktop: '350px', mobile: '200px'}}>
-                <Box
-                    as="img"
-                    attributes={{
-                        src: props.stakingToken.logo,
-                    }}
+                <LogoWithFallback
+                    src={props.stakingToken.logo}
                     width={"$16"}
                     height={"$16"}
                 />
@@ -141,14 +139,7 @@ export function StakingRewardDetailsBox({children, ...props}: StakingRewardDetai
                 <Box>
                     <Icon name="arrowRightLine" size={'$2xl'} color={'$primary200'}/>
                 </Box>
-                <Box
-                    as="img"
-                    attributes={{
-                        src: props.prizeToken.logo,
-                    }}
-                    width={"$16"}
-                    height={"$16"}
-                />
+                <LogoWithFallback src={props.prizeToken.logo} width={"$16"} height={"$16"}/>
                 <Box>
                     <Text fontWeight={'$hairline'} fontSize={'$sm'} color={'$primary100'}>Earn</Text>
                     <Text fontWeight={'$bold'} fontSize={'$lg'}

@@ -5,6 +5,7 @@ import {marketIdFromDenoms, prettyAmount} from "@/utils";
 import BigNumber from "bignumber.js";
 import {ClickableBox} from "@/components";
 import {useRouter} from "next/router";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 export interface MarketListItemProps extends BaseComponentProps {
     withdrawLabel?: string;
@@ -111,24 +112,8 @@ export default function MarketListItem(props: MarketListItemProps) {
                 props.baseToken && props.quoteToken ?
                     <>
                         <Box width="$22">
-                            <Box
-                                as="img"
-                                attributes={{
-                                    src: props.baseToken.logo,
-                                    onError: (e: { currentTarget: { src: string; }; }) => (e.currentTarget.src = "/token_placeholder.png")
-                                }}
-                                width={"$14"}
-                                height={"$14"}
-                            />
-                            <Box
-                                as="img"
-                                attributes={{
-                                    src: props.quoteToken.logo,
-                                    onError: (e: { currentTarget: { src: string; }; }) => (e.currentTarget.src = "/token_placeholder.png"),
-                                }}
-                                width={"$14"}
-                                height={"$14"}
-                            />
+                            <LogoWithFallback src={props.baseToken.logo} width={"$14"} height={"$14"}/>
+                            <LogoWithFallback src={props.quoteToken.logo} width={"$14"} height={"$14"}/>
                         </Box>
                         <Stack attributes={{alignItems: "center", flex: 1}}>
                             <Stack space="$0" direction="vertical" attributes={{width: "20%"}}>
