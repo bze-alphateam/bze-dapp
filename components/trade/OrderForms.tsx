@@ -1,7 +1,6 @@
 import {useToast, useTx} from "@/hooks";
 import {
     amountToBigNumberUAmount,
-    amountToUAmount,
     calculateAmountFromPrice,
     calculatePricePerUnit,
     calculateTotalAmount,
@@ -9,10 +8,9 @@ import {
     getMinAmount,
     getMinPrice,
     marketIdFromDenoms,
-    prettyAmount,
     priceToBigNumberUPrice,
-    sanitizeNumberInput,
-    uAmountToAmount, uAmountToBigNumberAmount, uPriceToBigNumberPrice, uPriceToPrice,
+    sanitizeNumberInput, toBigNumber,
+    uAmountToAmount, uPriceToBigNumberPrice,
 } from "@/utils";
 import {useChain} from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
@@ -26,6 +24,7 @@ import {ActiveOrders, MarketPairTokens} from "./ActiveOrders";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
 import {useRouter} from "next/router";
 import {formatUsdAmount, MarketPrices} from "@/services";
+import {FillOrderItem} from "@bze/bzejs/types/codegen/beezee/tradebin/tx";
 
 export interface OrderFormData {
     index: number|undefined;
@@ -43,7 +42,7 @@ interface OrderFormsProps {
     marketPrices?: MarketPrices;
 }
 
-const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+const {createOrder, fillOrders} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
 function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, uAmount: string, uPrice: string) {
     const marketId = marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base);
@@ -140,11 +139,9 @@ export function OrderForms(props: OrderFormsProps) {
     const {tx} = useTx();
     const router = useRouter();
 
-    //checks the price and amount to see set the appropriate value of fillOrderRequired
-    const checkFillMessage = (price: BigNumber, amount: BigNumber) => {
-        if (price.isNaN() || !price.isPositive() || amount.isNaN() || !amount.isPositive()) {
-            setFillMessage("");
-            return;
+    const getMatchingOrders = (uPrice: BigNumber, uAmount: BigNumber): AggregatedOrderSDKType[] => {
+        if (uPrice.isNaN() || uPrice.lte(0) || uAmount.isNaN() || uAmount.lte(0)) {
+            return [];
         }
 
         let toCheck = [];
@@ -157,16 +154,13 @@ export function OrderForms(props: OrderFormsProps) {
         }
 
         if (toCheck.length <= 1) {
-            //if none or only one counter order is available we can simply use CreateOrder message
-            setFillMessage("");
-            return;
+            return [];
         }
 
         //check the provided price with the first order price in the order book
         const firstOrderPrice = new BigNumber(toCheck[0].price);
-        if ((showBuy && firstOrderPrice.gte(price)) || (!showBuy && firstOrderPrice.lte(price))) {
-            setFillMessage("");
-            return;
+        if ((showBuy && firstOrderPrice.gte(uPrice)) || (!showBuy && firstOrderPrice.lte(uPrice))) {
+            return [];
         }
 
         let finishFunc = (p: BigNumber, c: string) => p.gt(c);
@@ -174,23 +168,33 @@ export function OrderForms(props: OrderFormsProps) {
             finishFunc = (p: BigNumber, c: string) => p.lt(c);
         }
 
-        const pricesToFill = [];
-        let uAmount = amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
+        const result = [];
         for (let i = 0; i < toCheck.length; i++) {
-            if (finishFunc(price, toCheck[i].price)) {
+            if (finishFunc(uPrice, toCheck[i].price)) {
+                break;
+            }
+            if (uAmount.lte(0)) {
                 break;
             }
 
-            pricesToFill.push(toCheck[i].price);
-            uAmount = uAmount.minus(toCheck[i].amount);
-            if (!uAmount.isPositive()) {
-                break;
+            const orderCopy = {...toCheck[i]};
+            if (uAmount.minus(toCheck[i].amount).lt(0)) {
+                orderCopy.amount = uAmount.toString();
             }
+
+            result.push(orderCopy);
+            uAmount = uAmount.minus(orderCopy.amount);
         }
 
-        const toFillCount = pricesToFill.length;
+        return result;
+    }
+
+    //checks the price and amount to see set the appropriate value of fillOrderRequired
+    const checkFillMessage = (uPrice: BigNumber, uAmount: BigNumber) => {
+        const toFill = getMatchingOrders(uPrice, uAmount);
+        const toFillCount = toFill.length;
         if (toFillCount > 1) {
-            setFillMessage(`Match orders with price from ${pricesToFill[0]} to ${pricesToFill[toFillCount - 1]}`);
+            setFillMessage(`Match orders with price from ${toFill[0].price} to ${toFill[toFillCount - 1].price}`);
         } else {
             setFillMessage("");
         }
@@ -253,6 +257,83 @@ export function OrderForms(props: OrderFormsProps) {
         setIsLoadingValues(false);
     }
 
+    const submitFillOrdersMsg = async (toFill: AggregatedOrderSDKType[], walletAddress: string) => {
+        setIsPendingSubmit(true);
+        const msgOrders: FillOrderItem[] = [];
+        for (let i = 0; i < toFill.length; i++) {
+            msgOrders.push({
+                price: toFill[i].price,
+                amount: toFill[i].amount,
+            })
+        }
+
+        const msg = fillOrders({
+            creator: walletAddress,
+            marketId: marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base),
+            orderType: toFill[0].order_type, //use first order to specify what orders we fill
+            orders: msgOrders,
+        })
+
+        await tx([msg], {
+            toast: {
+                description: 'Orders fill submitted successfully.',
+            },
+            onSuccess: () => {
+                setAmount("");
+                setPrice("");
+                setTotal("");
+                props.onOrderPlaced ? props.onOrderPlaced() : null;
+            }
+        });
+
+        setIsPendingSubmit(false);
+    }
+
+    const submitCreateOrderMsg = async (uPrice: BigNumber, uAmount: BigNumber, walletAddress: string) => {
+        if (showBuy) {
+            if (props.activeOrders.sellOrders.length > 0) {
+                const maxPrice = props.activeOrders.sellOrders[props.activeOrders.sellOrders.length - 1].price;
+                if (uPrice.gt(maxPrice)) {
+                    toast({
+                        type: 'error',
+                        title: `Price is too high. You can buy at a lower price`
+                    });
+
+                    return;
+                }
+            }
+        } else {
+            if (props.activeOrders.buyOrders.length > 0) {
+                const minPrice = props.activeOrders.buyOrders[0].price;
+                if (uPrice.lt(minPrice)) {
+                    toast({
+                        type: 'error',
+                        title: `Price is too low. You can sell at a higher price`
+                    });
+
+                    return;
+                }
+            }
+        }
+
+        setIsPendingSubmit(true);
+        const msgs = getOrderTxMessages(props, walletAddress, showBuy, uAmount.toString(), uPrice.toString());
+
+        await tx(msgs, {
+            toast: {
+                description: 'Order successful placed'
+            },
+            onSuccess: () => {
+                setAmount("");
+                setPrice("");
+                setTotal("");
+                props.onOrderPlaced ? props.onOrderPlaced() : null;
+            }
+        });
+
+        setIsPendingSubmit(false);
+    }
+
     const onFormSubmit = async () => {
         if (address === undefined) {
             toast({
@@ -292,7 +373,7 @@ export function OrderForms(props: OrderFormsProps) {
             return;
         }
 
-        const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
+        const uAmount = amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
         const uPrice = priceToBigNumberUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
         const minAmount = getMinAmount(uPrice.toString(), props.tokens.baseTokenDisplayDenom.exponent);
         if (amountNum.lt(minAmount)) {
@@ -304,48 +385,14 @@ export function OrderForms(props: OrderFormsProps) {
             return;
         }
 
-        if (showBuy) {
-            if (props.activeOrders.sellOrders.length > 0) {
-                const maxPrice = props.activeOrders.sellOrders[props.activeOrders.sellOrders.length - 1].price;
-                if (uPrice.gt(maxPrice)) {
-                    toast({
-                        type: 'error',
-                        title: `Price is too high. You can buy at a lower price`
-                    });
-
-                    return;
-                }
-            }
-        } else {
-            if (props.activeOrders.buyOrders.length > 0) {
-                const minPrice = props.activeOrders.buyOrders[0].price;
-                if (uPrice.lt(minPrice)) {
-                    toast({
-                        type: 'error',
-                        title: `Price is too low. You can sell at a higher price`
-                    });
-
-                    return;
-                }
-            }
+        const toFill = getMatchingOrders(uPrice, uAmount);
+        if (toFill.length === 0) {
+            return submitCreateOrderMsg(uPrice, uAmount, address);
+        } else if (toFill.length === 1) {
+            return submitCreateOrderMsg(toBigNumber(toFill[0].price), uAmount, address);
         }
 
-        setIsPendingSubmit(true);
-        const msgs = getOrderTxMessages(props, address, showBuy, uAmount, uPrice.toString());
-
-        await tx(msgs, {
-            toast: {
-                description: 'Order successful placed'
-            },
-            onSuccess: () => {
-                setAmount("");
-                setPrice("");
-                setTotal("");
-                props.onOrderPlaced ? props.onOrderPlaced() : null;
-            }
-        });
-
-        setIsPendingSubmit(false);
+        return submitFillOrdersMsg(toFill, address);
     }
 
     const fetchBalances = async () => {
@@ -405,7 +452,11 @@ export function OrderForms(props: OrderFormsProps) {
     }
 
     useEffect(() => {
-        checkFillMessage(new BigNumber(price), new BigNumber(amount));
+        checkFillMessage(
+            priceToBigNumberUPrice(price, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent),
+            amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent)
+        );
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [price, amount]);
 

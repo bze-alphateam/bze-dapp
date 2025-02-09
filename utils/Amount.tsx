@@ -104,7 +104,9 @@ export const priceToUPrice = (price: BigNumber, quoteExponent: number, baseExpon
     return priceToBigNumberUPrice(price, quoteExponent, baseExponent).toFixed(MAX_PRICE_DECIMALS).toString();
 }
 
-export const priceToBigNumberUPrice = (price: BigNumber, quoteExponent: number, baseExponent: number): BigNumber => {
+export const priceToBigNumberUPrice = (price: BigNumber | number | string, quoteExponent: number, baseExponent: number): BigNumber => {
+    price = toBigNumber(price);
+
     return price.multipliedBy(Math.pow(10, (quoteExponent - baseExponent)));
 }
 
