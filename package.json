@@ -15,7 +15,7 @@
     "@types/react-dom": "18.0.9"
   },
   "dependencies": {
-    "@bze/bzejs": "^0.8.8",
+    "@bze/bzejs": "^0.8.9",
     "@cosmjs/cosmwasm-stargate": "0.31.1",
     "@cosmjs/stargate": "^0.32.4",
     "@cosmos-kit/react": "^2.21.1",
