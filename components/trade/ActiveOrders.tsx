@@ -67,11 +67,11 @@ export interface ActiveOrderStackProps {
     order: AggregatedOrderSDKType;
     baseTokenDisplayDenom: DenomUnitSDKType;
     quoteTokenDisplayDenom: DenomUnitSDKType;
-    onClick: (order: OrderFormData) => void;
+    onClick: () => void
 }
 
 export function ActiveOrderStack(props: ActiveOrderStackProps) {
-    const [data, setData] = useState<OrderFormData>({price: "", amount: "", total: ""});
+    const [data, setData] = useState({price: "", amount: "", total: ""});
 
     useEffect(() => {
         const p = uPriceToPrice(new BigNumber(props.order.price), props.quoteTokenDisplayDenom.exponent, props.baseTokenDisplayDenom.exponent);
@@ -81,7 +81,7 @@ export function ActiveOrderStack(props: ActiveOrderStackProps) {
         setData({
             price: p,
             amount: a,
-            total: priceNum.multipliedBy(amountNum).decimalPlaces(props.quoteTokenDisplayDenom.exponent).toString()
+            total: priceNum.multipliedBy(amountNum).decimalPlaces(props.quoteTokenDisplayDenom.exponent).toString(),
         });
     }, [props])
 
@@ -89,9 +89,7 @@ export function ActiveOrderStack(props: ActiveOrderStackProps) {
         <Box
             as="a"
             attributes={{
-                onClick: () => {
-                    data.price !== "" ? props.onClick(data) : null
-                }
+                onClick: props.onClick
             }}
         >
             <Stack space={'$2'} attributes={{marginBottom: "$0"}}>
@@ -113,19 +111,18 @@ export interface ActiveOrdersProps {
     orders: ActiveOrders;
     lastOrder: HistoryOrderSDKType | undefined;
     loading: boolean;
-    onOrderClick: (data: OrderFormData) => void
+    onOrderClick: (index: number, orderType: string) => void
 }
 
 export function ActiveOrdersList(props: ActiveOrdersProps) {
 
-    const buyOrderClickCallback = useCallback((data: OrderFormData) => {
-        props.onOrderClick(data);
+    const buyOrderClickCallback = useCallback((index: number) => {
+        props.onOrderClick(index, "buy");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const sellOrderClickCallback = useCallback((data: OrderFormData) => {
-
-        props.onOrderClick(data);
+    const sellOrderClickCallback = useCallback((index: number) => {
+        props.onOrderClick(index, "sell");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -154,7 +151,7 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
                                             quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                                             order={order}
                                             orderType="sell"
-                                            onClick={sellOrderClickCallback}
+                                            onClick={() => sellOrderClickCallback(index)}
                                             key={`${order.price}${order.amount}`}
                                         />
                                     ))
@@ -180,7 +177,7 @@ export function ActiveOrdersList(props: ActiveOrdersProps) {
                                         quoteTokenDisplayDenom={props.tokens.quoteTokenDisplayDenom}
                                         order={order}
                                         orderType="buy"
-                                        onClick={buyOrderClickCallback}
+                                        onClick={() => buyOrderClickCallback(index)}
                                         key={`${order.price}${order.amount}`}
                                     />
                                 ))

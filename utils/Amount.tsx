@@ -3,25 +3,32 @@ import BigNumber from 'bignumber.js';
 
 const MAX_PRICE_DECIMALS = 14;
 
-export function uAmountToAmount(amount: string | number, noOfDecimals: number): string {
-    return new BigNumber(amount)
-        .shiftedBy((-1) * noOfDecimals)
-        .decimalPlaces(noOfDecimals || 6)
-        .toString();
-    // let parsed = parseInt(amount);
+export function toBigNumber(amount: string | number | BigNumber): BigNumber {
+    if (typeof amount === "string" || typeof amount === "number") {
+        amount = new BigNumber(amount);
+    }
 
-    // return parsed / Math.pow(10, noOfDecimals);
+    return amount;
 }
 
-export function amountToUAmount(amount: string | number, noOfDecimals: number): string {
-    return new BigNumber(amount)
-        .shiftedBy(noOfDecimals)
+export function uAmountToAmount(amount: string | number | BigNumber, noOfDecimals: number): string {
+    return uAmountToBigNumberAmount(amount, noOfDecimals).toString();
+}
+
+export function uAmountToBigNumberAmount(amount: string | number | BigNumber, noOfDecimals: number): BigNumber {
+    return toBigNumber(amount)
+        .shiftedBy((-1) * noOfDecimals)
         .decimalPlaces(noOfDecimals || 6)
-        .toString();
+}
 
-    // let parsed = parseFloat(amount);
+export function amountToBigNumberUAmount(amount: string | number | BigNumber, noOfDecimals: number): BigNumber {
+    return toBigNumber(amount)
+        .shiftedBy(noOfDecimals)
+        .decimalPlaces(noOfDecimals || 6);
+}
 
-    // return parsed * Math.pow(10, noOfDecimals);
+export function amountToUAmount(amount: string | number | BigNumber, noOfDecimals: number): string {
+    return amountToBigNumberUAmount(amount, noOfDecimals).toString();
 }
 
 export function prettyAmount(amount: number | string): string {

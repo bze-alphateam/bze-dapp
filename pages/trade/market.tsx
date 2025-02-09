@@ -36,7 +36,11 @@ import {
     uPriceToBigNumberPrice,
 } from "@/utils";
 import {useChain} from "@cosmos-kit/react";
-import {HistoryOrderSDKType, OrderReferenceSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import {
+    AggregatedOrderSDKType,
+    HistoryOrderSDKType,
+    OrderReferenceSDKType
+} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import {
   ActiveOrders,
   ActiveOrdersList,
@@ -51,7 +55,6 @@ import {EmptyOrderFormData, OrderFormData, OrderForms} from "@/components/trade/
 import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
 import {PriceBox, StatsBox, VolumeBox} from "@/components/trade/StatsBox";
-
 
 interface MarketChartProps {
     tokens: MarketPairTokens;
@@ -263,6 +266,11 @@ export default function MarketPair() {
         setChartData(chart);
     }
 
+
+    const selectOrders = (index: number, orderType: string) => {
+        setOrderFormData({index, orderType});
+    }
+
     const fetchActiveOrders = async () => {
         if (!marketId) {
             return;
@@ -273,7 +281,7 @@ export default function MarketPair() {
         setActiveOrders(
             {
                 buyOrders: buy.list,
-                sellOrders: sell.list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)),
+                sellOrders: sell.list.reverse(),
             }
         );
     }
@@ -510,7 +518,7 @@ export default function MarketPair() {
                                 loading={activeOrders === undefined}
                                 orders={activeOrders !== undefined ? activeOrders : {buyOrders: [], sellOrders: []}}
                                 lastOrder={historyOrders !== undefined ? historyOrders[0] : undefined}
-                                onOrderClick={setOrderFormData}
+                                onOrderClick={selectOrders}
                             />
                         </Box>
                         <Box mt={'$6'} display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}
