@@ -3,7 +3,7 @@ import {getTokenDisplayDenom, isNativeType, Token} from "@/services";
 import {DefaultBorderedBox} from "@/components";
 import {Box, Button, Text} from "@interchain-ui/react";
 import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
-import {getChainName, prettyChainName, toUpperFirstLetter, uAmountToAmount} from "@/utils";
+import {getChainName, isTestnet, prettyChainName, toUpperFirstLetter, uAmountToAmount} from "@/utils";
 import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import {
     getAddressBalances,
@@ -36,6 +36,10 @@ export const WalletBalances = memo(({props}: { props: WalletBalancesProps }) => 
 
     const {address} = useChain(getChainName());
     const getCounterpartyChainName = useMemo(() => {
+        if (isTestnet()) {
+            return getChainName();
+        }
+
         return props.token.ibcTrace?.counterparty.chain_name ?? getChainName()
     }, [props.token]);
 
@@ -90,7 +94,6 @@ export const WalletBalances = memo(({props}: { props: WalletBalancesProps }) => 
         setTokenDisplay(display);
 
         const bzeBalances = (await getAddressBalances(address)).balances.find((item) => item.denom === props.token.metadata.base);
-        console.log("bzeBalances", bzeBalances)
         const allBalances = [];
         if (bzeBalances) {
             allBalances.push({
@@ -103,7 +106,6 @@ export const WalletBalances = memo(({props}: { props: WalletBalancesProps }) => 
             //when BZE is the token we want to fetch the BZE balance on Osmosis
             const counterpartyBalances = (await getAddressCounterpartyBalances(counterpartyAddress, props.token)).find((item) => item.denom === props.token.metadata.base)
             if (counterpartyBalances) {
-                console.log("counterpartyBalances", counterpartyBalances)
                 allBalances.push({
                     balance: counterpartyBalances,
                     chainName: getCounterpartyChainName,

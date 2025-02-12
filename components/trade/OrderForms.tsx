@@ -1,6 +1,6 @@
 import {useToast, useTx} from "@/hooks";
 import {
-    amountToUAmount,
+    amountToBigNumberUAmount,
     calculateAmountFromPrice,
     calculatePricePerUnit,
     calculateTotalAmount,
@@ -8,10 +8,9 @@ import {
     getMinAmount,
     getMinPrice,
     marketIdFromDenoms,
-    prettyAmount,
     priceToBigNumberUPrice,
-    sanitizeNumberInput,
-    uAmountToAmount,
+    sanitizeNumberInput, toBigNumber,
+    uAmountToAmount, uPriceToBigNumberPrice,
 } from "@/utils";
 import {useChain} from "@cosmos-kit/react";
 import BigNumber from "bignumber.js";
@@ -25,14 +24,14 @@ import {ActiveOrders, MarketPairTokens} from "./ActiveOrders";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
 import {useRouter} from "next/router";
 import {formatUsdAmount, MarketPrices} from "@/services";
+import {FillOrderItem} from "@bze/bzejs/types/codegen/beezee/tradebin/tx";
 
 export interface OrderFormData {
-    price: string;
-    amount: string;
-    total: string;
+    index: number|undefined;
+    orderType: string;
 }
 
-export const EmptyOrderFormData = {price: "", amount: "", total: ""};
+export const EmptyOrderFormData = {index: undefined, orderType: "buy"};
 
 interface OrderFormsProps {
     data: OrderFormData;
@@ -43,7 +42,7 @@ interface OrderFormsProps {
     marketPrices?: MarketPrices;
 }
 
-const {createOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+const {createOrder, fillOrders} = bze.tradebin.v1.MessageComposer.withTypeUrl;
 
 function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, uAmount: string, uPrice: string) {
     const marketId = marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base);
@@ -115,18 +114,23 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
 }
 
 export function OrderForms(props: OrderFormsProps) {
-    const [isBuy, setIsBuy] = useState(true);
+    //props.data contains data about the order that the user clicked on.
+    //If the user clicked on a buy order he wants to sell, otherwise he wants to buy
+    const [showBuy, setShowBuy] = useState(props.data.orderType === "sell");
     const [isLoadingValues, setIsLoadingValues] = useState(false);
     const [isPendingSubmit, setIsPendingSubmit] = useState(false);
     const [isLoadingBalances, setIsLoadingBalances] = useState(false);
+
+    //used to determine if FillOrders message is required instead of CreateOrder
+    const [fillMessage, setFillMessage] = useState("");
 
     //pretty balances
     const [baseBalance, setBasebalance] = useState<string>("0");
     const [quoteBalance, setQuoteBalance] = useState<string>("0");
 
-    const [price, setPrice] = useState<string>(props.data.price);
-    const [amount, setAmount] = useState<string>(props.data.amount);
-    const [total, setTotal] = useState<string>(props.data.total);
+    const [price, setPrice] = useState<string>("");
+    const [amount, setAmount] = useState<string>("");
+    const [total, setTotal] = useState<string>("");
 
     const [minPrice, setMinPrice] = useState(new BigNumber(0));
 
@@ -134,6 +138,67 @@ export function OrderForms(props: OrderFormsProps) {
     const {address} = useChain(getChainName());
     const {tx} = useTx();
     const router = useRouter();
+
+    const getMatchingOrders = (uPrice: BigNumber, uAmount: BigNumber): AggregatedOrderSDKType[] => {
+        if (uPrice.isNaN() || uPrice.lte(0) || uAmount.isNaN() || uAmount.lte(0)) {
+            return [];
+        }
+
+        let toCheck = [];
+        if (showBuy) {
+            //reverse them to check from the lowest price to the highest one
+            //unpack in a new array to avoid reversing the original one
+            toCheck = [...props.activeOrders.sellOrders].reverse();
+        } else {
+            toCheck = props.activeOrders.buyOrders;
+        }
+
+        if (toCheck.length <= 1) {
+            return [];
+        }
+
+        //check the provided price with the first order price in the order book
+        const firstOrderPrice = new BigNumber(toCheck[0].price);
+        if ((showBuy && firstOrderPrice.gte(uPrice)) || (!showBuy && firstOrderPrice.lte(uPrice))) {
+            return [];
+        }
+
+        let finishFunc = (p: BigNumber, c: string) => p.gt(c);
+        if (showBuy) {
+            finishFunc = (p: BigNumber, c: string) => p.lt(c);
+        }
+
+        const result = [];
+        for (let i = 0; i < toCheck.length; i++) {
+            if (finishFunc(uPrice, toCheck[i].price)) {
+                break;
+            }
+            if (uAmount.lte(0)) {
+                break;
+            }
+
+            const orderCopy = {...toCheck[i]};
+            if (uAmount.minus(toCheck[i].amount).lt(0)) {
+                orderCopy.amount = uAmount.toString();
+            }
+
+            result.push(orderCopy);
+            uAmount = uAmount.minus(orderCopy.amount);
+        }
+
+        return result;
+    }
+
+    //checks the price and amount to see set the appropriate value of fillOrderRequired
+    const checkFillMessage = (uPrice: BigNumber, uAmount: BigNumber) => {
+        const toFill = getMatchingOrders(uPrice, uAmount);
+        const toFillCount = toFill.length;
+        if (toFillCount > 1) {
+            setFillMessage(`Match orders with price from ${toFill[0].price} to ${toFill[toFillCount - 1].price}`);
+        } else {
+            setFillMessage("");
+        }
+    }
 
     const onPriceChange = (price: string) => {
         setPrice(price);
@@ -192,6 +257,83 @@ export function OrderForms(props: OrderFormsProps) {
         setIsLoadingValues(false);
     }
 
+    const submitFillOrdersMsg = async (toFill: AggregatedOrderSDKType[], walletAddress: string) => {
+        setIsPendingSubmit(true);
+        const msgOrders: FillOrderItem[] = [];
+        for (let i = 0; i < toFill.length; i++) {
+            msgOrders.push({
+                price: toFill[i].price,
+                amount: toFill[i].amount,
+            })
+        }
+
+        const msg = fillOrders({
+            creator: walletAddress,
+            marketId: marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base),
+            orderType: toFill[0].order_type, //use first order to specify what orders we fill
+            orders: msgOrders,
+        })
+
+        await tx([msg], {
+            toast: {
+                description: 'Orders fill submitted successfully.',
+            },
+            onSuccess: () => {
+                setAmount("");
+                setPrice("");
+                setTotal("");
+                props.onOrderPlaced ? props.onOrderPlaced() : null;
+            }
+        });
+
+        setIsPendingSubmit(false);
+    }
+
+    const submitCreateOrderMsg = async (uPrice: BigNumber, uAmount: BigNumber, walletAddress: string) => {
+        if (showBuy) {
+            if (props.activeOrders.sellOrders.length > 0) {
+                const maxPrice = props.activeOrders.sellOrders[props.activeOrders.sellOrders.length - 1].price;
+                if (uPrice.gt(maxPrice)) {
+                    toast({
+                        type: 'error',
+                        title: `Price is too high. You can buy at a lower price`
+                    });
+
+                    return;
+                }
+            }
+        } else {
+            if (props.activeOrders.buyOrders.length > 0) {
+                const minPrice = props.activeOrders.buyOrders[0].price;
+                if (uPrice.lt(minPrice)) {
+                    toast({
+                        type: 'error',
+                        title: `Price is too low. You can sell at a higher price`
+                    });
+
+                    return;
+                }
+            }
+        }
+
+        setIsPendingSubmit(true);
+        const msgs = getOrderTxMessages(props, walletAddress, showBuy, uAmount.toString(), uPrice.toString());
+
+        await tx(msgs, {
+            toast: {
+                description: 'Order successful placed'
+            },
+            onSuccess: () => {
+                setAmount("");
+                setPrice("");
+                setTotal("");
+                props.onOrderPlaced ? props.onOrderPlaced() : null;
+            }
+        });
+
+        setIsPendingSubmit(false);
+    }
+
     const onFormSubmit = async () => {
         if (address === undefined) {
             toast({
@@ -231,7 +373,7 @@ export function OrderForms(props: OrderFormsProps) {
             return;
         }
 
-        const uAmount = amountToUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
+        const uAmount = amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
         const uPrice = priceToBigNumberUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
         const minAmount = getMinAmount(uPrice.toString(), props.tokens.baseTokenDisplayDenom.exponent);
         if (amountNum.lt(minAmount)) {
@@ -243,48 +385,14 @@ export function OrderForms(props: OrderFormsProps) {
             return;
         }
 
-        if (isBuy) {
-            if (props.activeOrders.sellOrders.length > 0) {
-                const maxPrice = props.activeOrders.sellOrders[props.activeOrders.sellOrders.length - 1].price;
-                if (uPrice.gt(maxPrice)) {
-                    toast({
-                        type: 'error',
-                        title: `Price is too high. You can buy at a lower price`
-                    });
-
-                    return;
-                }
-            }
-        } else {
-            if (props.activeOrders.buyOrders.length > 0) {
-                const minPrice = props.activeOrders.buyOrders[0].price;
-                if (uPrice.lt(minPrice)) {
-                    toast({
-                        type: 'error',
-                        title: `Price is too low. You can sell at a higher price`
-                    });
-
-                    return;
-                }
-            }
+        const toFill = getMatchingOrders(uPrice, uAmount);
+        if (toFill.length === 0) {
+            return submitCreateOrderMsg(uPrice, uAmount, address);
+        } else if (toFill.length === 1) {
+            return submitCreateOrderMsg(toBigNumber(toFill[0].price), uAmount, address);
         }
 
-        setIsPendingSubmit(true);
-        const msgs = getOrderTxMessages(props, address, isBuy, uAmount, uPrice.toString());
-
-        await tx(msgs, {
-            toast: {
-                description: 'Order successful placed'
-            },
-            onSuccess: () => {
-                setAmount("");
-                setPrice("");
-                setTotal("");
-                props.onOrderPlaced ? props.onOrderPlaced() : null;
-            }
-        });
-
-        setIsPendingSubmit(false);
+        return submitFillOrdersMsg(toFill, address);
     }
 
     const fetchBalances = async () => {
@@ -311,16 +419,48 @@ export function OrderForms(props: OrderFormsProps) {
         setIsLoadingBalances(false);
     }
 
-    useEffect(() => {
-        setPrice(props.data.price);
-        setAmount(props.data.amount);
-        if (props.data.price !== "" && props.data.amount !== "" && props.tokens.quoteTokenDisplayDenom !== undefined) {
-            setTotal(calculateTotalAmount(props.data.price, props.data.amount, props.tokens.quoteTokenDisplayDenom.exponent));
-        }
-        if (props.tokens.baseTokenDisplayDenom !== undefined && props.tokens.quoteTokenDisplayDenom !== undefined) {
-            setMinPrice(getMinPrice(props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent));
+    const fillFormFromOrders = (formData: OrderFormData) => {
+        if (formData.index === undefined) {
+            return;
         }
 
+        const clickedOnSell = props.data.orderType === "sell"
+        setShowBuy(clickedOnSell);
+
+        //use the counter orders to fill the form. he clicked on buy, it means he sells, and vice versa
+        let orders = props.activeOrders.buyOrders;
+        let stopIndex = formData.index;
+        if (clickedOnSell) {
+            orders = [...props.activeOrders.sellOrders].reverse();
+            stopIndex = orders.length - 1 - formData.index;
+        }
+
+        if (!orders[stopIndex]) {
+            return;
+        }
+
+        const price = uPriceToBigNumberPrice(new BigNumber(orders[stopIndex].price), props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
+        setPrice(price.toString());
+        let uAmount = new BigNumber(0);
+        for (let i = 0; i <= stopIndex; i++) {
+            uAmount = uAmount.plus(orders[i].amount);
+        }
+
+        const amount = uAmountToAmount(uAmount, props.tokens.baseTokenDisplayDenom.exponent);
+        setAmount(amount);
+        setTotal(price.multipliedBy(amount).decimalPlaces(props.tokens.quoteTokenDisplayDenom.exponent).toString())
+    }
+
+    useEffect(() => {
+        checkFillMessage(
+            priceToBigNumberUPrice(price, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent),
+            amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent)
+        );
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [price, amount]);
+
+    useEffect(() => {
         if (address !== undefined) {
             fetchBalances();
             AddressBalanceListener.clearCallbacks();
@@ -336,7 +476,15 @@ export function OrderForms(props: OrderFormsProps) {
             setBasebalance("0");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.data, props.tokens, address])
+    }, [address]);
+
+    useEffect(() => {
+        fillFormFromOrders(props.data);
+        if (props.tokens.baseTokenDisplayDenom !== undefined && props.tokens.quoteTokenDisplayDenom !== undefined) {
+            setMinPrice(getMinPrice(props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.data, props.tokens])
 
     useEffect(() => {
         const onRouteChange = () => {
@@ -355,13 +503,13 @@ export function OrderForms(props: OrderFormsProps) {
     return (
         <DefaultBorderedBox p={'$2'} width={{desktop: '$auto', mobile: '$auto'}} minHeight={'10vh'} flex={1}>
             <Box display={'flex'} flex={1}>
-                <Box display={'flex'} flex={1}><Button intent={isBuy ? "tertiary" : "secondary"}
-                                                       size={isBuy ? "lg" : "sm"} fluid onClick={() => {
-                    !isBuy ? setIsBuy(true) : null
+                <Box display={'flex'} flex={1}><Button intent={showBuy ? "tertiary" : "secondary"}
+                                                       size={showBuy ? "lg" : "sm"} fluid onClick={() => {
+                    !showBuy ? setShowBuy(true) : null
                 }} disabled={isPendingSubmit}>Buy</Button></Box>
-                <Box display={'flex'} flex={1}><Button intent={!isBuy ? "tertiary" : "secondary"}
-                                                       size={!isBuy ? "lg" : "sm"} fluid onClick={() => {
-                    isBuy ? setIsBuy(false) : null
+                <Box display={'flex'} flex={1}><Button intent={!showBuy ? "tertiary" : "secondary"}
+                                                       size={!showBuy ? "lg" : "sm"} fluid onClick={() => {
+                    showBuy ? setShowBuy(false) : null
                 }} disabled={isPendingSubmit}>Sell</Button></Box>
             </Box>
             <Box flex={1} display={'flex'} flexDirection={'row'} justifyContent={'space-between'} p={'$2'} m={'$6'}
@@ -376,12 +524,12 @@ export function OrderForms(props: OrderFormsProps) {
                         as="a"
                         attributes={{
                             onClick: () => {
-                                isBuy ? onTotalChange(quoteBalance) : onAmountChange(baseBalance)
+                                showBuy ? onTotalChange(quoteBalance) : onAmountChange(baseBalance)
                             }
                         }}
                     >
                         <Text color={'$primary200'}
-                              fontWeight={'$semibold'}>{isBuy ? quoteBalance : baseBalance} {isBuy ? props.tokens.quoteTokenDisplayDenom.denom.toUpperCase() : props.tokens.baseTokenDisplayDenom.denom.toUpperCase()}
+                              fontWeight={'$semibold'}>{showBuy ? quoteBalance : baseBalance} {showBuy ? props.tokens.quoteTokenDisplayDenom.denom.toUpperCase() : props.tokens.baseTokenDisplayDenom.denom.toUpperCase()}
                         </Text>
                     </Box>
                 }
@@ -465,10 +613,14 @@ export function OrderForms(props: OrderFormsProps) {
                                                               fontWeight={'$thin'}>~{formatUsdAmount(new BigNumber(total).multipliedBy(props.marketPrices.quote))} {props.marketPrices.denom}</Text></Box>
                 }
                 <Box display={'flex'} m='$6' justifyContent={'center'} alignItems={'center'} flexDirection={'column'}>
-                    <Button size="sm" intent={isBuy ? "success" : "danger"} onClick={() => {
+                    <Button size="sm" intent={showBuy ? "success" : "danger"} onClick={() => {
                         onFormSubmit()
                     }} isLoading={isPendingSubmit}
-                            disabled={isLoadingValues || props.loading}>{isBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display.toUpperCase()}</Button>
+                            disabled={isLoadingValues || props.loading}>{showBuy ? "Buy" : "Sell"} {props.tokens.baseToken.metadata.display.toUpperCase()}
+                    </Button>
+                    <Box textAlign={'center'} mt={'$2'}>
+                        <Text fontSize={'$xs'} fontWeight={'$thin'}>{fillMessage}</Text>
+                    </Box>
                 </Box>
             </Box>
         </DefaultBorderedBox>

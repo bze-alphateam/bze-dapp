@@ -7,6 +7,7 @@ import {marketIdFromDenoms} from "@/utils";
 import {PriceText} from "@/components/common/MarketListItem";
 import {useRouter} from "next/router";
 import {EXCLUDED_MARKETS} from "@/config/verified";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 function EmptyTokenMarkets({props}: {props: {text: string}}) {
     return (
@@ -42,8 +43,8 @@ function MarketBox({props}: {props: MarketBoxProps}) {
     return (
         <ClickableBox onClick={onClick}>
             <Box p={"$4"} m={"$2"} display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"row"}>
-                <Box as="img" attributes={{src: props.base.logo}} width={"$14"} height={"$14"}/>
-                <Box as="img" attributes={{src: props.quote.logo}} width={"$14"} height={"$14"}/>
+                <LogoWithFallback src={props.base.logo} width={"$14"} height={"$14"}/>
+                <LogoWithFallback src={props.quote.logo} width={"$14"} height={"$14"}/>
                 <Box flex={1} justifyContent={"center"} flexDirection={"column"} ml={"$2"}>
                     <Box>
                         <Text fontSize={'$sm'} fontWeight="$semibold" attributes={{marginBottom: "$2"}}>

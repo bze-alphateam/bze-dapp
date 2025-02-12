@@ -126,6 +126,6 @@ export function prettyChainName(chainName: string): string {
         case 'atomone':
             return "AtomOne";
         default:
-            return "??";
+            return chainName;
     }
 }

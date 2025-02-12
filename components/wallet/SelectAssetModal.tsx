@@ -5,6 +5,7 @@ import {ClickableBox} from "../common";
 import {Token} from "@/services";
 import {useEffect, useState} from "react";
 import {truncateDenom} from "@/utils";
+import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 interface SelectAssetModaLProps {
     control: UseDisclosureReturn,
@@ -59,14 +60,7 @@ export default function SelectAssetModal({props}: { props: SelectAssetModaLProps
                             onPressClick(asset)
                         }} key={index}>
                             <Box as="div" p='$2' display={'flex'} flexDirection={'row'} alignItems={'center'} flex={1}>
-                                <Box
-                                    as="img"
-                                    attributes={{
-                                        src: asset.logo,
-                                    }}
-                                    width={"$14"}
-                                    height={'$14'}
-                                />
+                                <LogoWithFallback src={asset.logo} width={"$14"} height={'$14'}/>
                                 <Box display={'flex'} flex={1} justifyContent={'center'}>
                                     <Box>
                                         <Text fontSize={'$lg'} color={'$primary200'}

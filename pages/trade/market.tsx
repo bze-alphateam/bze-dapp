@@ -36,7 +36,11 @@ import {
     uPriceToBigNumberPrice,
 } from "@/utils";
 import {useChain} from "@cosmos-kit/react";
-import {HistoryOrderSDKType, OrderReferenceSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import {
+    AggregatedOrderSDKType,
+    HistoryOrderSDKType,
+    OrderReferenceSDKType
+} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
 import {
   ActiveOrders,
   ActiveOrdersList,
@@ -51,7 +55,6 @@ import {EmptyOrderFormData, OrderFormData, OrderForms} from "@/components/trade/
 import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/types/codegen/beezee/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
 import {PriceBox, StatsBox, VolumeBox} from "@/components/trade/StatsBox";
-
 
 interface MarketChartProps {
     tokens: MarketPairTokens;
@@ -263,6 +266,11 @@ export default function MarketPair() {
         setChartData(chart);
     }
 
+
+    const selectOrders = (index: number, orderType: string) => {
+        setOrderFormData({index, orderType});
+    }
+
     const fetchActiveOrders = async () => {
         if (!marketId) {
             return;
@@ -273,7 +281,7 @@ export default function MarketPair() {
         setActiveOrders(
             {
                 buyOrders: buy.list,
-                sellOrders: sell.list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)),
+                sellOrders: sell.list.reverse(),
             }
         );
     }
@@ -359,6 +367,19 @@ export default function MarketPair() {
     const onOrderPlaced = useCallback(() => {
         setOrderFormData(EmptyOrderFormData)
     }, []);
+
+    const onTickerClick = (baseDenom: string|undefined) => {
+        if (!baseDenom) {
+            return;
+        }
+
+        router.push({
+            pathname: '/token',
+            query: {
+                denom: baseDenom
+            }
+        });
+    }
 
     useEffect(() => {
         chartTypeRef.current = chartType;
@@ -453,11 +474,19 @@ export default function MarketPair() {
         <Layout>
             <Box display='block' flexDirection={'row'}>
                 <Box marginBottom={'$6'} ml='$6'>
-                    <Box>
-                        <Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'}
-                                                                          as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text
-                            fontSize={'$2xl'} color={'$primary300'}
-                            as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
+                    <Box flex={1} display={'flex'} flexDirection={{mobile: "column", desktop: "row"}} gap={"$2"} alignItems={'center'}>
+                        <Box flex={1} display={'flex'} >
+                            <Text as="h1" fontSize={'$2xl'}>DEX Market: <Text fontSize={'$2xl'} color={'$primary300'}
+                                                                              as="span">{tokens?.baseToken.metadata.display.toUpperCase()}</Text><Text
+                                fontSize={'$2xl'} color={'$primary300'}
+                                as="span">/{tokens?.quoteToken.metadata.display.toUpperCase()}</Text></Text>
+                        </Box>
+                        {tokens &&
+                            <Box flex={1} display={'flex'} gap={'$4'} justifyContent={"flex-end"} mr={{desktop: "$6"}}>
+                                <Button size="xs" intent={'secondary'} onClick={() => onTickerClick(tokens?.baseToken.metadata.base)}>{tokens?.baseToken.metadata.display.toUpperCase()} Details</Button>
+                                <Button size="xs" intent={'secondary'} onClick={() => onTickerClick(tokens?.quoteToken.metadata.base)}>{tokens?.quoteToken.metadata.display.toUpperCase()} Details</Button>
+                            </Box>
+                        }
                     </Box>
                     <Box display="flex" flexDirection={{desktop: "row", mdMobile: "row", mobile: "column"}} gap="$4"
                          mt="$4" mr={{desktop: "$6"}}>
@@ -489,7 +518,7 @@ export default function MarketPair() {
                                 loading={activeOrders === undefined}
                                 orders={activeOrders !== undefined ? activeOrders : {buyOrders: [], sellOrders: []}}
                                 lastOrder={historyOrders !== undefined ? historyOrders[0] : undefined}
-                                onOrderClick={setOrderFormData}
+                                onOrderClick={selectOrders}
                             />
                         </Box>
                         <Box mt={'$6'} display='flex' flexDirection={{desktop: 'row', mobile: 'column-reverse'}}
