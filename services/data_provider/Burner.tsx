@@ -6,12 +6,13 @@ import {getAddressBalances} from "./Balances";
 import {getCurrentuDenom, transformAttributes} from "@/utils";
 import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import {getFromCache, getKeyExpiry, removeFromCache, setInCache, setKeyExpiry} from "@/services/data_provider/cache";
-import {getBlockResults} from "@/services";
+import {getBlockResults, getCurrentWeekEpochEndTime} from "@/services";
 
 export interface NextBurning {
     amount: string,
     denom: string,
     time: Date | undefined,
+    isProposal: boolean,
 }
 
 const FAILOVER_DATA = {
@@ -94,38 +95,58 @@ export async function getNextBurning(): Promise<NextBurning | undefined> {
         return undefined;
     }
 
-    const proposals = await getActiveProposals();
-    if (proposals.proposals.length === 0) {
-        return {
-            amount: bzeBalance[0].amount,
-            denom: bzeBalance[0].denom,
-            time: undefined,
-        }
+    const timeFromProposals = await getBurningTimeFromProposal();
+    const timeFromEpoch = await getBurningTimeFromEpoch();
+
+    if (!timeFromProposals && !timeFromEpoch) {
+        return undefined;
     }
 
-    //@ts-ignore
-    const filtered = proposals.proposals.filter((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
-    if (filtered.length === 0 || filtered[0].voting_end_time === undefined) {
-        return {
-            amount: bzeBalance[0].amount,
-            denom: bzeBalance[0].denom,
-            time: undefined,
-        }
+    let next = timeFromProposals;
+    let isProposal = true;
+    if (!next) {
+        next = timeFromEpoch;
+        isProposal = false;
+    } else if (timeFromEpoch && timeFromEpoch < next) {
+        next = timeFromEpoch;
+        isProposal = false;
     }
 
-    //check the date
-    let checkDate = new Date(filtered[0].voting_end_time);
+    if (!next) {
+        return undefined;
+    }
+
     //if we have a proposal that will burn coins, set the TTL for all burned coins listing response at voting time end.
-    //this way the cache is available until that moment and we are sure it will reset right after the voting period ended
-    if (checkDate.getTime() !== cacheExpireAt) {
-        await resetBurnedCoinsCache(checkDate);
+    //this way the cache is available until that moment, and we are sure it will reset right after the voting period ended
+    if (next.getTime() !== cacheExpireAt) {
+        await resetBurnedCoinsCache(next);
     }
 
     return {
         amount: bzeBalance[0].amount,
         denom: bzeBalance[0].denom,
-        time: filtered[0].voting_end_time,
+        time: next,
+        isProposal: isProposal,
     }
+}
+
+async function getBurningTimeFromEpoch(): Promise<Date|undefined> {
+    return await getCurrentWeekEpochEndTime();
+}
+
+async function getBurningTimeFromProposal(): Promise<Date|undefined> {
+    const proposals = await getActiveProposals();
+    if (proposals.proposals.length === 0) {
+        return undefined;
+    }
+
+    //@ts-ignore
+    const filtered = proposals.proposals.find((item) => item.content['@type'] === PROPOSAL_TYPE_BURNING);
+    if (!filtered || filtered.voting_end_time === undefined) {
+        return undefined;
+    }
+
+    return new Date(filtered.voting_end_time);
 }
 
 export async function getRaffles(): Promise<RaffleSDKType[]> {

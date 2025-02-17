@@ -12,6 +12,31 @@ export function prettyDateTime(date: Date): string {
     }).format(date);
 }
 
+export function prettyDateTimeNoTime(date: Date): string {
+    return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
+
+export function daysUntil(date: Date): number {
+    const now = new Date();
+    const futureDate = date;
+
+    // Ensure the future date is not in the past
+    if (futureDate < now) {
+        return 0;
+    }
+
+    const millisecondsPerHour = 1000 * 60 * 60;
+    const diffInMilliseconds = futureDate.getTime() - now.getTime();
+    const hours = diffInMilliseconds / millisecondsPerHour;
+    const days = hours / 24;
+
+    return Math.ceil(days); // Use Math.ceil to round up to the nearest whole day
+}
+
 export function hoursUntil(date: Date): number {
     const now = new Date();
     const futureDate = date;
