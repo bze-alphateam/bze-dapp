@@ -2,15 +2,15 @@ import {getFromCache, setInCache} from "@/services/data_provider/cache";
 import {getRestClient} from "@/services";
 import {QueryEpochsInfoResponseSDKType} from "@bze/bzejs/types/codegen/beezee/epochs/query";
 import Long from "long";
-import {EpochInfoSDKType} from "@bze/bzejs/src/codegen/beezee/epochs/genesis";
 
 const EPOCHS_KEY = "epochs:info";
 const EPOCHS_INFO_TTL = 60 * 5;
 
 //using custom type to avoid type checking failure when building
-export interface EpochInfoAppType extends EpochInfoSDKType{
+export interface EpochInfoAppType {
     identifier: string;
     current_epoch: Long;
+    current_epoch_start_time?: Date;
 }
 
 export async function getEpochsInfo(): Promise<QueryEpochsInfoResponseSDKType> {
