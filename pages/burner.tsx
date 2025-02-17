@@ -22,7 +22,7 @@ import {
 import {
     addDebounce,
     amountToUAmount,
-    cancelDebounce,
+    cancelDebounce, daysUntil,
     getBzeDenomExponent,
     getChainName,
     getCurrentuDenom,
@@ -30,7 +30,7 @@ import {
     minutesUntil,
     prettyAmount,
     prettyDate,
-    prettyDateTime,
+    prettyDateTimeNoTime,
     sanitizeNumberInput,
     stringTruncateFromCenter,
     toPrettyDenom,
@@ -385,13 +385,26 @@ function NextBurning() {
         }
 
         let burnDate = new Date(next.time);
-        setDate(prettyDateTime(burnDate));
-        let until = hoursUntil(burnDate);
-        setWhen(`In ${until} hours if vote passes.`);
-        if (until <= 2) {
-            until = minutesUntil(burnDate);
-            setWhen(`In ${until} minutes if vote passes.`);
+        setDate(prettyDateTimeNoTime(burnDate));
+        let days = daysUntil(next.time);
+        let when = `In ${days} days`
+        if (days < 3) {
+            let until = hoursUntil(burnDate);
+            when = `In ${until} hours`
+
+            if (until <= 2) {
+                until = minutesUntil(burnDate);
+                when = `In ${until} minutes`;
+            }
         }
+
+        if (next.isProposal) {
+            when += " if vote passes.";
+        } else {
+            when += ".";
+        }
+
+        setWhen(when);
     }
 
     const onContributeSuccess = () => {
