@@ -498,7 +498,7 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
 
         await tx([msg], {
             toast: {
-                description: 'Token metadata successfuly saved'
+                description: 'Token metadata successfully saved'
             },
             onSuccess: () => {
                 setDisabled(true);
