@@ -86,7 +86,8 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
                 setAmount("");
                 props.control.onClose();
                 props.onSuccess();
-            }
+            },
+            isIbc: true
         });
         setIsLoading(false);
     }
@@ -113,7 +114,8 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
                 setAmount("");
                 props.control.onClose();
                 props.onSuccess();
-            }
+            },
+            isIbc: true
         });
         setIsLoading(false);
     }

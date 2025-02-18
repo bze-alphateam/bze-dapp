@@ -16,6 +16,7 @@ interface TxOptions {
     toast?: Partial<CustomToast>;
     onSuccess?: (res: DeliverTxResponse) => void;
     useDirectSign?: boolean;
+    isIbc?: boolean;
 }
 
 export enum TxStatus {
@@ -71,7 +72,7 @@ export const useTx = (chainName?: string) => {
 
         let fee: StdFee;
         try {
-            client = await getSigningClient(offlineSignerFunc(), chainName);
+            client = await getSigningClient(offlineSignerFunc(), chainName, options.isIbc);
             if (options?.fee) {
                 fee = options.fee;
             } else {
