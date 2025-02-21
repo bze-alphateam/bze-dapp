@@ -6,6 +6,10 @@ import Long from "long";
 const EPOCHS_KEY = "epochs:info";
 const EPOCHS_INFO_TTL = 60 * 5;
 
+const EPOCH_HOUR = "hour";
+const EPOCH_DAY = "day";
+const EPOCH_WEEK = "week";
+
 //using custom type to avoid type checking failure when building
 export interface EpochInfoAppType {
     identifier: string;
@@ -43,25 +47,37 @@ export async function getCurrentEpoch(identifier: string): Promise<EpochInfoAppT
 }
 
 export async function getHourEpochInfo() {
-    return getCurrentEpoch("hour");
+    return getCurrentEpoch(EPOCH_HOUR);
 }
 
 export async function getWeekEpochInfo() {
-    return getCurrentEpoch("week");
+    return getCurrentEpoch(EPOCH_WEEK);
 }
 
 export async function getCurrentWeekEpochEndTime(): Promise<Date|undefined> {
-    return getEpochEndTime("week");
+    return getPeriodicEpochEndTime(EPOCH_WEEK);
 }
 
-export async function getEpochEndTime(identifier: string): Promise<Date|undefined> {
+export async function getPeriodicWeekEpochEndTime(modWeek: number = 1): Promise<Date|undefined> {
+    return getPeriodicEpochEndTime(EPOCH_WEEK, modWeek);
+}
+
+// returns the end time of an epoch. If modWeek is provided it will return the end time of the epoch maching the mod.
+// example: to return the end of a week epoch happening once every 4 weeks use modWeek = 4
+export async function getPeriodicEpochEndTime(identifier: string, modWeek: number = 1): Promise<Date|undefined> {
     const epoch = await getCurrentEpoch(identifier);
     if (!epoch || !epoch.current_epoch_start_time) {
         return undefined;
     }
+    const current = Long.fromValue(epoch.current_epoch).toNumber();
+    let remainingEpochs = modWeek - (current % modWeek);
+    if (remainingEpochs === modWeek) {
+        remainingEpochs = 0;
+    }
 
     const startAt = (new Date(epoch.current_epoch_start_time));
-    startAt.setTime(startAt.getTime() + getEpochDurationByIdentifier(identifier));
+    const duration = getEpochDurationByIdentifier(identifier);
+    startAt.setTime(startAt.getTime() + duration + (duration * remainingEpochs));
 
     return startAt;
 }
@@ -69,11 +85,11 @@ export async function getEpochEndTime(identifier: string): Promise<Date|undefine
 function getEpochDurationByIdentifier(identifier: string): number {
     const hourMs = 60 * 60 * 1000;
     switch (identifier) {
-        case "hour":
+        case EPOCH_HOUR:
             return hourMs;
-        case "day":
+        case EPOCH_DAY:
             return hourMs * 24;
-        case "week":
+        case EPOCH_WEEK:
             return hourMs * 24 * 7;
         default:
             return hourMs;

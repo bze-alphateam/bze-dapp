@@ -6,7 +6,9 @@ import {getAddressBalances} from "./Balances";
 import {getCurrentuDenom, transformAttributes} from "@/utils";
 import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import {getFromCache, getKeyExpiry, removeFromCache, setInCache, setKeyExpiry} from "@/services/data_provider/cache";
-import {getBlockResults, getCurrentWeekEpochEndTime} from "@/services";
+import {getBlockResults, getPeriodicWeekEpochEndTime} from "@/services";
+
+const BURN_EPOCH_COUNT = 4;
 
 export interface NextBurning {
     amount: string,
@@ -131,7 +133,7 @@ export async function getNextBurning(): Promise<NextBurning | undefined> {
 }
 
 async function getBurningTimeFromEpoch(): Promise<Date|undefined> {
-    return await getCurrentWeekEpochEndTime();
+    return await getPeriodicWeekEpochEndTime(BURN_EPOCH_COUNT);
 }
 
 async function getBurningTimeFromProposal(): Promise<Date|undefined> {
