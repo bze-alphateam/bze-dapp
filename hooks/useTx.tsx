@@ -5,6 +5,9 @@ import {type CustomToast, useToast} from './useToast';
 import {keplrSuggestChain} from '@/config';
 import {getSigningClient} from '@/services';
 import {getChainName, getMinDenom, prettyError} from '@/utils';
+import {FeeToken} from "@chain-registry/types/chain.schema";
+import {ibc} from "interchain-query";
+import fee = ibc.applications.fee;
 
 interface Msg {
     typeUrl: string;
@@ -25,14 +28,21 @@ export enum TxStatus {
     Broadcasting = 'Transaction Broadcasting',
 }
 
-const simulateFee = async (address: string, signingClient: any, messages: any[], memo?: string | undefined): Promise<StdFee> => {
+const simulateFee = async (address: string, signingClient: any, messages: any[], memo?: string | undefined, feeToken?: FeeToken|undefined): Promise<StdFee> => {
     try {
+        let gasPrice = 0.1;
+        let gasDenom = getMinDenom();
+        if (feeToken) {
+            gasDenom = feeToken.denom;
+            gasPrice = feeToken.average_gas_price ?? feeToken.fixed_min_gas_price ?? 0.1
+        }
+
         const gasEstimated = await signingClient.simulate(address, messages, memo);
         let gasAmount = gasEstimated * 1.5;
-        let gasPayment = (gasAmount * 0.1).toFixed(0).toString();
+        let gasPayment = (gasAmount * gasPrice).toFixed(0).toString();
 
         return {
-            amount: coins(gasPayment, getMinDenom()),
+            amount: coins(gasPayment, gasDenom),
             gas: gasAmount.toFixed(0)
         };
 
@@ -46,7 +56,7 @@ const simulateFee = async (address: string, signingClient: any, messages: any[],
 }
 
 export const useTx = (chainName?: string) => {
-    const {address, getOfflineSignerAmino, getOfflineSignerDirect} = useChain(chainName ?? getChainName());
+    const {address, getOfflineSignerAmino, getOfflineSignerDirect, chain} = useChain(chainName ?? getChainName());
     const {toast} = useToast();
 
     const tx = async (msgs: Msg[], options: TxOptions) => {
@@ -76,7 +86,7 @@ export const useTx = (chainName?: string) => {
             if (options?.fee) {
                 fee = options.fee;
             } else {
-                fee = await simulateFee(address, client, msgs);
+                fee = await simulateFee(address, client, msgs, undefined, chain.fees?.fee_tokens[0]);
             }
         } catch (e: any) {
             console.error(e);
