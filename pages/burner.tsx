@@ -447,9 +447,7 @@ const Intro = memo(() => {
                 <Text fontSize={'$md'}>BZE has a burner module that destroys coins in its balance. The BZE network
                     charges fees for different activities. Most fees go to the community pool, allowing the community to
                     vote on whether to burn them or not. However, some coins are sent directly to the Burner Module.
-                    Coins can only be burned if the community approves it through a governance proposal. The BZE Alpha
-                    Team regularly supports burning events by proposing to move funds from the community pool or by
-                    buying back coins.</Text>
+                    Coins are burned once every 4 weeks or on demand if the community approves it through a governance proposal.</Text>
             </Box>
         </>
     );
