@@ -67,7 +67,7 @@ function WinnersModal({props}: { props: WinnersModalProps }) {
             }
 
             const w = await getRaffleWinners(props.raffle.sdk.denom);
-            setWinners(w);
+            setWinners(w.sort((a, b) => parseInt(a.index, 10) - parseInt(b.index, 10)));
         }
 
         fetchWinners();
