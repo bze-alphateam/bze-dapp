@@ -115,7 +115,8 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
             },
             onSuccess: () => {
                 setAdmin("");
-            }
+            },
+            useDirectSign: true,
         })
 
         setSubmitPending(false);
