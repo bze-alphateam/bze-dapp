@@ -15,7 +15,8 @@
     "@types/react-dom": "18.0.9",
     "base-x": "^3.0.11",
     "axios": "^0.30.0",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "elliptic": "^6.6.1"
   },
   "dependencies": {
     "@bze/bzejs": "^0.8.10",
