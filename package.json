@@ -14,7 +14,8 @@
     "@types/react": "18.0.25",
     "@types/react-dom": "18.0.9",
     "base-x": "^3.0.11",
-    "axios": "^0.30.0"
+    "axios": "^0.30.0",
+    "braces": "^3.0.3"
   },
   "dependencies": {
     "@bze/bzejs": "^0.8.10",
@@ -27,7 +28,7 @@
     "@interchain-ui/react": "^1.23.11",
     "@next/third-parties": "^14.2.13",
     "@tanstack/react-query": "^5.36.2",
-    "axios": "0.28.0",
+    "axios": "0.30.0",
     "bignumber.js": "^9.1.2",
     "chain-registry": "^1.69.70",
     "cosmos-kit": "^2.24.0",
