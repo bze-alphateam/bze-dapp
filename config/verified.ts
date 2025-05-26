@@ -6,6 +6,7 @@ export const VERIFIED_TOKENS: { [key: string]: boolean } = {
     "utbz": true,
     "factory/bze13gzq40che93tgfm9kzmkpjamah5nj0j73pyhqk/uvdl": true,
     "factory/bze15pqjgk4la0mfphwddce00d05n3th3u66n3ptcv/2MARS": true,
+    "factory/bze12gyp30f29zg26nuqrwdhl26ej4q066pt572fhm/GGE": true,
     // "factory/bze1f0qgels0eu96ev6a67znu70q7rquy9eragn8nw/ucorey": true,
 }
 
