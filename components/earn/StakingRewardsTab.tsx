@@ -194,7 +194,7 @@ function StakingRewardDetail({props}: { props: StakingRewardDetailProps }) {
                     }} disabled={props.reward.payouts >= props.reward.duration}>Stake</Button>
                     <Button size='sm' intent="primary" onClick={() => {
                         setShowDonateForm(true)
-                    }} disabled={props.reward.payouts >= props.reward.duration}>Donate</Button>
+                    }}>Donate</Button>
                 </Box>
             }
             {
