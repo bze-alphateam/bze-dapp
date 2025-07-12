@@ -9,6 +9,7 @@ import {
 import {getRestClient} from "../Client";
 import {bze} from '@bze/bzejs';
 import {getFromCache, removeFromCache, setInCache} from "./cache";
+import {PageRequest} from "@bze/bzejs/cosmos/base/query/v1beta1/pagination";
 
 const ALL_MARKETS_KEY = 'markets:list';
 const ALL_MARKETS_CACHE_TTL = 60 * 5; //5 minutes
@@ -40,7 +41,7 @@ export async function getMarketOrders(marketId: string, orderType: string): Prom
         return client.bze.tradebin.marketAggregatedOrders(QueryMarketAggregatedOrdersRequestFromPartyal({
             market: marketId,
             orderType: orderType,
-            pagination: {limit: 15, reverse: reversed}
+            pagination: PageRequest.fromPartial({limit: BigInt(15), reverse: reversed})
         }));
 
     } catch (e) {
@@ -56,7 +57,7 @@ export async function getMarketHistory(marketId: string): Promise<QueryMarketHis
 
         return client.bze.tradebin.marketHistory(QueryMarketHistoryRequestFromPartial({
             market: marketId,
-            pagination: {limit: 50, reverse: true}
+            pagination: PageRequest.fromPartial({limit: BigInt(50), reverse: true})
         }));
     } catch (e) {
         console.error(e);
@@ -79,7 +80,7 @@ export async function getAllMarkets(): Promise<QueryAllMarketsResponseSDKType> {
         }
 
         const client = await getRestClient();
-        let response = await client.bze.tradebin.allMarkets(QueryMarketsFromPartial({pagination: {limit: 500}}));
+        let response = await client.bze.tradebin.allMarkets(QueryMarketsFromPartial({pagination: PageRequest.fromPartial({limit: BigInt(500)})}));
 
         setInCache(cacheKey, JSON.stringify(response), ALL_MARKETS_CACHE_TTL);
 
@@ -102,7 +103,7 @@ export async function getAddressMarketOrders(marketId: string, address: string):
         return client.bze.tradebin.userMarketOrders(QueryUserMarketOrdersRequestFromPartial({
             market: marketId,
             address: address,
-            pagination: {limit: 100, reverse: true}
+            pagination: PageRequest.fromPartial({limit: BigInt(100), reverse: true})
         }));
     } catch (e) {
         console.error(e);
@@ -111,7 +112,7 @@ export async function getAddressMarketOrders(marketId: string, address: string):
     }
 }
 
-export async function getMarketOrder(marketId: string, orderType: string, orderId: string): Promise<QueryMarketOrderResponseSDKType> {
+export async function getMarketOrder(marketId: string, orderType: string, orderId: string): Promise<QueryMarketOrderResponseSDKType|undefined> {
     try {
         const cacheKey = `${ALL_MARKETS_KEY}${marketId}:${orderType}:${orderId}`;
         let localData = getFromCache(cacheKey);
@@ -136,7 +137,7 @@ export async function getMarketOrder(marketId: string, orderType: string, orderI
     } catch (e) {
         console.error(e);
 
-        return {order: undefined};
+        return undefined;
     }
 }
 
@@ -164,7 +165,7 @@ export async function getAssetMarkets(denom: string): Promise<QueryAssetMarketsR
     }
 }
 
-export async function getAssetsMarket(base: string, quote: string): Promise<QueryMarketResponseSDKType> {
+export async function getAssetsMarket(base: string, quote: string): Promise<QueryMarketResponseSDKType|undefined> {
     try {
         let cacheKey = `${ALL_MARKETS_KEY}${base}:${quote}`;
         let localData = getFromCache(cacheKey);
@@ -195,6 +196,6 @@ export async function getAssetsMarket(base: string, quote: string): Promise<Quer
     } catch (e) {
         console.error(e);
 
-        return {};
+        return undefined;
     }
 }

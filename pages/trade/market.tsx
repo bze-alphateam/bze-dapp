@@ -39,7 +39,7 @@ import {useChain} from "@cosmos-kit/react";
 import {
     HistoryOrderSDKType,
     OrderReferenceSDKType
-} from "@bze/bzejs@bze/bzejs'bze/tradebin/store";
+} from "@bze/bzejs/bze/tradebin/store";
 import {
   ActiveOrders,
   ActiveOrdersList,
@@ -51,7 +51,7 @@ import {
   OrderHistoryList
 } from "@/components/trade";
 import {EmptyOrderFormData, OrderFormData, OrderForms} from "@/components/trade/OrderForms";
-import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs@bze/bzejs'bze/tradebin/events";
+import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/bze/tradebin/events";
 import MarketPairListener from "@/services/listener/MarketPairListener";
 import {PriceBox, StatsBox, VolumeBox} from "@/components/trade/StatsBox";
 

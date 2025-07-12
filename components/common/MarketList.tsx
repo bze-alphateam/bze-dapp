@@ -43,7 +43,7 @@ export default function MarketsList(props: MarketListProps) {
                             <MarketListItem
                                 showWithdraw={true}
                                 onWithdraw={() => item?.onWithdraw?.()}
-                                withdrawLabel={item.withdrawLabel ?? InterchainAssetListItem.defaultProps.withdrawLabel}
+                                withdrawLabel={item.withdrawLabel ?? "withdraw"}
                                 baseToken={item.baseToken}
                                 quoteToken={item.quoteToken}
                                 tickers={props.tickers}

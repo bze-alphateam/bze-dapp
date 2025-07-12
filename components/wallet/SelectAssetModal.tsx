@@ -45,8 +45,6 @@ export default function SelectAssetModal({props}: { props: SelectAssetModaLProps
     return (
         <BasicModal
             onClose={props.control.onClose}
-            renderTrigger={function Va() {
-            }}
             title={props.title ?? 'Select Asset'}
             isOpen={props.control.isOpen}
         >

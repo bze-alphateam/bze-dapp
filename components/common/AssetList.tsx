@@ -47,8 +47,8 @@ export default function AssetList(props: CustomAssetListProps) {
                                     showWithdraw={item.showWithdraw}
                                     onDeposit={() => item?.onDeposit?.()}
                                     onWithdraw={() => item?.onWithdraw?.()}
-                                    withdrawLabel={item.withdrawLabel ?? InterchainAssetListItem.defaultProps.withdrawLabel}
-                                    depositLabel={item.depositLabel ?? InterchainAssetListItem.defaultProps.depositLabel}
+                                    withdrawLabel={item.withdrawLabel ?? "withdraw"}
+                                    depositLabel={item.depositLabel ?? "deposit"}
                                 />
                             </Box>
                         );

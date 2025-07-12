@@ -7,6 +7,7 @@ import {getRestClient} from "../Client";
 import {bze} from '@bze/bzejs';
 import {StakingRewardSDKType, StakingRewardParticipantSDKType, PendingUnlockParticipantSDKType} from "@bze/bzejs/bze/rewards/store";
 import {getFromCache, removeFromCache, setInCache} from "@/services/data_provider/cache";
+import {PageRequest} from "@bze/bzejs/cosmos/base/query/v1beta1/pagination";
 
 const SR_KEY = 'SR:LIST';
 const SRP_KEY = 'SRP:LIST:';
@@ -31,10 +32,10 @@ export async function getStakingRewards(reverse: boolean = true): Promise<QueryA
 
         const client = await getRestClient();
         let response = await client.bze.rewards.allStakingRewards(QueryAllStakingRewardRequestFromPartial({
-            pagination: {
+            pagination: PageRequest.fromPartial({
                 reverse: reverse,
-                limit: 1000
-            }
+                limit: BigInt(1000)
+            })
         }));
         setInCache(SR_KEY, JSON.stringify(response), SR_TTL);
 
@@ -81,7 +82,7 @@ export async function getStakingRewardParticipantByAddress(address: string): Pro
         const client = await getRestClient();
         let response = await client.bze.rewards.stakingRewardParticipant(QueryGetStakingRewardParticipantRequestFromPartial({
             address: address,
-            pagination: {limit: 100}
+            pagination: PageRequest.fromPartial({limit: BigInt(100)})
         }));
         setInCache(cacheKey, JSON.stringify(response), SR_TTL);
 
@@ -115,7 +116,7 @@ export async function getPendingUnlockParticipants(): Promise<QueryAllPendingUnl
 
         const client = await getRestClient();
         let response = await client.bze.rewards.allPendingUnlockParticipants(QueryAllPendingUnlockParticipantRequestFromPartial({
-            pagination: {limit: 1000}
+            pagination: PageRequest.fromPartial({limit: BigInt(1000)})
         }));
         setInCache(cacheKey, JSON.stringify(response), SR_TTL);
 

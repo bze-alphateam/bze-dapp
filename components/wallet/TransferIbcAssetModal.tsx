@@ -74,8 +74,13 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
             sourceChannel: props.token.ibcTrace.chain.channel_id,
             sender: bzeAddress ?? "",
             receiver: tokenChainAddress ?? "",
-            timeoutTimestamp: transferTimeout,
-            token: coin(uAmount, props.token.metadata.base)
+            timeoutTimestamp: BigInt(transferTimeout.toString()),
+            token: coin(uAmount, props.token.metadata.base),
+            //@ts-ignore
+            timeoutHeight: undefined,
+            memo: "",
+            encoding: "",
+            useAliasing: false
         });
 
         await withdrawTx([msg], {
@@ -103,8 +108,13 @@ export default function TransferIbcAssetModal({props}: { props: TransferIbcAsset
             sourceChannel: props.token.ibcTrace.counterparty.channel_id,
             sender: tokenChainAddress ?? "",
             receiver: bzeAddress ?? "",
-            timeoutTimestamp: transferTimeout,
-            token: coin(uAmount, props.token.ibcTrace.counterparty.base_denom)
+            timeoutTimestamp: BigInt(transferTimeout.toString()),
+            token: coin(uAmount, props.token.ibcTrace.counterparty.base_denom),
+            //@ts-ignore
+            timeoutHeight: undefined,
+            memo: "",
+            encoding: "",
+            useAliasing: false
         });
         await depositTx([msg], {
             toast: {

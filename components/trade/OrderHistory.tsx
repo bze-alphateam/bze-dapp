@@ -274,7 +274,7 @@ const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
         const fetchFullOrder = async () => {
             setLoading(true);
             const ord = await getMarketOrder(props.order.market_id, props.order.order_type, props.order.id);
-            if (ord.order === undefined) {
+            if (ord === undefined) {
                 return;
             }
 

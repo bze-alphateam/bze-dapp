@@ -31,7 +31,7 @@ export async function getBlockDetailsByHeight(height: Long): Promise<GetBlockByH
         }
 
         const client = await getRestClient();
-        let response = await client.cosmos.base.tendermint.v1beta1.getBlockByHeight({height: height});
+        let response = await client.cosmos.base.tendermint.v1beta1.getBlockByHeight({height: BigInt(height.toString())});
 
         setInCache(cacheKey, JSON.stringify(response), 9999999);
 

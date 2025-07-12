@@ -76,8 +76,6 @@ function WinnersModal({props}: { props: WinnersModalProps }) {
     return (
         <BasicModal
             onClose={props.control.onClose}
-            renderTrigger={function Va() {
-            }}
             title={`${props.raffle?.displayDenom.denom.toUpperCase()} Raffle Winners`}
             isOpen={props.control.isOpen}
         >
@@ -592,7 +590,7 @@ const RafflesBoxItem = memo((props: { raffle: RaffleBoxRaffle }) => {
         let msg = joinRaffle({
             creator: address,
             denom: raffle.sdk.denom,
-            tickets: 1,
+            tickets: BigInt(1),
         })
 
         await tx([msg], {
@@ -650,7 +648,7 @@ const RafflesBoxItem = memo((props: { raffle: RaffleBoxRaffle }) => {
                 </Box>
                 <Box p='$6'>
                     <Text fontSize={'$lg'} color='$primary300'> Chances: 1 out
-                        of {prettyAmount(Long.fromNumber(1_000_000).div(props.raffle.sdk.chances).toNumber())} </Text>
+                        of {prettyAmount(Long.fromNumber(1_000_000).div(props.raffle.sdk.chances.toString()).toNumber())} </Text>
                 </Box>
             </Box>
             <Divider/>
