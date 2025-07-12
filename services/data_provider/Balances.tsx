@@ -1,9 +1,11 @@
-import {QuerySpendableBalancesResponseSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/query";
+
 import {getCounterpartyRestClient, getRestClient} from "../Client";
 import {getFromCache, removeFromCache, setInCache} from "@/services/data_provider/cache";
-import {MetadataSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+
 import {IbcTransition} from "@chain-registry/types/assetlist.schema";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
+import {QuerySpendableBalancesResponseSDKType} from "interchain-query/cosmos/bank/v1beta1/query";
+import {MetadataSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 
 const BALANCES_KEY = 'bank:balances:';
 

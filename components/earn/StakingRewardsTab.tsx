@@ -1,16 +1,15 @@
 import {Box, Button, Callout, FieldLabel, Text, TextField} from "@interchain-ui/react";
 import {ClickableBox, DefaultBorderedBox, StakingRewardDetailsBox} from "@/components";
 import {useEffect, useState} from "react";
-import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
+import {StakingRewardSDKType} from "@bze/bzejs/bze/rewards/store";
 import {getAllSupplyTokens, getRewardsParams, getTokenDisplayDenom, Token} from "@/services";
 import {SearchInput} from "@/components/common/Input";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import {useDisclosure, useToast, useTx} from "@/hooks";
 import {
     amountToUAmount,
-    calculateApr,
     getChainName,
-    isGreaterOrEqualToZero, isGreaterThan,
+    isGreaterOrEqualToZero,
     isGreaterThanZero,
     prettyAmount,
     prettyFee, sanitizeIntegerInput,
@@ -21,8 +20,8 @@ import {DeliverTxResponse} from "@cosmjs/stargate";
 import {bze} from '@bze/bzejs';
 import {useChain} from "@cosmos-kit/react";
 import {getStakingRewards, resetStakingRewardsCache} from "@/services/data_provider/StakingReward";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
 import {
     amountChangeHandler,
@@ -31,7 +30,7 @@ import {
     getStakingTokenBalance
 } from "@/components/earn/common";
 
-const {createStakingReward, updateStakingReward} = bze.v1.rewards.MessageComposer.withTypeUrl;
+const {createStakingReward, updateStakingReward} = bze.rewards.MessageComposer.withTypeUrl;
 
 export interface StakingRewardDetailProps {
     reward: StakingRewardSDKType;
@@ -463,13 +462,13 @@ function AddStakingRewardForm({props}: { props: AddStakingRewardFormProps }) {
 
         const fetchParams = async () => {
             let params = await getRewardsParams();
-            if (params.params === undefined) {
+            if (params === undefined) {
                 setCreateFee('an unknown');
 
                 return;
             }
 
-            setCreateFee(prettyFee(params.params.createStakingRewardFee));
+            setCreateFee(prettyFee(`${params.createStakingRewardFee.amount}${params.createStakingRewardFee.denom}`));
         }
 
         fetchParams();
@@ -633,7 +632,7 @@ export function StakingRewards() {
 
     const fetchStakingRewards = async () => {
         const all = await getStakingRewards();
-        const sorted = all.list.sort((a, b) => a.payouts >= a.duration ? 1 : -1);
+        const sorted = all.list.sort((a: any, b: any) => a.payouts >= a.duration ? 1 : -1);
         setRewards(sorted);
         setFilteredRewards(sorted);
     }

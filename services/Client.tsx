@@ -33,6 +33,10 @@ export function getAtomOneRpcUrl(): string {
     return process.env.NEXT_PUBLIC_RPC_URL_ATOMONE !== undefined ? process.env.NEXT_PUBLIC_RPC_URL_ATOMONE : '';
 }
 
+export async function getRpcClient() {
+    return bze.ClientFactory.createRPCQueryClient({rpcEndpoint: getRpcURL()})
+}
+
 export async function getRestClient() {
     return bze.ClientFactory.createLCDClient({restEndpoint: getRestURL()})
 }

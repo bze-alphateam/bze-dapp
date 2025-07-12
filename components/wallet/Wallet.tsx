@@ -48,7 +48,7 @@ export function Wallet() {
     useEffect(() => {
         const fetchBzeBalance = async (addr: string) => {
             const allBalances = await getAddressBalances(addr);
-            const found = allBalances.balances.find((bal) => bal.denom === getCurrentuDenom());
+            const found = allBalances.balances.find((bal: any) => bal.denom === getCurrentuDenom());
             if (!found) {
                 setBalance("0");
 

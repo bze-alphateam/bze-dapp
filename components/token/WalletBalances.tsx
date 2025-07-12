@@ -2,9 +2,9 @@ import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {getTokenDisplayDenom, isNativeType, Token} from "@/services";
 import {DefaultBorderedBox} from "@/components";
 import {Box, Button, Text} from "@interchain-ui/react";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import {getChainName, isTestnet, prettyChainName, toUpperFirstLetter, uAmountToAmount} from "@/utils";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 import {
     getAddressBalances,
     getAddressCounterpartyBalances,
@@ -93,7 +93,7 @@ export const WalletBalances = memo(({props}: { props: WalletBalancesProps }) => 
         const display = await getTokenDisplayDenom(props.token.metadata.base, props.token);
         setTokenDisplay(display);
 
-        const bzeBalances = (await getAddressBalances(address)).balances.find((item) => item.denom === props.token.metadata.base);
+        const bzeBalances = (await getAddressBalances(address)).balances.find((item: any) => item.denom === props.token.metadata.base);
         const allBalances = [];
         if (bzeBalances) {
             allBalances.push({

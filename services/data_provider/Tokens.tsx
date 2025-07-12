@@ -1,9 +1,10 @@
-import {DenomUnitSDKType, MetadataSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+
 import {getRestClient} from "../Client";
 import Long from 'long';
 import {getChain, getLastCharsAfterSlash, MAINNET_UDENOM, TESTNET_UDENOM} from "@/utils";
 import {EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS} from "@/config/verified";
 import {IbcTransition} from "@chain-registry/types/assetlist.schema";
+import {DenomUnitSDKType, MetadataSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 
 const DENOM_METADATA_LIMIT = 5000;
 const TOKEN_IMG_DEFAULT = 'token_placeholder.png';
@@ -107,7 +108,7 @@ export async function getTokenChainMetadata(denom: string): Promise<MetadataSDKT
 export async function getTokenAdminAddress(denom: string): Promise<string> {
     try {
         const client = await getRestClient();
-        let res = await client.bze.tokenfactory.v1.denomAuthority({denom: denom});
+        let res = await client.bze.tokenfactory.denomAuthority({denom: denom});
 
         return res.denomAuthority?.admin ?? ''
     } catch (e) {
@@ -146,7 +147,7 @@ export function resetAllTokensCache() {
 
 export async function getTokenSupply(denom: string): Promise<string> {
     let all = await getSupply();
-    let filtered = all.filter((item) => item.denom === denom);
+    let filtered = all.filter((item: any) => item.denom === denom);
 
     return filtered.length > 0 ? filtered[0].amount : "0";
 }

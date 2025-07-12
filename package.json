@@ -25,7 +25,7 @@
     "micromatch": "^4.0.8"
   },
   "dependencies": {
-    "@bze/bzejs": "^0.8.10",
+    "@bze/bzejs": "^1.8.4",
     "@cosmjs/cosmwasm-stargate": "0.31.1",
     "@cosmjs/stargate": "^0.32.4",
     "@cosmos-kit/react": "^2.22.0",

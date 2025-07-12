@@ -1,12 +1,12 @@
 import {Token} from "@/services";
-import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {useMemo} from "react";
 import {DefaultBorderedBox} from "./Box";
 import {Box, Icon, Text} from "@interchain-ui/react";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import BigNumber from "bignumber.js";
 import {calculateApr, prettyAmount, uAmountToAmount} from "@/utils";
 import LogoWithFallback from "@/components/common/LogoWithFallback";
+import {StakingRewardSDKType} from "@bze/bzejs/bze/rewards/store";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 
 export interface StakingRewardDetailsBoxRowProps {
     name: string,

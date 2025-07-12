@@ -1,7 +1,7 @@
 import {getRestClient} from "../Client";
-import {QueryParamsResponseSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/query";
-import {QueryParamsResponseSDKType as TFParams} from "@bze/bzejs/types/codegen/beezee/tokenfactory/query";
-import {QueryParamsResponseSDKType as RewardsParams} from "@bze/bzejs/types/codegen/beezee/rewards/query";
+import {ParamsSDKType as QueryParamsResponseSDKType} from "@bze/bzejs/bze/tradebin/params";
+import {ParamsSDKType as TFParams} from "@bze/bzejs/bze/tokenfactory/params";
+import {ParamsSDKType as RewardsParams} from "@bze/bzejs/bze/rewards/params";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
 
 const TRADEBIN_KEY = 'params:tradebin';
@@ -21,11 +21,11 @@ export async function getTradebinParams(): Promise<QueryParamsResponseSDKType> {
     }
 
     const client = await getRestClient();
-    let response = await client.bze.tradebin.v1.params();
+    let response = await client.bze.tradebin.params();
 
-    setInCache(TRADEBIN_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
+    setInCache(TRADEBIN_KEY, JSON.stringify(response.params), LOCAL_CACHE_TTL);
 
-    return response
+    return response.params
 }
 
 export async function getTokenFactoryParams(): Promise<TFParams> {
@@ -39,11 +39,11 @@ export async function getTokenFactoryParams(): Promise<TFParams> {
     }
 
     const client = await getRestClient();
-    let response = await client.bze.tokenfactory.v1.params();
+    let response = await client.bze.tokenfactory.params();
 
-    setInCache(FACTORY_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
+    setInCache(FACTORY_KEY, JSON.stringify(response.params), LOCAL_CACHE_TTL);
 
-    return response;
+    return response.params;
 }
 
 export async function getRewardsParams(): Promise<RewardsParams> {
@@ -57,9 +57,9 @@ export async function getRewardsParams(): Promise<RewardsParams> {
     }
 
     const client = await getRestClient();
-    let response = await client.bze.v1.rewards.params();
+    let response = await client.bze.rewards.params();
 
-    setInCache(REWARDS_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
+    setInCache(REWARDS_KEY, JSON.stringify(response.params), LOCAL_CACHE_TTL);
 
-    return response;
+    return response.params;
 }

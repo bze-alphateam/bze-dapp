@@ -1,8 +1,8 @@
 import {ClickableBox, DefaultBorderedBox} from "@/components";
-import {Box, Stack, Text} from "@interchain-ui/react";
+import {Box, Text} from "@interchain-ui/react";
 import {memo, useEffect, useState} from "react";
-import {getAllMarkets, getAllSupplyTokens, getAllTickers, getAssetMarkets, isIBCType, Ticker, Token} from "@/services";
-import {MarketSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/market";
+import {getAllSupplyTokens, getAllTickers, getAssetMarkets, Ticker, Token} from "@/services";
+import {MarketSDKType} from "@bze/bzejs/bze/tradebin/store";
 import {marketIdFromDenoms} from "@/utils";
 import {PriceText} from "@/components/common/MarketListItem";
 import {useRouter} from "next/router";

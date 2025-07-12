@@ -2,7 +2,6 @@ import {ColorType, createChart} from 'lightweight-charts';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Box, Text, useColorModeValue} from "@interchain-ui/react";
 import {getNoOfIntervalsNeeded} from "@/services";
-import {from} from "rxjs";
 
 interface PriceData {
     open: number;

@@ -1,11 +1,10 @@
 import {Token} from "@/services";
 import {uAmountToAmount, uPriceToPrice} from "@/utils";
-import {AggregatedOrderSDKType, HistoryOrderSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import {AggregatedOrderSDKType, HistoryOrderSDKType} from "@bze/bzejs/bze/tradebin/store";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 import {Box, Divider, Icon, Stack, Text} from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import {useCallback, useEffect, useState} from "react";
-import {OrderFormData} from "./OrderForms";
 
 export interface MarketPairTokens {
     baseToken: Token;

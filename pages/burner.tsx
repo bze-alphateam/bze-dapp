@@ -1,7 +1,7 @@
 import {BasicModal, Box, Button, Callout, Divider, Text, TextField} from "@interchain-ui/react";
 import {DefaultBorderedBox, Layout} from "@/components";
 import {memo, useEffect, useState} from "react";
-import {BurnedCoinsSDKType} from "@bze/bzejs/types/codegen/beezee/burner/burned_coins";
+import {BurnedCoinsSDKType} from "@bze/bzejs/bze/burner/burned_coins";
 import {
     BURNER,
     checkAddressWonRaffle,
@@ -42,13 +42,13 @@ import {useChain} from "@cosmos-kit/react";
 import {useDisclosure, UseDisclosureReturn, useToast, useTx} from "@/hooks";
 import {bze} from '@bze/bzejs';
 import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
-import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/bze/burner/raffle";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 import BigNumber from "bignumber.js";
 import {useRouter} from "next/router";
 import RaffleListener from "@/services/listener/RaffleListener";
-import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/types/codegen/beezee/burner/events";
+import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/bze/burner/events";
 
 interface WinnersModalProps {
     control: UseDisclosureReturn;
@@ -192,7 +192,7 @@ function BurnHistory() {
 
     const fetchBurnings = async () => {
         const list = await getAllBurnedCoins();
-        let sorted = list.burnedCoins.sort((a, b) => {
+        let sorted = list.burnedCoins.sort((a: BurnedCoinsSDKType, b: BurnedCoinsSDKType) => {
             let parsedA = parseInt(a.height);
             let parsedB = parseInt(b.height);
 
@@ -200,7 +200,7 @@ function BurnHistory() {
         });
 
         //exclude burnings not related to BZE
-        sorted = sorted.filter((b) => b.burned.includes(getCurrentuDenom()))
+        sorted = sorted.filter((b: BurnedCoinsSDKType) => b.burned.includes(getCurrentuDenom()))
 
         setBurnings(sorted);
         setLoading(false);
@@ -223,7 +223,7 @@ function BurnHistory() {
     );
 }
 
-const {fundBurner, joinRaffle} = bze.burner.v1.MessageComposer.withTypeUrl;
+const {fundBurner, joinRaffle} = bze.burner.MessageComposer.withTypeUrl;
 
 interface ContributeProps {
     onContributeSuccess?: () => void;
@@ -591,7 +591,8 @@ const RafflesBoxItem = memo((props: { raffle: RaffleBoxRaffle }) => {
         let expectedSeconds = WAITING_DEFAULT;
         let msg = joinRaffle({
             creator: address,
-            denom: raffle.sdk.denom
+            denom: raffle.sdk.denom,
+            tickets: 1,
         })
 
         await tx([msg], {

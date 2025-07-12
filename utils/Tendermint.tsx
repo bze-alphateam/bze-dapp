@@ -1,14 +1,14 @@
-import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/types/codegen/beezee/tradebin/events";
+import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/bze/tradebin/events";
 import {decodeBase64, snakeToCamel} from "./Functions";
 import {bze} from '@bze/bzejs';
-import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/types/codegen/beezee/burner/events";
+import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/bze/burner/events";
 
-const {fromPartial: OrderCanceledEventFromPartial} = bze.tradebin.v1.OrderCanceledEvent;
-const {fromPartial: OrderSavedEventFromPartial} = bze.tradebin.v1.OrderSavedEvent;
-const {fromPartial: OrderExecutedEventFromPartial} = bze.tradebin.v1.OrderExecutedEvent;
+const {fromPartial: OrderCanceledEventFromPartial} = bze.tradebin.OrderCanceledEvent;
+const {fromPartial: OrderSavedEventFromPartial} = bze.tradebin.OrderSavedEvent;
+const {fromPartial: OrderExecutedEventFromPartial} = bze.tradebin.OrderExecutedEvent;
 
-const {fromPartial: RaffleWinnerEventFromPartial} = bze.burner.v1.RaffleWinnerEvent;
-const {fromPartial: RaffleLostEventFromPartial} = bze.burner.v1.RaffleLostEvent;
+const {fromPartial: RaffleWinnerEventFromPartial} = bze.burner.RaffleWinnerEvent;
+const {fromPartial: RaffleLostEventFromPartial} = bze.burner.RaffleLostEvent;
 
 export interface Attribute {
     key: string;

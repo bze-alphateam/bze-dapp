@@ -1,12 +1,12 @@
 import {getRestClient} from "../Client";
-import {QueryAllBurnedCoinsResponseSDKType} from "@bze/bzejs/types/codegen/beezee/burner/query";
 import {getActiveProposals} from "./Proposal";
 import {getModuleAddress} from "./Account";
 import {getAddressBalances} from "./Balances";
 import {getCurrentuDenom, transformAttributes} from "@/utils";
-import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/types/codegen/beezee/burner/raffle";
 import {getFromCache, getKeyExpiry, removeFromCache, setInCache, setKeyExpiry} from "@/services/data_provider/cache";
 import {getBlockResults, getPeriodicWeekEpochEndTime} from "@/services";
+import {QueryAllBurnedCoinsResponseSDKType} from "@bze/bzejs/bze/burner/query";
+import {RaffleSDKType, RaffleWinnerSDKType} from "@bze/bzejs/bze/burner/raffle";
 
 const BURN_EPOCH_COUNT = 4;
 
@@ -70,7 +70,7 @@ export async function getAllBurnedCoins(): Promise<QueryAllBurnedCoinsResponseSD
 
         const client = await getRestClient();
         //@ts-ignore
-        let response = await client.bze.burner.v1.allBurnedCoins({pagination: {reverse: true}});
+        let response = await client.bze.burner.allBurnedCoins({pagination: {reverse: true}});
         setInCache(BURNED_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
 
         return response;
@@ -163,7 +163,7 @@ export async function getRaffles(): Promise<RaffleSDKType[]> {
         }
 
         const client = await getRestClient();
-        const response = await client.bze.burner.v1.raffles();
+        const response = await client.bze.burner.raffles();
 
         setInCache(cacheKey, JSON.stringify(response), RAFFLE_CACHE_TTL)
 
@@ -196,7 +196,7 @@ export async function getBurnerCurrentEpoch(): Promise<number> {
         }
 
         const client = await getRestClient();
-        const response = await client.bze.epochs.v1.currentEpoch({identifier: BURNER_EPOCH});
+        const response = await client.bze.epochs.currentEpoch({identifier: BURNER_EPOCH});
 
         setInCache(cacheKey, `${response.current_epoch}`, RAFFLE_CACHE_TTL)
 
@@ -212,7 +212,7 @@ export async function getBurnerCurrentEpoch(): Promise<number> {
 export async function getRaffleWinners(denom: string): Promise<RaffleWinnerSDKType[]> {
     try {
         const client = await getRestClient();
-        const response = await client.bze.burner.v1.raffleWinners({denom: denom});
+        const response = await client.bze.burner.raffleWinners({denom: denom});
         return response.list;
     } catch (e) {
         console.error(e);

@@ -1,12 +1,12 @@
 import {useToast, useTx} from "@/hooks";
 import {getMarketOrder, HistoryOrder} from "@/services";
 import {getChainName, uAmountToAmount, uPriceToBigNumberPrice, uPriceToPrice} from "@/utils";
-import {HistoryOrderSDKType, OrderReferenceSDKType, OrderSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
-import {useChain, useWallet} from "@cosmos-kit/react";
+import {HistoryOrderSDKType, OrderReferenceSDKType, OrderSDKType} from "@bze/bzejs/bze/tradebin/store";
+import {useChain} from "@cosmos-kit/react";
 import {Box, Button, Skeleton, Stack, Text, useColorModeValue} from "@interchain-ui/react";
 import BigNumber from "bignumber.js";
 import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
-import {memo, useCallback, useEffect, useMemo, useState} from "react";
+import {memo, useEffect, useMemo, useState} from "react";
 import {bze} from '@bze/bzejs';
 import {MarketPairTokens} from "./ActiveOrders";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
@@ -226,7 +226,7 @@ interface MyOrdersListRowProps {
     onOrderCancel: () => void;
 }
 
-const {cancelOrder} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+const {cancelOrder} = bze.tradebin.MessageComposer.withTypeUrl;
 
 const MyOrdersListRow = memo((props: MyOrdersListRowProps) => {
     const [loading, setLoading] = useState(true);

@@ -1,4 +1,4 @@
-import {DefaultBorderedBox, FactoryIcon, Layout, TooltippedText, WalletBalances} from "@/components";
+import {DefaultBorderedBox, Layout, TooltippedText, WalletBalances} from "@/components";
 import {
     getAllSupplyTokens, getDenomType,
     getTokenAdminAddress,
@@ -11,7 +11,7 @@ import {
 import {Box, Button, Callout, Divider, Text, TextField} from "@interchain-ui/react";
 import {useRouter} from "next/router";
 import {useEffect, useState} from "react";
-import {DenomUnitSDKType, MetadataSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import {DenomUnitSDKType, MetadataSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 import {useToast, useTx} from "@/hooks";
 import {bze} from '@bze/bzejs';
 import {useChain, useWallet} from "@cosmos-kit/react";
@@ -35,7 +35,7 @@ interface TokenOwnershipProps {
     }
 }
 
-const {changeAdmin} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+const {changeAdmin} = bze.tokenfactory.MessageComposer.withTypeUrl;
 
 function TokenOwnership({props}: { props: TokenOwnershipProps }) {
     const [admin, setAdmin] = useState(props.admin);
@@ -195,7 +195,7 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
     );
 }
 
-const {mint, burn} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+const {mint, burn} = bze.tokenfactory.MessageComposer.withTypeUrl;
 
 interface TokenSupplyProps {
     metadata: {
@@ -396,7 +396,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
     );
 }
 
-const {setDenomMetadata} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+const {setDenomMetadata} = bze.tokenfactory.MessageComposer.withTypeUrl;
 
 interface TokenMetadataProps {
     chainMetadata: MetadataSDKType,
@@ -525,7 +525,7 @@ function TokenChainMetadata({props}: { props: TokenMetadataProps }) {
     }
 
     const defaultDisplayAndDecimals = () => {
-        let metaDenoms = props.chainMetadata.denom_units.filter((item) => item.denom != props.chainMetadata.base);
+        let metaDenoms = props.chainMetadata.denom_units.filter((item: DenomUnitSDKType) => item.denom != props.chainMetadata.base);
         if (metaDenoms.length === 0) {
             return;
         }

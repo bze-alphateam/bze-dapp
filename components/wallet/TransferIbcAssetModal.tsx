@@ -2,7 +2,7 @@ import {UseDisclosureReturn, useToast, useTx} from "@/hooks";
 import {BasicModal, Box, Button, Callout, Text, TextField} from "@interchain-ui/react";
 import {Token} from "@/services";
 import {useEffect, useMemo, useState} from "react";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
 import {
     amountToUAmount,
     getChainName,
@@ -16,7 +16,7 @@ import {ibc} from '@bze/bzejs';
 import Long from 'long';
 import {coin} from '@cosmjs/stargate';
 import {useChain} from "@cosmos-kit/react";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 import {ClickableBox} from "@/components";
 import {getAddressCounterpartyBalances} from "@/services/data_provider/Balances";
 

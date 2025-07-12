@@ -1,4 +1,4 @@
-import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/types/codegen/beezee/tradebin/events";
+import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/bze/tradebin/events";
 import {callbacksMultiCallMultiArgs, filterEventsFromWs} from "./Helper";
 import {parseOrderCanceledEvent, parseOrderExecutedEvent, parseOrderSavedEvent} from "@/utils";
 import TmWebSocket from "./WebSocket";

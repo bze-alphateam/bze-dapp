@@ -1,6 +1,6 @@
 import {getRestClient} from "../Client";
-import {QueryProposalsResponseSDKType} from "@bze/bzejs/types/codegen/cosmos/gov/v1beta1/query";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {QueryProposalsResponseSDKType} from "interchain-query/cosmos/gov/v1/query";
 
 const ACTIVE_PROPOSALS_KEY = 'gov:active_proposals';
 
@@ -18,7 +18,7 @@ export async function getActiveProposals(): Promise<QueryProposalsResponseSDKTyp
 
         const client = await getRestClient();
         //@ts-ignore
-        let response = await client.cosmos.gov.v1beta1.proposals({proposalStatus: 2});
+        let response = await client.cosmos.gov.v1.proposals({proposalStatus: 2});
         setInCache(ACTIVE_PROPOSALS_KEY, JSON.stringify(response), LOCAL_CACHE_TTL);
 
         return response;

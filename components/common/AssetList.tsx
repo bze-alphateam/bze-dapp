@@ -1,6 +1,6 @@
 import AssetListItem, {CustomAssetListItemProps} from "./AssetListItem";
 import {AssetListItem as InterchainAssetListItem, BaseComponentProps, Box, Stack, Text} from "@interchain-ui/react";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 
 interface CustomAssetListProps extends BaseComponentProps {
     list: CustomAssetListItemProps[];

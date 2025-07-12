@@ -15,7 +15,7 @@ import {DeliverTxResponse} from "@cosmjs/stargate";
 import {useRouter} from "next/router";
 
 const minDenomLength = 2;
-const {createDenom} = bze.tokenfactory.v1.MessageComposer.withTypeUrl;
+const {createDenom} = bze.tokenfactory.MessageComposer.withTypeUrl;
 
 interface CreateTokenFormProps {
     onCancel: () => void,
@@ -141,14 +141,14 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
 
     const fetchParams = async () => {
         let params = await getTokenFactoryParams();
-        if (params.params === undefined) {
+        if (params === undefined) {
             setCreateTokenFee('Unknown');
 
             return;
         }
 
         //pretty fee
-        let pFee = prettyFee(params.params.createDenomFee);
+        let pFee = prettyFee(`${params.create_denom_fee.amount}${params.create_denom_fee.denom}`);
         setCreateTokenFee(`${pFee} Required`);
         setFee(pFee);
     }

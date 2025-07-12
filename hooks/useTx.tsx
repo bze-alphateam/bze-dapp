@@ -2,12 +2,9 @@
 import {useChain} from '@cosmos-kit/react';
 import {coins, DeliverTxResponse, isDeliverTxSuccess, StdFee} from '@cosmjs/stargate';
 import {type CustomToast, useToast} from './useToast';
-import {keplrSuggestChain} from '@/config';
 import {getSigningClient} from '@/services';
 import {getChainName, getMinDenom, prettyError} from '@/utils';
 import {FeeToken} from "@chain-registry/types/chain.schema";
-import {ibc} from "interchain-query";
-import fee = ibc.applications.fee;
 
 interface Msg {
     typeUrl: string;
@@ -129,7 +126,7 @@ export const useTx = (chainName?: string) => {
                         });
                     }
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     console.log(err);
                     toast({
                         title: TxStatus.Failed,

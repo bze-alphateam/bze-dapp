@@ -1,9 +1,12 @@
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
+
 import BigNumber from "bignumber.js";
 import {amountToUAmount, calculateApr, isGreaterThan, isGreaterThanZero, uAmountToAmount} from "@/utils";
-import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
+
 import {Token} from "@/services";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
+import {StakingRewardSDKType} from "@bze/bzejs/bze/rewards/store";
 import {bze} from "@bze/bzejs";
 
 interface AmountChangeHandlerProps {
@@ -67,7 +70,7 @@ export const getStakingAmountErrors = (amount: string, stakingTokenBalance: stri
     return undefined;
 }
 
-const {joinStaking} = bze.v1.rewards.MessageComposer.withTypeUrl;
+const {joinStaking} = bze.rewards.MessageComposer.withTypeUrl;
 
 export const createStakingMessage = (amount: string, stakingDisplayDenom: DenomUnitSDKType, rewardId: string, address?: string|undefined) => {
     const convertedAmount = amountToUAmount(amount, stakingDisplayDenom.exponent);

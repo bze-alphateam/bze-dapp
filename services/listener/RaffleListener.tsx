@@ -1,7 +1,7 @@
 import {callbacksMultiCallMultiArgs, filterEventsFromWs} from "./Helper";
 import {parseRaffleLostEvent, parseRaffleWinnerEvent} from "@/utils";
 import TmWebSocket from "./WebSocket";
-import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/types/codegen/beezee/burner/events";
+import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs@bze/bzejs'bze/burner/events";
 
 const raffleLostEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.v1.RaffleLostEvent.denom EXISTS`;
 const raffleWinEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.v1.RaffleWinnerEvent.denom EXISTS`;
