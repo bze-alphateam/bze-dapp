@@ -3,17 +3,17 @@ import {callbacksMultiCallMultiArgs, filterEventsFromWs} from "./Helper";
 import {parseOrderCanceledEvent, parseOrderExecutedEvent, parseOrderSavedEvent} from "@/utils";
 import TmWebSocket from "./WebSocket";
 
-const orderSavedEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.v1.OrderSavedEvent.market_id CONTAINS '${marketId}'`;
-const orderCanceledEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.v1.OrderCanceledEvent.market_id CONTAINS '${marketId}'`
-const orderExecutedEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.v1.OrderExecutedEvent.market_id CONTAINS '${marketId}'`;
+const orderSavedEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.OrderSavedEvent.market_id CONTAINS '${marketId}'`;
+const orderCanceledEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.OrderCanceledEvent.market_id CONTAINS '${marketId}'`
+const orderExecutedEventQuery = (marketId: string) => `tm.event = 'NewBlock' AND bze.tradebin.OrderExecutedEvent.market_id CONTAINS '${marketId}'`;
 
 const SUB_ID_ORDER_SAVED = 3;
 const SUB_ID_ORDER_CANCELED = 4;
 const SUB_ID_ORDER_EXECUTED = 5;
 
-const TYPE_ORDER_SAVED_EVENT = 'bze.tradebin.v1.OrderSavedEvent';
-const TYPE_ORDER_EXECUTED_EVENT = 'bze.tradebin.v1.OrderExecutedEvent';
-const TYPE_ORDER_CANCELED_EVENT = 'bze.tradebin.v1.OrderCanceledEvent';
+const TYPE_ORDER_SAVED_EVENT = 'bze.tradebin.OrderSavedEvent';
+const TYPE_ORDER_EXECUTED_EVENT = 'bze.tradebin.OrderExecutedEvent';
+const TYPE_ORDER_CANCELED_EVENT = 'bze.tradebin.OrderCanceledEvent';
 
 class Listener {
     private isStarted: boolean = false;
