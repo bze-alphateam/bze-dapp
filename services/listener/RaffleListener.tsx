@@ -3,14 +3,14 @@ import {parseRaffleLostEvent, parseRaffleWinnerEvent} from "@/utils";
 import TmWebSocket from "./WebSocket";
 import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/bze/burner/events";
 
-const raffleLostEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.v1.RaffleLostEvent.denom EXISTS`;
-const raffleWinEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.v1.RaffleWinnerEvent.denom EXISTS`;
+const raffleLostEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.RaffleLostEvent.denom EXISTS`;
+const raffleWinEventQuery = () => `tm.event = 'NewBlock' AND bze.burner.RaffleWinnerEvent.denom EXISTS`;
 
 const SUB_ID_RAFFLE_LOST = 10;
 const SUB_ID_RAFFLE_WINNER = 11;
 
-const TYPE_RAFFLE_LOST_EVENT = 'bze.burner.v1.RaffleLostEvent';
-const TYPE_RAFFLE_WINNER_EVENT = 'bze.burner.v1.RaffleWinnerEvent';
+const TYPE_RAFFLE_LOST_EVENT = 'bze.burner.RaffleLostEvent';
+const TYPE_RAFFLE_WINNER_EVENT = 'bze.burner.RaffleWinnerEvent';
 
 class Listener {
     private isStarted: boolean = false;

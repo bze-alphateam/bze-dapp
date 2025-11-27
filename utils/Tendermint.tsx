@@ -25,7 +25,7 @@ export const transformAttributes = (attributes: Attribute[]) => {
     const result: { [key: string]: any } = {};
 
     attributes.forEach(attr => {
-        result[snakeToCamel(attr.key)] = JSON.parse(attr.value);
+        result[snakeToCamel(attr.key)] = attr.value.replace('\"', '').replace('\"', '');
     });
 
     return result;
