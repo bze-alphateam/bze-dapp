@@ -1,5 +1,5 @@
 import {OrderCanceledEvent, OrderExecutedEvent, OrderSavedEvent} from "@bze/bzejs/bze/tradebin/events";
-import {decodeBase64, snakeToCamel} from "./Functions";
+import {snakeToCamel} from "./Functions";
 import {bze} from '@bze/bzejs';
 import {RaffleLostEvent, RaffleWinnerEvent} from "@bze/bzejs/bze/burner/events";
 
@@ -25,9 +25,7 @@ export const transformAttributes = (attributes: Attribute[]) => {
     const result: { [key: string]: any } = {};
 
     attributes.forEach(attr => {
-        const decodedKey = decodeBase64(attr.key);
-        const decodedValue = decodeBase64(attr.value);
-        result[snakeToCamel(decodedKey)] = JSON.parse(decodedValue);
+        result[snakeToCamel(attr.key)] = JSON.parse(attr.value);
     });
 
     return result;

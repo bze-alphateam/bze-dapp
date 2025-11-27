@@ -1,11 +1,11 @@
 import {TendermintEvent} from "@/utils";
 
 export const filterEventsFromWs = (wsData: any, eventType: string, transformer: any): TendermintEvent[] => {
-    if (!wsData.result?.data?.value?.result_end_block?.events) {
+    if (!wsData.result?.data?.value?.finalize_block_events?.events) {
         return [];
     }
 
-    const allEvents = wsData.result.data.value.result_end_block.events;
+    const allEvents = wsData.result.data.value.finalize_block_events.events;
     const result = [];
     for (let i = 0; i < allEvents.length; i++) {
         if (allEvents[i].type !== eventType) {
