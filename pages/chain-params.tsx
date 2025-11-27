@@ -57,7 +57,7 @@ function TradebinModuleParams() {
 
     const fetchParams = async () => {
         let params = await getTradebinParams();
-        if (params.params === undefined) {
+        if (params === undefined) {
             setCreateFee('Unknown');
             setMakerFee('Unknown');
             setTakerFee('Unknown');
@@ -67,11 +67,11 @@ function TradebinModuleParams() {
             return;
         }
 
-        setCreateFee(prettyFee(params.params.createMarketFee));
-        setMakerFee(prettyFee(params.params.marketMakerFee));
-        setTakerFee(prettyFee(params.params.marketTakerFee));
-        setMakerDest(prettyDestination(params.params.makerFeeDestination));
-        setTakerDest(prettyDestination(params.params.takerFeeDestination));
+        setCreateFee(prettyFee(params.createMarketFee));
+        setMakerFee(prettyFee(params.marketMakerFee));
+        setTakerFee(prettyFee(params.marketTakerFee));
+        setMakerDest(prettyDestination(params.makerFeeDestination));
+        setTakerDest(prettyDestination(params.takerFeeDestination));
     }
 
     useEffect(() => {
@@ -125,13 +125,13 @@ function TokenFactoryModuleParams() {
 
     const fetchParams = async () => {
         let params = await getTokenFactoryParams();
-        if (params.params === undefined) {
+        if (params === undefined) {
             setFee('Unknown');
 
             return;
         }
 
-        setFee(prettyFee(params.params.createDenomFee));
+        setFee(prettyFee(`${params.create_denom_fee.amount}${params.create_denom_fee.denom}`));
     }
 
     useEffect(() => {
@@ -157,14 +157,14 @@ function RewardsModuleParams() {
 
     const fetchParams = async () => {
         let params = await getRewardsParams();
-        if (params.params === undefined) {
+        if (params === undefined) {
             setSFee('Unknown');
 
             return;
         }
 
-        setSFee(prettyFee(params.params.createStakingRewardFee));
-        setRFee(prettyFee(params.params.createTradingRewardFee));
+        setSFee(prettyFee(`${params.createStakingRewardFee.amount}${params.createStakingRewardFee.denom}`));
+        setRFee(prettyFee(`${params.createTradingRewardFee.amount}${params.createTradingRewardFee.denom}`));
     }
 
     useEffect(() => {

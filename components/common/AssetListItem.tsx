@@ -1,10 +1,10 @@
 import {Token} from "@/services";
 import {uAmountToAmount} from "@/utils";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import {BaseComponentProps, Box, Button, Stack, Text} from "@interchain-ui/react";
 import {useMemo} from "react";
 import {useRouter} from "next/router";
 import LogoWithFallback from "@/components/common/LogoWithFallback";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 
 export interface CustomAssetListItemProps extends BaseComponentProps {
     token: Token;

@@ -1,8 +1,8 @@
-import {GetBlockByHeightResponseSDKType} from "@bze/bzejs/types/codegen/cosmos/base/tendermint/v1beta1/query";
-import {getRestClient, getRpcURL} from "../Client";
+import {getRestClient, getRpcClient, getRpcURL} from "../Client";
 import Long from "long";
 import {TendermintEvent} from "@/utils";
 import {getFromCache, setInCache} from "@/services/data_provider/cache";
+import {GetBlockByHeightResponseSDKType} from "interchain-query/cosmos/base/tendermint/v1beta1/query";
 
 type FailoverBlockTimes = {
     [key: string]: string;
@@ -31,7 +31,7 @@ export async function getBlockDetailsByHeight(height: Long): Promise<GetBlockByH
         }
 
         const client = await getRestClient();
-        let response = await client.cosmos.base.tendermint.v1beta1.getBlockByHeight({height: height});
+        let response = await client.cosmos.base.tendermint.v1beta1.getBlockByHeight({height: BigInt(height.toString())});
 
         setInCache(cacheKey, JSON.stringify(response), 9999999);
 

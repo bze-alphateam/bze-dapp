@@ -19,12 +19,12 @@ import {DefaultBorderedBox} from "../common";
 import {Box, Button, Divider, Text, TextField} from "@interchain-ui/react";
 import {bze} from '@bze/bzejs';
 import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
-import {AggregatedOrderSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/order";
+import {AggregatedOrderSDKType} from "@bze/bzejs/bze/tradebin/store";
 import {ActiveOrders, MarketPairTokens} from "./ActiveOrders";
 import AddressBalanceListener from "@/services/listener/BalanceListener";
 import {useRouter} from "next/router";
 import {formatUsdAmount, MarketPrices} from "@/services";
-import {FillOrderItem} from "@bze/bzejs/types/codegen/beezee/tradebin/tx";
+import {FillOrderItem} from "@bze/bzejs/bze/tradebin/tx";
 
 export interface OrderFormData {
     index: number|undefined;
@@ -42,7 +42,7 @@ interface OrderFormsProps {
     marketPrices?: MarketPrices;
 }
 
-const {createOrder, fillOrders} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+const {createOrder, fillOrders} = bze.tradebin.MessageComposer.withTypeUrl;
 
 function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: boolean, uAmount: string, uPrice: string) {
     const marketId = marketIdFromDenoms(props.tokens.baseToken.metadata.base, props.tokens.quoteToken.metadata.base);
@@ -402,14 +402,14 @@ export function OrderForms(props: OrderFormsProps) {
 
         setIsLoadingBalances(true);
         const allBalances = await getAddressBalances(address);
-        const bBal = allBalances.balances.find((bal) => bal.denom === props.tokens.baseToken.metadata.base);
+        const bBal = allBalances.balances.find((bal: any) => bal.denom === props.tokens.baseToken.metadata.base);
         if (bBal !== undefined) {
             setBasebalance(uAmountToAmount(bBal.amount, props.tokens.baseTokenDisplayDenom.exponent));
         } else {
             setBasebalance("0");
         }
 
-        const qBal = allBalances.balances.find((bal) => bal.denom === props.tokens.quoteToken.metadata.base);
+        const qBal = allBalances.balances.find((bal: any) => bal.denom === props.tokens.quoteToken.metadata.base);
         if (qBal !== undefined) {
             setQuoteBalance(uAmountToAmount(qBal.amount, props.tokens.quoteTokenDisplayDenom.exponent));
         } else {

@@ -22,7 +22,7 @@ import {DeliverTxResponse} from "@cosmjs/stargate";
 import {useRouter} from "next/router";
 import SelectAssetModal from "@/components/wallet/SelectAssetModal";
 import MarketsList from "@/components/common/MarketList";
-import {MarketSDKType} from "@bze/bzejs/types/codegen/beezee/tradebin/market";
+import {MarketSDKType} from "@bze/bzejs/bze/tradebin/store";
 import {EXCLUDED_MARKETS} from "@/config/verified";
 
 function BuyWithSkip() {
@@ -50,7 +50,7 @@ function BuyWithSkip() {
 }
 
 
-const {createMarket} = bze.tradebin.v1.MessageComposer.withTypeUrl;
+const {createMarket} = bze.tradebin.MessageComposer.withTypeUrl;
 
 interface CreateMarketFormProps {
     onCancel: () => void,
@@ -204,14 +204,14 @@ function CallToActionBox({props}: { props: CallToActionBoxProps }) {
 
     const fetchParams = async () => {
         let params = await getTradebinParams();
-        if (params.params === undefined) {
+        if (params === undefined) {
             setCreateMarketFee('Unknown');
 
             return;
         }
 
         //pretty fee
-        let pFee = prettyFee(params.params.createMarketFee);
+        let pFee = prettyFee(params.createMarketFee);
         setCreateMarketFee(`${pFee} Required`);
         setFee(pFee);
     }
@@ -488,7 +488,7 @@ export default function Home() {
     const fetchList = async () => {
         const [resp, tokens, tick] = await Promise.all([getAllMarkets(), getAllSupplyTokens(), getAllTickers()]);
         setAllTokens(tokens);
-        const filteredMarkets = resp.market.filter((market) => !EXCLUDED_MARKETS[marketIdFromDenoms(market.base, market.quote)]);
+        const filteredMarkets = resp.market.filter((market: MarketSDKType) => !EXCLUDED_MARKETS[marketIdFromDenoms(market.base, market.quote)]);
         setList(filteredMarkets);
         setTickers(tick);
         setLoading(false);

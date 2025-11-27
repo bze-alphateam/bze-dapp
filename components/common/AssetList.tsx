@@ -1,6 +1,6 @@
 import AssetListItem, {CustomAssetListItemProps} from "./AssetListItem";
 import {AssetListItem as InterchainAssetListItem, BaseComponentProps, Box, Stack, Text} from "@interchain-ui/react";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 
 interface CustomAssetListProps extends BaseComponentProps {
     list: CustomAssetListItemProps[];
@@ -47,8 +47,8 @@ export default function AssetList(props: CustomAssetListProps) {
                                     showWithdraw={item.showWithdraw}
                                     onDeposit={() => item?.onDeposit?.()}
                                     onWithdraw={() => item?.onWithdraw?.()}
-                                    withdrawLabel={item.withdrawLabel ?? InterchainAssetListItem.defaultProps.withdrawLabel}
-                                    depositLabel={item.depositLabel ?? InterchainAssetListItem.defaultProps.depositLabel}
+                                    withdrawLabel={item.withdrawLabel ?? "withdraw"}
+                                    depositLabel={item.depositLabel ?? "deposit"}
                                 />
                             </Box>
                         );

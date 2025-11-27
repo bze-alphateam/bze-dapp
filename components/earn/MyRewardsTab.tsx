@@ -7,7 +7,6 @@ import {
     StakingRewardDetailsBoxRow
 } from "@/components";
 import {useEffect, useState} from "react";
-import {StakingRewardSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward";
 import {getAllSupplyTokens, getHourEpochInfo, Token} from "@/services";
 import {SearchInput} from "@/components/common/Input";
 import {useToast, useTx} from "@/hooks";
@@ -21,21 +20,24 @@ import BigNumber from "bignumber.js";
 import {bze} from '@bze/bzejs';
 import {useChain} from "@cosmos-kit/react";
 import {getAddressStakingRewards, resetStakingRewardsCache} from "@/services/data_provider/StakingReward";
-import {DenomUnitSDKType} from "@bze/bzejs/types/codegen/cosmos/bank/v1beta1/bank";
 import WalletConnectCallout from "@/components/wallet/WalletCallout";
-import {StakingRewardParticipantSDKType} from "@bze/bzejs/types/codegen/beezee/rewards/staking_reward_participant";
-import {PendingUnlockParticipantSDKType} from "@bze/bzejs/src/codegen/beezee/rewards/staking_reward_participant";
 import Long from 'long';
 import {getAddressBalances, removeBalancesCache} from "@/services/data_provider/Balances";
-import {CoinSDKType} from "@bze/bzejs/types/codegen/cosmos/base/v1beta1/coin";
 import {
     amountChangeHandler,
     createStakingMessage,
     getStakingAmountErrors,
     getStakingTokenBalance
 } from "@/components/earn/common";
+import {
+    PendingUnlockParticipantSDKType,
+    StakingRewardParticipantSDKType,
+    StakingRewardSDKType
+} from "@bze/bzejs/bze/rewards/store";
+import {DenomUnitSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
+import {CoinSDKType} from "interchain-query/cosmos/base/v1beta1/coin";
 
-const {joinStaking, exitStaking, claimStakingRewards} = bze.v1.rewards.MessageComposer.withTypeUrl;
+const {joinStaking, exitStaking, claimStakingRewards} = bze.rewards.MessageComposer.withTypeUrl;
 
 interface MyRewardDetailProps extends StakingRewardDetailProps {
     participant?: StakingRewardParticipantSDKType;
