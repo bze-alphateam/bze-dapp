@@ -64,7 +64,7 @@ export default function Burner() {
                                 e.currentTarget.style.boxShadow = 'none';
                             }}
                         >
-                            Visit New Burner Platform
+                            Visit New Burner App
                         </button>
                     </a>
                 </Box>
