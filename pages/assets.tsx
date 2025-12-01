@@ -1,5 +1,5 @@
 import {Box, Divider, Text} from "@interchain-ui/react";
-import {DefaultBorderedBox, Layout} from "@/components";
+import {DefaultBorderedBox, DexBanner, Layout} from "@/components";
 import {SearchInput} from "@/components/common/Input";
 import AssetList from "@/components/common/AssetList";
 import {useEffect, useState} from "react";
@@ -153,7 +153,7 @@ function TokenList() {
                     <AssetList
                         balances={userBalances}
                         list={
-                            filtered.map((token, i) => {
+                            filtered.map((token) => {
                                 const showWithdraw = () => {
                                     return isIBCType(token.metadata.base) && token.ibcTrace !== undefined;
                                 }
@@ -199,6 +199,7 @@ function TokenList() {
 export default function Assets() {
     return (
         <Layout>
+            <DexBanner />
             <Box display='block' flexDirection={'row'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>BZE Blockchain Assets</Text>

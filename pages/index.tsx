@@ -1,5 +1,5 @@
 import {Box, Button, Callout, Divider, FieldLabel, Text} from "@interchain-ui/react";
-import {DefaultBorderedBox, Layout, TooltippedText} from "@/components";
+import {DefaultBorderedBox, DexBanner, Layout, TooltippedText} from "@/components";
 import {SearchInput} from "@/components/common/Input";
 import {useEffect, useState} from "react";
 import {
@@ -454,7 +454,7 @@ function MarketsListing(props: MarketListProps) {
                     <MarketsList
                         tickers={props.tickers}
                         list={
-                            filtered.sort(sortMarketsCallback).map((market, i) => {
+                            filtered.sort(sortMarketsCallback).map((market) => {
                                 return {
                                     onWithdraw: () => {
                                         router.push({
@@ -512,6 +512,7 @@ export default function Home() {
 
     return (
         <Layout>
+            <DexBanner />
             <Box display='block' flexDirection={'row'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>Trade</Text>

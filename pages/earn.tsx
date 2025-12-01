@@ -1,5 +1,5 @@
 import {Box, Button, Tabs, Text} from "@interchain-ui/react";
-import {DefaultBorderedBox, Layout, MyRewards, StakingRewards} from "@/components";
+import {DefaultBorderedBox, DexBanner, Layout, MyRewards, StakingRewards} from "@/components";
 import {useEffect, useState} from "react";
 import Image from "next/image";
 import {useRouter} from "next/router";
@@ -33,6 +33,7 @@ export default function Earn() {
 
     return (
         <Layout>
+            <DexBanner />
             <Box display='flex' flexDirection={'row'} alignItems={'center'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>Earn Crypto</Text>
