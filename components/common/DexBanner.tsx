@@ -1,6 +1,7 @@
 import {Box, Text} from "@interchain-ui/react";
 
 export default function DexBanner() {
+    return (<></>)
     return (
         <Box
             display='flex'
