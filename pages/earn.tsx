@@ -33,7 +33,7 @@ export default function Earn() {
 
     return (
         <Layout>
-            <DexBanner />
+            <DexBanner url={"https://dex.getbze.com/staking"}/>
             <Box display='flex' flexDirection={'row'} alignItems={'center'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>Earn Crypto</Text>

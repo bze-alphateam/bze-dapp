@@ -199,7 +199,7 @@ function TokenList() {
 export default function Assets() {
     return (
         <Layout>
-            <DexBanner />
+            <DexBanner url={"https://dex.getbze.com/assets"}/>
             <Box display='block' flexDirection={'row'}>
                 <Box marginBottom={'$12'} ml='$6'>
                     <Text as="h1" fontSize={'$2xl'}>BZE Blockchain Assets</Text>

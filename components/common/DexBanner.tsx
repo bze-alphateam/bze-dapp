@@ -1,7 +1,6 @@
 import {Box, Text} from "@interchain-ui/react";
 
-export default function DexBanner() {
-    return (<></>)
+export default function DexBanner({url}: {url?: string}) {
     return (
         <Box
             display='flex'
@@ -22,7 +21,7 @@ export default function DexBanner() {
             </Box>
             <Box>
                 <a
-                    href="https://dex.getbze.com"
+                    href={url ?? "https://dex.getbze.com"}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{textDecoration: 'none'}}

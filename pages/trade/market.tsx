@@ -1,5 +1,5 @@
 import {Box, Button, Divider, Skeleton, Text} from "@interchain-ui/react";
-import {DefaultBorderedBox, Layout} from "@/components";
+import {DefaultBorderedBox, DexBanner, Layout} from "@/components";
 import {useRouter} from "next/router";
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
@@ -471,6 +471,7 @@ export default function MarketPair() {
 
     return (
         <Layout>
+            <DexBanner url={marketId === "" ? "https://dex.getbze.com/exchange" : `https://dex.getbze.com/exchange/market?id=${marketId}`}/>
             <Box display='block' flexDirection={'row'}>
                 <Box marginBottom={'$6'} ml='$6'>
                     <Box flex={1} display={'flex'} flexDirection={{mobile: "column", desktop: "row"}} gap={"$2"} alignItems={'center'}>
