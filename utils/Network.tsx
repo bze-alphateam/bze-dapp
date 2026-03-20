@@ -6,10 +6,9 @@ let cachedChain: Map<string, any> = new Map();
 
 const CHAIN_REGISTRY_ASSETS_CACHE_KEY = "chain_registry:assets";
 const CHAIN_REGISTRY_CACHE_TTL = 30 * 60; //30 minutes
-const CHAIN_REGISTRY_CACHE_TTL_ON_ERROR = 1 * 60; //1 minute
+const CHAIN_REGISTRY_CACHE_TTL_ON_ERROR = 60; //1 minute
 
 export const MAINNET_CHAIN_ID = 'beezee-1';
-export const TESTNET_CHAIN_ID = 'bzetestnet-2';
 
 const getChainRegistryAssetsUrl = (): string => {
     return process.env.NEXT_PUBLIC_CHAIN_REGISTRY_ASSETS_URL ?? "";
@@ -102,7 +101,7 @@ export async function getChain() {
 }
 
 export function getMinDenom(): string {
-    return isTestnet() ? 'utbz' : 'ubze';
+    return 'ubze';
 }
 
 export function getChainName(): string {

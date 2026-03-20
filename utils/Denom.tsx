@@ -1,6 +1,6 @@
 import {MAINNET_CHAIN_ID} from "./Network";
 
-export const TESTNET_UDENOM = 'utbz';
+export const TESTNET_UDENOM = 'ubze';
 export const TESTNET_DENOM = 'TBZE';
 
 export const MAINNET_UDENOM = 'ubze';
