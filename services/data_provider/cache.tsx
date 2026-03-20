@@ -66,5 +66,5 @@ export const setKeyExpiry = (key: string, expiry: Date): boolean => {
 
 
 const prefixedKey = (key: string): string => {
-    return `p9:${key}`;
+    return `p10:${key}`;
 }

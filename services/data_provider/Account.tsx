@@ -6,11 +6,7 @@ const MODULE_ADDRESS_KEY = 'auth:module:address:';
 const BALANCES_CACHE_TTL = 60 * 60 * 48; //48 hours
 
 function getHardcodedBurnerAddress(): string {
-    if (process.env.NEXT_PUBLIC_CHAIN_ID === 'beezee-1') {
-        return 'bze1v7uw4xhrcv0vk7qp8jf9lu3hm5d8uu5yjp5qun';
-    }
-
-    return 'testbz1v7uw4xhrcv0vk7qp8jf9lu3hm5d8uu5ysekt99';
+    return 'bze1v7uw4xhrcv0vk7qp8jf9lu3hm5d8uu5yjp5qun';
 }
 
 export async function getModuleAddress(module: string): Promise<string> {
