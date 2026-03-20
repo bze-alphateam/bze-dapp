@@ -61,8 +61,8 @@ const MAINNET_CHAIN_INFO_FALLBACK = {
 };
 
 const TESTNET_CHAIN_INFO_FALLBACK = {
-    "chainId": "bzetestnet-2",
-    "chainName": "BeeZee Testnet",
+    "chainId": "bzetestnet-3",
+    "chainName": "BeeZee Testnet 3",
     "chainSymbolImageUrl": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/bzetestnet/chain.png",
     "rpc": "https://testnet-rpc.getbze.com",
     "rest": "https://testnet.getbze.com",
@@ -73,43 +73,33 @@ const TESTNET_CHAIN_INFO_FALLBACK = {
     },
     "stakeCurrency": {
         "coinDenom": "TBZE",
-        "coinMinimalDenom": "utbz",
+        "coinMinimalDenom": "ubze",
         "coinDecimals": 6,
-        "coinGeckoId": "bzedge",
         "coinImageUrl": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/bzetestnet/chain.png"
     },
     "bip44": {
         "coinType": 118
     },
     "bech32Config": {
-        "bech32PrefixAccAddr": "testbz",
-        "bech32PrefixAccPub": "testbzpub",
-        "bech32PrefixValAddr": "testbzvaloper",
-        "bech32PrefixValPub": "testbzvaloperpub",
-        "bech32PrefixConsAddr": "testbzvalcons",
-        "bech32PrefixConsPub": "testbzvalconspub"
+        "bech32PrefixAccAddr": "bze",
+        "bech32PrefixAccPub": "bzepub",
+        "bech32PrefixValAddr": "bzevaloper",
+        "bech32PrefixValPub": "bzevaloperpub",
+        "bech32PrefixConsAddr": "bzevalcons",
+        "bech32PrefixConsPub": "bzevalconspub"
     },
     "currencies": [
         {
             "coinDenom": "TBZE",
-            "coinMinimalDenom": "utbz",
+            "coinMinimalDenom": "ubze",
             "coinDecimals": 6,
-            "coinGeckoId": "bzedge",
             "coinImageUrl": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/bzetestnet/chain.png"
-        },
-        {
-            "coinDenom": "TVDL",
-            "coinMinimalDenom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
-            "coinDecimals": 6,
-            "coinGeckoId": "vidulum",
-            "coinImageUrl": "https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/bzetestnet/factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum.png"
         }
     ],
     "feeCurrencies": [{
         "coinDenom": "TBZE",
-        "coinMinimalDenom": "utbz",
+        "coinMinimalDenom": "ubze",
         "coinDecimals": 6,
-        "coinGeckoId": "bzedge",
         "gasPriceStep": {
             "low": 0.001,
             "average": 0.01,
@@ -156,7 +146,7 @@ async function getKeplrTestnetChainInfo() {
         return JSON.parse(cachedData);
     }
 
-    const url = 'https://raw.githubusercontent.com/faneaatiku/keplr-chain-registry/main/cosmos/bzetestnet.json';
+    const url = 'https://raw.githubusercontent.com/faneaatiku/keplr-chain-registry/refs/heads/patch-2/cosmos/bzetestnet.json';
     try {
         const response = await fetch(url);
         if (!response.ok) {

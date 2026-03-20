@@ -1,18 +1,17 @@
-const TESTNET_CHAIN_ID = 'bzetestnet-2';
+const TESTNET_CHAIN_ID = 'bzetestnet-3';
 const TESTNET_COIN_DENOM = "TBZE";
-const TESTNET_COIN_MIN_DENOM = "utbz";
-const BZE_PREFIX_TESTNET = "testbz";
+const TESTNET_COIN_MIN_DENOM = "ubze";
+const BZE_PREFIX_TESTNET = "bze";
 
 const BZE_TESTNET_2_SUGGEST_CHAIN = {
     chain_id: TESTNET_CHAIN_ID,
-    chain_name: "BeeZee Testnet",
-    pretty_name: 'BeeZee Testnet',
+    chain_name: "BeeZee Testnet 3",
+    pretty_name: 'BeeZee Testnet 3',
     network_type: 'mainnet',
     chain_type: "cosmos",
     bech32_prefix: BZE_PREFIX_TESTNET,
     status: "live",
     slip44: 118,
-
     logo_URIs: {
         svg: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.svg',
     },
@@ -952,128 +951,50 @@ export const networks = {
                         "coingecko_id": "bzedge"
                     },
                     {
-                        "description": "BitcoinZ wrapped on BZE network",
+                        "description": "Lumen",
                         "type_asset": "sdk.coin",
                         "denom_units": [
                             {
-                                "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/bitcoinz",
-                                "exponent": 0
+                                "denom": "ibc/9DA252F9F9C86132CC282EA431DFB7DE7729501F6DC9A3E0F50EC8C6EE380CC7",
+                                "exponent": 0,
+                                "aliases": []
                             },
                             {
-                                "denom": "BTCZ",
-                                "exponent": 8
-                            }
+                                "denom": "LMN",
+                                "exponent": 6,
+                                "aliases": []
+                            },
                         ],
-                        "base": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/bitcoinz",
-                        "name": "BitcoinZ",
-                        "display": "BTCZ",
-                        "symbol": "BTCZ",
+                        "base": "ibc/9DA252F9F9C86132CC282EA431DFB7DE7729501F6DC9A3E0F50EC8C6EE380CC7",
+                        "display": "LMN",
+                        "name": "Lumen",
+                        "symbol": "LMN",
                         "logo_URIs": {
-                            "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/beezee/images/bze.svg",
-                            "png": "https://getbtcz.com/wp-content/uploads/2020/05/BTCZ-LOGO-fresh.png"
-                        },
-                        "coingecko_id": "bitcoinz"
-                    },
-                    {
-                        "description": "A test denomination created by Faneatiku",
-                        "type_asset": "sdk.coin",
-                        "denom_units": [
-                            {
-                                "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku1",
-                                "exponent": 0,
-                                "aliases": []
-                            },
-                            {
-                                "denom": "ALPHA",
-                                "exponent": 6,
-                                "aliases": []
-                            }
-                        ],
-                        "base": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku1",
-                        "display": "ALPHA",
-                        "name": "Alpha",
-                        "symbol": "ALP"
-                    },
-                    {
-                        "description": "A test denomination created by Faneatiku",
-                        "type_asset": "sdk.coin",
-                        "denom_units": [
-                            {
-                                "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku2",
-                                "exponent": 0,
-                                "aliases": []
-                            },
-                            {
-                                "denom": "BETA",
-                                "exponent": 6,
-                                "aliases": []
-                            }
-                        ],
-                        "base": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku2",
-                        "display": "BETA",
-                        "name": "Beta",
-                        "symbol": "BETA"
-                    },
-                    {
-                        "description": "Stefan's token",
-                        "type_asset": "sdk.coin",
-                        "denom_units": [
-                            {
-                                "denom": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku3",
-                                "exponent": 0,
-                                "aliases": []
-                            }
-                        ],
-                        "base": "factory/testbz1w9vva0muctcrmd9xgret9x4wasw2rrflsdkwfs/faneatiku3",
-                        "display": "STF",
-                        "name": "STeF",
-                        "symbol": "STF"
-                    },
-                    {
-                        "description": "Celestia",
-                        "type_asset": "sdk.coin",
-                        "denom_units": [
-                            {
-                                "denom": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
-                                "exponent": 0,
-                                "aliases": []
-                            },
-                            {
-                                "denom": "TIA",
-                                "exponent": 6,
-                                "aliases": []
-                            },
-                        ],
-                        "base": "ibc/2537300C916FD9DFBE5995327C56667963FD29A2272A4EC6A90C01D753F4FCFE",
-                        "display": "TIA",
-                        "name": "Celestia",
-                        "symbol": "TIA",
-                        "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/celestia/images/celestia.png"
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/lumen/images/lmn.png"
                         }
                     },
                     {
-                        "description": "Vidulum token",
+                        "description": "Vidulum app token",
                         "type_asset": "sdk.coin",
                         "denom_units": [
                             {
-                                "denom": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
+                                "denom": "factory/bze1z3mkcr2jz424w6m49frgjmy9uhlrx69phqwg3l/vidulum",
                                 "exponent": 0,
                                 "aliases": []
                             },
                             {
-                                "denom": "TVDL",
+                                "denom": "VDL",
                                 "exponent": 6,
                                 "aliases": []
                             },
                         ],
-                        "base": "factory/testbz1z3mkcr2jz424w6m49frgjmy9uhlrx69p4cvrgf/vidulum",
-                        "display": "TVDL",
+                        "base": "factory/bze1z3mkcr2jz424w6m49frgjmy9uhlrx69phqwg3l/vidulum",
+                        "display": "VDL",
                         "name": "Vidulum",
-                        "symbol": "TVDL",
+                        "symbol": "VDL",
                         "logo_URIs": {
-                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/vidulum/images/vdl.png"
-                        },
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/refs/heads/master/beezee/images/vdl.png"
+                        }
                     },
                 ]
             }
