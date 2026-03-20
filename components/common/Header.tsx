@@ -1,6 +1,7 @@
 import {Box, Button, Icon, Text, useColorModeValue, useTheme,} from "@interchain-ui/react";
 import {Wallet} from "../wallet";
 import Image from "next/image";
+import {isTestnet} from "@/utils";
 
 export function Header() {
     const {theme, setTheme} = useTheme();
@@ -16,6 +17,7 @@ export function Header() {
                 <Image src={useColorModeValue("/beezee_dark.svg", "/beezee_light.svg")} alt="beezee blockchain"
                        width={178} height={40} priority={true}/>
                 <Text fontWeight={"$bold"} color={useColorModeValue("#179ad4", "#13c1e1")}>DEX</Text>
+                {isTestnet() && <Text fontWeight={"$bold"} color={"#d35637"}>TESTNET</Text>}
                 <Box display="flex" justifyContent="end" gap={5} flex={1}>
                     <Wallet/>
                     <Box marginX={"$6"}>
