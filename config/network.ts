@@ -909,6 +909,43 @@ export const networks = {
                             "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.png",
                             "svg": "https://raw.githubusercontent.com/cosmos/chain-registry/master/atomone/images/atomone.svg"
                         }
+                    },
+                    {
+                        "description": "Lumen network native coin",
+                        "type_asset": "ics20",
+                        "denom_units": [
+                            {
+                                "denom": "ibc/693DDB2D9B4260D67C8136C22D837F37488E0FBD81857D8E9C6022332EA26E33",
+                                "exponent": 0,
+                                "aliases": []
+                            },
+                            {
+                                "denom": "LMN",
+                                "exponent": 6,
+                                "aliases": []
+                            }
+                        ],
+                        "base": "ibc/693DDB2D9B4260D67C8136C22D837F37488E0FBD81857D8E9C6022332EA26E33",
+                        "display": "LMN",
+                        "name": "Lumen",
+                        "symbol": "LMN",
+                        "logo_URIs": {
+                            "png": "https://raw.githubusercontent.com/cosmos/chain-registry/master/lumen/images/lmn.png"
+                        },
+                        "traces": [
+                            {
+                                "type": "ibc",
+                                "counterparty": {
+                                    "chain_name": "lumen",
+                                    "base_denom": "ulmn",
+                                    "channel_id": "channel-0"
+                                },
+                                "chain": {
+                                    "channel_id": "channel-10",
+                                    "path": "transfer/channel-10/ulmn"
+                                }
+                            }
+                        ]
                     }
                 ]
             }
