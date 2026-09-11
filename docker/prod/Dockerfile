@@ -1,14 +1,24 @@
-# Production image for app.getbze.com (the v1 BZE dapp). Build from the repo
-# root:  docker build -f docker/prod/Dockerfile .
-# Mainnet-only: .env.mainnet.dist is baked in at build time (all values are
-# public NEXT_PUBLIC_* — no secrets).
+# Production image for app.getbze.com (the v1 BZE dapp). Mainnet-only: CI
+# builds it on every push to main. Build from the repo root:
+#   docker build -f docker/prod/Dockerfile --secret id=build_env,src=.env.dist .
+#
+# Build-time env: Next inlines the NEXT_PUBLIC_* values of `.env` into the
+# client bundle at build time. That file is .dockerignore'd and comes in as
+# the BuildKit secret `build_env`, mounted as /app/.env for the build step
+# only — it is never in the build context, an image layer or the build log.
+# CI mounts the production values from the private deploy repo
+# (bze-deploy/app.getbze.com/build.env); the command above uses the dev
+# template for a local build. All values are public NEXT_PUBLIC_* — no secrets.
 
 FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /app
 COPY . .
 RUN yarn install --frozen-lockfile
-RUN cp .env.mainnet.dist .env && yarn build
+# Next's output tracing copies .env into the standalone bundle — drop that copy
+# so the env file never reaches the final stage.
+RUN --mount=type=secret,id=build_env,target=/app/.env,required=true \
+    yarn build && rm -f .next/standalone/.env
 
 FROM node:24-alpine
 ENV NODE_ENV=production \
