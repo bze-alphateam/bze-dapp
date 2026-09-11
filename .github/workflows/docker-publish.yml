@@ -1,20 +1,37 @@
 name: docker-publish
 
-# Build the production image and push it to GHCR on every push to main.
-# Image tag = commit short-SHA (pinned versions everywhere — no "latest").
+# Build the production image, push it to GHCR, then deploy it: every push to
+# main -> ghcr.io/bze-alphateam/bze-dapp:<sha8> (commit short-SHA, pinned
+# versions everywhere — no "latest") -> app.getbze.com.
+#
+# The build-time env (the NEXT_PUBLIC_* values Next inlines into the bundle) is NOT
+# in this repo: it is app.getbze.com/build.env in the private deploy repo
+# (bze-alphateam/bze-deploy). The job checks that dir out with the
+# DEPLOY_REPO_TOKEN org secret and hands the file to `docker build` as a
+# BuildKit secret — it never enters the build context, an image layer or the
+# log. (This workflow runs on push only, so fork PRs never see the token. Do
+# not add a pull_request trigger.)
+#
+# After a successful push — on push events only; a workflow_dispatch build
+# never deploys — the job dispatches the deploy repo's `deploy` workflow for
+# app.getbze.com and waits for it: a failed release on the server = red job here.
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch:   # rebuild + push only, no deploy
 
 permissions:
   contents: read
   packages: write
-  pull-requests: write   # comment the release command on the merged PR
+  pull-requests: write   # comment the deploy info on the merged PR
 
 concurrency:
   group: docker-publish
   cancel-in-progress: false
+
+env:
+  DEPLOY_REPO: bze-alphateam/bze-deploy
+  DEPLOY_DIR: app.getbze.com   # the target's dir in the deploy repo = ~/apps/<dir> on the server
 
 jobs:
   build-push:
@@ -28,6 +45,29 @@ jobs:
         # it can be derived from any commit listing without asking git.
         run: echo "sha=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_OUTPUT"
 
+      # Sparse checkout of the one target dir, into deploy/ (excluded from the
+      # docker build context by .dockerignore). The token is not persisted in
+      # the checkout's git config.
+      - name: Check out build env from the deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: bze-alphateam/bze-deploy
+          token: ${{ secrets.DEPLOY_REPO_TOKEN }}
+          path: deploy
+          sparse-checkout: ${{ env.DEPLOY_DIR }}
+          persist-credentials: false
+
+      - name: Check build env is present
+        env:
+          BUILD_ENV: deploy/${{ env.DEPLOY_DIR }}/build.env
+        # presence and shape only — the file is never printed
+        run: |
+          if [ ! -s "$BUILD_ENV" ]; then
+            echo "::error::$BUILD_ENV is missing or empty in the deploy repo"
+            exit 1
+          fi
+          echo "using $BUILD_ENV ($(grep -c '^NEXT_PUBLIC_' "$BUILD_ENV") NEXT_PUBLIC_* values)"
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -36,47 +76,89 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # No layer cache on purpose: a secret mount is not part of BuildKit's
+      # cache key, so a cached build layer could ship stale build.env values
+      # (e.g. a rebuild of the same commit after the deploy repo changed).
       - uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/prod/Dockerfile
           push: true
+          secret-files: |
+            build_env=./deploy/${{ env.DEPLOY_DIR }}/build.env
           tags: ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.sha }}
-          cache-from: type=gha
-          cache-to: type=gha
 
       - name: Summary
         run: echo "Pushed ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
 
-      # Runs only after the push succeeded, so the comment doubles as the
-      # "image is ready" signal. Direct pushes to main have no PR — skipped.
-      - name: Comment release command on the merged PR
+      # `gh workflow run` returns no run id, so the run is found by its title
+      # (the deploy workflow sets run-name: deploy <app> <tag>) among the runs
+      # created after this dispatch (minus a minute of clock skew). Waiting on
+      # it makes a failed release on the server a red job here.
+      - name: Deploy (dispatch the deploy repo's workflow and wait for it)
         if: github.event_name == 'push'
+        id: deploy
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+          APP: ${{ env.DEPLOY_DIR }}
+          TAG: ${{ steps.vars.outputs.sha }}
+          SOURCE: ${{ github.repository }}@${{ github.sha }}
+        run: |
+          set -euo pipefail
+          TITLE="deploy $APP $TAG"
+          SINCE=$(date -u -d '-1 minute' +%Y-%m-%dT%H:%M:%SZ)
+          export TITLE SINCE
+          gh workflow run deploy.yml -R "$DEPLOY_REPO" -f app="$APP" -f tag="$TAG" -f source="$SOURCE"
+          run_id=""
+          for _ in $(seq 1 20); do
+            sleep 5
+            run_id=$(gh run list -R "$DEPLOY_REPO" --workflow deploy.yml -L 30 \
+              --json databaseId,displayTitle,createdAt \
+              --jq '[.[] | select(.displayTitle == env.TITLE and .createdAt >= env.SINCE)] | sort_by(.createdAt) | last | .databaseId // empty')
+            [ -n "$run_id" ] && break
+          done
+          if [ -z "$run_id" ]; then
+            echo "::error::dispatched '$TITLE' but no matching run appeared in $DEPLOY_REPO within 100s"
+            exit 1
+          fi
+          url="https://github.com/$DEPLOY_REPO/actions/runs/$run_id"
+          echo "run_url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deploy run: $url"
+          if gh run watch "$run_id" -R "$DEPLOY_REPO" --interval 10 --exit-status; then
+            echo "✅ deploy \`$APP\` \`$TAG\`: $url" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "❌ deploy \`$APP\` \`$TAG\` FAILED: $url" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::deploy of $APP $TAG failed — see $url (the previous tag stays live)"
+            exit 1
+          fi
+
+      # Runs whether the deploy passed or failed, never when the build/push
+      # itself failed. Direct pushes to main have no PR — skipped.
+      - name: Comment deploy info on the merged PR
+        if: github.event_name == 'push' && !cancelled() && steps.deploy.outcome != 'skipped'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.vars.outputs.sha }}
           BEFORE: ${{ github.event.before }}
+          APP: ${{ env.DEPLOY_DIR }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.run_url }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
         run: |
           pr=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].number')
           if [ -n "$pr" ] && [ "$pr" != "null" ]; then
-            # fenced blocks (not inline code) so GitHub renders a copy button
-            body="📦 Image published: \`ghcr.io/${{ github.repository }}:${TAG}\`
-
-          Deploy:
-          \`\`\`bash
-          ./release.sh ${TAG}
-          \`\`\`"
             # previous main head = the previous build's tag; the usual rollback
             # target, but releases.log on the server is what's actually live
             prev=$(echo "$BEFORE" | cut -c1-8)
-            if [ -n "$prev" ] && [ "$prev" != "00000000" ]; then
-              body="$body
+            [ -n "$prev" ] && [ "$prev" != "00000000" ] || prev="an older tag"
+            # fenced blocks (not inline code) so GitHub renders a copy button
+            body="📦 Published \`ghcr.io/${{ github.repository }}:${TAG}\`.
 
-          Rollback (previous build):
+          🚀 Deploys are push-based: this build dispatched a \`deploy ${APP} ${TAG}\` run in the deploy repo and waited for it (a red deploy run = red build job): ${DEPLOY_URL:-not found} (${DEPLOY_OUTCOME}).
+
+          Rollback / manual deploy: re-run that workflow (https://github.com/${DEPLOY_REPO}/actions/workflows/deploy.yml) with the previous build \`${prev}\` or any older tag, or on the server from the app's deploy dir:
           \`\`\`bash
-          ./release.sh ${prev}
+          ./release.sh ${TAG}
           \`\`\`"
-            fi
             gh pr comment "$pr" -R "${{ github.repository }}" --body "$body"
           else
             echo "no PR associated with ${{ github.sha }}, skipping comment"
