@@ -15,6 +15,15 @@ a {
   box-sizing: border-box;
 }
 
+/* iOS Safari zooms the page when a focused field's text is under 16px and never zooms back. */
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
