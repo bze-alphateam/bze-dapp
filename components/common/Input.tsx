@@ -50,6 +50,8 @@ export function SearchInput(props: SearchInputProps) {
                     border: 'none',
                     outline: 'none',
                     margin: 10,
+                    // Lets the box shrink on a phone: `size` is in characters, so 16px text makes it wider.
+                    minWidth: 0,
                     caretColor: 'gray',
                     color: textColor,
                 }}
