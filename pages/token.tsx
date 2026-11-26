@@ -1,7 +1,7 @@
 import {DefaultBorderedBox, Layout, TooltippedText, WalletBalances} from "@/components";
 import {
     getAllSupplyTokens, getDenomType,
-    getTokenAdminAddress,
+    getTokenAuthority,
     getTokenChainMetadata,
     getTokenDisplayDenom,
     getTokenSupply, isFactoryType, isIBCType,
@@ -30,12 +30,25 @@ import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 interface TokenOwnershipProps {
     admin: string;
+    mintable: boolean;
     metadata: {
         base: string;
     }
 }
 
 const {changeAdmin} = bze.tokenfactory.MessageComposer.withTypeUrl;
+
+function ownershipCopy(admin: string, mintable: boolean): string {
+    if (admin === "") {
+        return "The creator of this token gave up on the ownership. Tokens can NOT be minted anymore and the metadata can NOT be modified.";
+    }
+
+    if (!mintable) {
+        return "Minting is turned off for this token for good: the supply is fixed. This address can still burn tokens and change token metadata. Proceed with caution.";
+    }
+
+    return "This address has the power to mint, burn tokens and change token metadata. Proceed with caution.";
+}
 
 function TokenOwnership({props}: { props: TokenOwnershipProps }) {
     const [admin, setAdmin] = useState(props.admin);
@@ -144,7 +157,7 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
                     <Box mt='$6'>
                         <Text fontSize={'$sm'} textAlign={'center'}
                               color={admin !== "" ? '$textDanger' : '$textSuccess'}
-                              fontWeight={'$thin'}>{admin !== "" ? "This address has the power to mint, burn tokens and change token metadata. Proceed with caution." : "The creator of this token gave up on the ownership. Tokens can NOT be minted anymore and the metadata can NOT be modified."}</Text>
+                              fontWeight={'$thin'}>{ownershipCopy(admin, props.mintable)}</Text>
                     </Box>
                 </Box>
             </Box>
@@ -203,6 +216,7 @@ interface TokenSupplyProps {
         display: string;
     },
     admin: string;
+    mintable: boolean;
 }
 
 function TokenSupply({props}: { props: TokenSupplyProps }) {
@@ -386,7 +400,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
                         {showBurnButton && <Button size="sm" intent="primary" onClick={() => {
                             onBurnClick()
                         }} isLoading={submitPending} disabled={!canMint}>Burn</Button>}
-                        {showMintButton && <Button size="sm" intent="primary" onClick={() => {
+                        {showMintButton && props.mintable && <Button size="sm" intent="primary" onClick={() => {
                             onMintClick()
                         }} isLoading={submitPending} disabled={!canMint}>Mint</Button>}
                     </Box>
@@ -686,6 +700,7 @@ export default function Token() {
     const [loading, setLoading] = useState(true);
     const [chainMetadata, setChainMetadata] = useState<MetadataSDKType>();
     const [admin, setAdmin] = useState('');
+    const [mintable, setMintable] = useState(false);
     const [logo, setLogo] = useState<string|undefined>();
     const [token, setToken] = useState<Token|undefined>();
 
@@ -732,8 +747,9 @@ export default function Token() {
             return;
         }
 
-        const admin = await getTokenAdminAddress(denom);
-        setAdmin(admin);
+        const authority = await getTokenAuthority(denom);
+        setAdmin(authority.admin);
+        setMintable(authority.mintable);
     }
 
     const onMetadataUpdate = async (denom: string) => {
@@ -773,8 +789,8 @@ export default function Token() {
                     }}/>
                     <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
                         <Box flexDirection={'row'} flex={1}>
-                            <TokenSupply props={{metadata: chainMetadata, admin: admin}}/>
-                            {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin}}/>)}
+                            <TokenSupply props={{metadata: chainMetadata, admin: admin, mintable: mintable}}/>
+                            {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin, mintable: mintable}}/>)}
                             <TokenMarkets props={{denom: chainMetadata.base}}/>
                             {address && token && <WalletBalances props={{token: token}} />}
                         </Box>

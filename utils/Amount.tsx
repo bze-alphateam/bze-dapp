@@ -21,14 +21,26 @@ export function uAmountToBigNumberAmount(amount: string | number | BigNumber, no
         .decimalPlaces(noOfDecimals || 6)
 }
 
+// Chain amounts are integers: anything beyond the token's exponent is cut off (never rounded up).
 export function amountToBigNumberUAmount(amount: string | number | BigNumber, noOfDecimals: number): BigNumber {
     return toBigNumber(amount)
         .shiftedBy(noOfDecimals)
-        .decimalPlaces(noOfDecimals || 6);
+        .decimalPlaces(0, BigNumber.ROUND_DOWN);
 }
 
 export function amountToUAmount(amount: string | number | BigNumber, noOfDecimals: number): string {
-    return amountToBigNumberUAmount(amount, noOfDecimals).toString();
+    return toCanonicalInteger(amountToBigNumberUAmount(amount, noOfDecimals));
+}
+
+// Chain v8.3.0 refuses order amounts that are not canonical base-10 integers (no decimals,
+// no exponent notation, no leading zeros). toFixed never uses exponent notation.
+export function toCanonicalInteger(amount: string | number | BigNumber): string {
+    const value = toBigNumber(amount);
+    if (!value.isFinite()) {
+        return "0";
+    }
+
+    return value.toFixed(0, BigNumber.ROUND_DOWN);
 }
 
 export function prettyAmount(amount: number | string): string {

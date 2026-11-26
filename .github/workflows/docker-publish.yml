@@ -33,7 +33,16 @@ env:
   DEPLOY_DIR: app.getbze.com   # the target's dir in the deploy repo = ~/apps/<dir> on the server
 
 jobs:
+  # Never build or deploy on red checks: each check stays its own workflow
+  # (with its own pull_request trigger) and is called from here as well.
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  tests:
+    uses: ./.github/workflows/tests.yml
+
   build-push:
+    needs: [lint, tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

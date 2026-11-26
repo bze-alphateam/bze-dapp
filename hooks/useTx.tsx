@@ -1,10 +1,9 @@
 // import { cosmos } from 'interchain-query';
 import {useChain} from '@cosmos-kit/react';
-import {coins, DeliverTxResponse, isDeliverTxSuccess, StdFee} from '@cosmjs/stargate';
+import {DeliverTxResponse, isDeliverTxSuccess, StdFee} from '@cosmjs/stargate';
 import {type CustomToast, useToast} from './useToast';
 import {getSigningClient} from '@/services';
-import {getChainName, getMinDenom, prettyError} from '@/utils';
-import {FeeToken} from "@chain-registry/types/chain.schema";
+import {getChainName, getMinDenom, hasMaxFillsRefund, prettyError, simulateFee} from '@/utils';
 
 interface Msg {
     typeUrl: string;
@@ -23,33 +22,6 @@ export enum TxStatus {
     Failed = 'Transaction Failed',
     Successful = 'Transaction Successful',
     Broadcasting = 'Transaction Broadcasting',
-}
-
-const simulateFee = async (address: string, signingClient: any, messages: any[], memo?: string | undefined, feeToken?: FeeToken|undefined): Promise<StdFee> => {
-    try {
-        let gasPrice = 0.1;
-        let gasDenom = getMinDenom();
-        if (feeToken) {
-            gasDenom = feeToken.denom;
-            gasPrice = feeToken.average_gas_price ?? feeToken.fixed_min_gas_price ?? 0.1
-        }
-
-        const gasEstimated = await signingClient.simulate(address, messages, memo);
-        let gasAmount = gasEstimated * 1.5;
-        let gasPayment = (gasAmount * gasPrice).toFixed(0).toString();
-
-        return {
-            amount: coins(gasPayment, gasDenom),
-            gas: gasAmount.toFixed(0)
-        };
-
-    } catch (e) {
-        console.error("failed to get gas", e);
-        return {
-            amount: coins(80000, getMinDenom()),
-            gas: "800000"
-        }
-    }
 }
 
 export const useTx = (chainName?: string) => {
@@ -83,13 +55,14 @@ export const useTx = (chainName?: string) => {
             if (options?.fee) {
                 fee = options.fee;
             } else {
-                fee = await simulateFee(address, client, msgs, undefined, chain.fees?.fee_tokens[0]);
+                // a failed simulation means the tx would fail on chain and burn the fee: show why and stop
+                fee = await simulateFee(address, client, msgs, getMinDenom(), undefined, chain.fees?.fee_tokens[0]);
             }
         } catch (e: any) {
             console.error(e);
             toast({
                 title: TxStatus.Failed,
-                description: e?.message || 'An unexpected error has occured',
+                description: prettyError(e?.message) || 'An unexpected error has occured',
                 type: 'error',
             });
             return;
@@ -110,6 +83,16 @@ export const useTx = (chainName?: string) => {
                 .then((res: any) => {
                     if (isDeliverTxSuccess(res)) {
                         if (options.onSuccess) options.onSuccess(res);
+
+                        if (hasMaxFillsRefund(res?.events)) {
+                            toast({
+                                title: 'Order partially filled',
+                                type: 'default',
+                                description: 'Part of your order was refunded because it hit the fill limit; place the rest again.',
+                                duration: 15000,
+                            });
+                            return;
+                        }
 
                         toast({
                             title: options.toast?.title || TxStatus.Successful,
