@@ -1,6 +1,8 @@
 import {useToast, useTx} from "@/hooks";
 import {
     amountToBigNumberUAmount,
+    capFillOrders,
+    toCanonicalInteger,
     calculateAmountFromPrice,
     calculatePricePerUnit,
     calculateTotalAmount,
@@ -66,7 +68,7 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
                 creator: address,
                 marketId: marketId,
                 orderType: orderType,
-                amount: uAmount,
+                amount: toCanonicalInteger(uAmount),
                 price: uPrice,
             })
         ];
@@ -77,9 +79,9 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
     //check active orders prices and fill them one by one if needed
     for (let i = 0; i < ordersToSearch.length; i++) {
         const orderUAmountNum = new BigNumber(ordersToSearch[i].amount);
-        let msgAmount = ordersToSearch[i].amount;
+        let msgAmount = toCanonicalInteger(ordersToSearch[i].amount);
         if (orderUAmountNum.gt(uAmountNum)) {
-            msgAmount = uAmountNum.toString();
+            msgAmount = toCanonicalInteger(uAmountNum);
         }
 
         msgs.push(
@@ -93,7 +95,7 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
         )
 
         uAmountNum = uAmountNum.minus(msgAmount);
-        if (uAmountNum.eq(0)) {
+        if (uAmountNum.lte(0)) {
             break;
         }
     }
@@ -104,7 +106,7 @@ function getOrderTxMessages(props: OrderFormsProps, address: string, isBuy: bool
                 creator: address,
                 marketId: marketId,
                 orderType: orderType,
-                amount: uAmountNum.toString(),
+                amount: toCanonicalInteger(uAmountNum),
                 price: uPrice,
             })
         )
@@ -191,7 +193,8 @@ export function OrderForms(props: OrderFormsProps) {
 
     //checks the price and amount to see set the appropriate value of fillOrderRequired
     const checkFillMessage = (uPrice: BigNumber, uAmount: BigNumber) => {
-        const toFill = getMatchingOrders(uPrice, uAmount);
+        //same cap as the submit path, so the preview matches what is sent
+        const toFill = capFillOrders(getMatchingOrders(uPrice, uAmount)).orders;
         const toFillCount = toFill.length;
         if (toFillCount > 1) {
             setFillMessage(`Match orders with price from ${toFill[0].price} to ${toFill[toFillCount - 1].price}`);
@@ -259,13 +262,12 @@ export function OrderForms(props: OrderFormsProps) {
 
     const submitFillOrdersMsg = async (toFill: AggregatedOrderSDKType[], walletAddress: string) => {
         setIsPendingSubmit(true);
-        const msgOrders: FillOrderItem[] = [];
-        for (let i = 0; i < toFill.length; i++) {
-            msgOrders.push({
-                price: toFill[i].price,
-                amount: toFill[i].amount,
-            })
-        }
+        //chain accepts at most 50 unique price levels per message: fill the best ones
+        const capped = capFillOrders(toFill);
+        const msgOrders: FillOrderItem[] = capped.orders.map((order) => ({
+            price: order.price,
+            amount: order.amount,
+        }));
 
         const msg = fillOrders({
             creator: walletAddress,
@@ -276,7 +278,9 @@ export function OrderForms(props: OrderFormsProps) {
 
         await tx([msg], {
             toast: {
-                description: 'Orders fill submitted successfully.',
+                description: capped.truncated
+                    ? `Orders fill submitted for the best ${msgOrders.length} price levels. The rest of your amount was not filled: place it again.`
+                    : 'Orders fill submitted successfully.',
             },
             onSuccess: () => {
                 setAmount("");
@@ -317,7 +321,7 @@ export function OrderForms(props: OrderFormsProps) {
         }
 
         setIsPendingSubmit(true);
-        const msgs = getOrderTxMessages(props, walletAddress, showBuy, uAmount.toString(), uPrice.toString());
+        const msgs = getOrderTxMessages(props, walletAddress, showBuy, toCanonicalInteger(uAmount), uPrice.toString());
 
         await tx(msgs, {
             toast: {
@@ -374,6 +378,15 @@ export function OrderForms(props: OrderFormsProps) {
         }
 
         const uAmount = amountToBigNumberUAmount(amount, props.tokens.baseTokenDisplayDenom.exponent);
+        if (!uAmount.gt(0)) {
+            toast({
+                type: 'error',
+                title: 'Invalid amount',
+                description: `The amount can have at most ${props.tokens.baseTokenDisplayDenom.exponent} decimals`,
+            });
+
+            return;
+        }
         const uPrice = priceToBigNumberUPrice(priceNum, props.tokens.quoteTokenDisplayDenom.exponent, props.tokens.baseTokenDisplayDenom.exponent);
         const minAmount = getMinAmount(uPrice.toString(), props.tokens.baseTokenDisplayDenom.exponent);
         if (amountNum.lt(minAmount)) {

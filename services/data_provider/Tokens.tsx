@@ -1,7 +1,7 @@
 
-import {getRestClient} from "../Client";
+import {getRestClient, getRestURL} from "../Client";
 import Long from 'long';
-import {getChain, getLastCharsAfterSlash, MAINNET_UDENOM, TESTNET_UDENOM} from "@/utils";
+import {DenomAuthority, fetchDenomAuthority, getChain, getLastCharsAfterSlash, MAINNET_UDENOM, TESTNET_UDENOM} from "@/utils";
 import {EXCLUDED_TOKENS, STABLE_COINS, VERIFIED_TOKENS} from "@/config/verified";
 import {IbcTransition} from "@chain-registry/types/assetlist.schema";
 import {DenomUnitSDKType, MetadataSDKType} from "interchain-query/cosmos/bank/v1beta1/bank";
@@ -105,17 +105,19 @@ export async function getTokenChainMetadata(denom: string): Promise<MetadataSDKT
     return filtered.length > 0 ? filtered[0] : undefined;
 }
 
-export async function getTokenAdminAddress(denom: string): Promise<string> {
-    try {
-        const client = await getRestClient();
-        let res = await client.bze.tokenfactory.denomAuthority({denom: denom});
+export async function getTokenAuthority(denom: string): Promise<DenomAuthority | undefined> {
+    return fetchDenomAuthority(
+        async (url: string) => {
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`denom authority request failed: ${res.status}`);
+            }
 
-        return res.denomAuthority?.admin ?? ''
-    } catch (e) {
-        console.error(e);
-
-        return '';
-    }
+            return res.json();
+        },
+        getRestURL(),
+        denom
+    );
 }
 
 async function getSupply() {

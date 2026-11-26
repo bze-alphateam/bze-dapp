@@ -9,6 +9,10 @@ export * from './Functions';
 export * from './Market';
 export * from './Tendermint';
 export * from './Errors';
+export * from './OrderFills';
+export * from './OrderEvents';
+export * from './Mintable';
+export * from './Fee';
 
 export function getLogo(from: Asset | Chain) {
     return from.logo_URIs?.svg || from.logo_URIs?.png;

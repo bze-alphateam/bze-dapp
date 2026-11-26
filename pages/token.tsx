@@ -1,7 +1,7 @@
 import {DefaultBorderedBox, Layout, TooltippedText, WalletBalances} from "@/components";
 import {
     getAllSupplyTokens, getDenomType,
-    getTokenAdminAddress,
+    getTokenAuthority,
     getTokenChainMetadata,
     getTokenDisplayDenom,
     getTokenSupply, isFactoryType, isIBCType,
@@ -30,12 +30,27 @@ import LogoWithFallback from "@/components/common/LogoWithFallback";
 
 interface TokenOwnershipProps {
     admin: string;
+    mintable: boolean;
+    //true when the authority could not be loaded: nothing is claimed about the owner
+    unknown: boolean;
     metadata: {
         base: string;
     }
 }
 
 const {changeAdmin} = bze.tokenfactory.MessageComposer.withTypeUrl;
+
+function ownershipCopy(admin: string, mintable: boolean): string {
+    if (admin === "") {
+        return "The creator of this token gave up on the ownership. Tokens can NOT be minted anymore and the metadata can NOT be modified.";
+    }
+
+    if (!mintable) {
+        return "Minting is turned off for this token for good: the supply is fixed. This address can still burn tokens and change token metadata. Proceed with caution.";
+    }
+
+    return "This address has the power to mint, burn tokens and change token metadata. Proceed with caution.";
+}
 
 function TokenOwnership({props}: { props: TokenOwnershipProps }) {
     const [admin, setAdmin] = useState(props.admin);
@@ -140,11 +155,11 @@ function TokenOwnership({props}: { props: TokenOwnershipProps }) {
                 <Text as='h3' fontSize={'$lg'} textAlign={'center'} color={'$primary200'}>Admin</Text>
                 <Box mt='$4'>
                     <Text fontSize={'$md'} textAlign={'center'}
-                          color={'$primary100'}>{admin !== "" ? admin : "Nobody"}</Text>
+                          color={'$primary100'}>{props.unknown ? "Unknown" : (admin !== "" ? admin : "Nobody")}</Text>
                     <Box mt='$6'>
                         <Text fontSize={'$sm'} textAlign={'center'}
-                              color={admin !== "" ? '$textDanger' : '$textSuccess'}
-                              fontWeight={'$thin'}>{admin !== "" ? "This address has the power to mint, burn tokens and change token metadata. Proceed with caution." : "The creator of this token gave up on the ownership. Tokens can NOT be minted anymore and the metadata can NOT be modified."}</Text>
+                              color={props.unknown ? '$primary100' : (admin !== "" ? '$textDanger' : '$textSuccess')}
+                              fontWeight={'$thin'}>{props.unknown ? "Could not load token ownership, try again later." : ownershipCopy(admin, props.mintable)}</Text>
                     </Box>
                 </Box>
             </Box>
@@ -203,6 +218,7 @@ interface TokenSupplyProps {
         display: string;
     },
     admin: string;
+    mintable: boolean;
 }
 
 function TokenSupply({props}: { props: TokenSupplyProps }) {
@@ -386,7 +402,7 @@ function TokenSupply({props}: { props: TokenSupplyProps }) {
                         {showBurnButton && <Button size="sm" intent="primary" onClick={() => {
                             onBurnClick()
                         }} isLoading={submitPending} disabled={!canMint}>Burn</Button>}
-                        {showMintButton && <Button size="sm" intent="primary" onClick={() => {
+                        {showMintButton && props.mintable && <Button size="sm" intent="primary" onClick={() => {
                             onMintClick()
                         }} isLoading={submitPending} disabled={!canMint}>Mint</Button>}
                     </Box>
@@ -686,6 +702,8 @@ export default function Token() {
     const [loading, setLoading] = useState(true);
     const [chainMetadata, setChainMetadata] = useState<MetadataSDKType>();
     const [admin, setAdmin] = useState('');
+    const [mintable, setMintable] = useState(false);
+    const [authorityUnknown, setAuthorityUnknown] = useState(false);
     const [logo, setLogo] = useState<string|undefined>();
     const [token, setToken] = useState<Token|undefined>();
 
@@ -732,8 +750,10 @@ export default function Token() {
             return;
         }
 
-        const admin = await getTokenAdminAddress(denom);
-        setAdmin(admin);
+        const authority = await getTokenAuthority(denom);
+        setAuthorityUnknown(authority === undefined);
+        setAdmin(authority?.admin ?? '');
+        setMintable(authority?.mintable ?? false);
     }
 
     const onMetadataUpdate = async (denom: string) => {
@@ -773,8 +793,8 @@ export default function Token() {
                     }}/>
                     <Box flex={1} mx={{desktop: '$12', mobile: '$6'}} flexDirection={'column'}>
                         <Box flexDirection={'row'} flex={1}>
-                            <TokenSupply props={{metadata: chainMetadata, admin: admin}}/>
-                            {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin}}/>)}
+                            <TokenSupply props={{metadata: chainMetadata, admin: admin, mintable: mintable}}/>
+                            {isFactoryType(chainMetadata?.base) && (<TokenOwnership props={{metadata: chainMetadata, admin: admin, mintable: mintable, unknown: authorityUnknown}}/>)}
                             <TokenMarkets props={{denom: chainMetadata.base}}/>
                             {address && token && <WalletBalances props={{token: token}} />}
                         </Box>
