@@ -88,7 +88,9 @@ export const useTx = (chainName?: string) => {
                             toast({
                                 title: 'Order partially filled',
                                 type: 'default',
-                                description: 'Part of your order was refunded because it hit the fill limit; place the rest again.',
+                                description: [options.toast?.description, 'Part of your order was refunded because it hit the fill limit; place the rest again.']
+                                    .filter((part) => typeof part === 'string' && part !== '')
+                                    .join(' '),
                                 duration: 15000,
                             });
                             return;

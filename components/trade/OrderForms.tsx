@@ -193,7 +193,8 @@ export function OrderForms(props: OrderFormsProps) {
 
     //checks the price and amount to see set the appropriate value of fillOrderRequired
     const checkFillMessage = (uPrice: BigNumber, uAmount: BigNumber) => {
-        const toFill = getMatchingOrders(uPrice, uAmount);
+        //same cap as the submit path, so the preview matches what is sent
+        const toFill = capFillOrders(getMatchingOrders(uPrice, uAmount)).orders;
         const toFillCount = toFill.length;
         if (toFillCount > 1) {
             setFillMessage(`Match orders with price from ${toFill[0].price} to ${toFill[toFillCount - 1].price}`);

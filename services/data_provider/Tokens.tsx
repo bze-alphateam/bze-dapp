@@ -105,11 +105,7 @@ export async function getTokenChainMetadata(denom: string): Promise<MetadataSDKT
     return filtered.length > 0 ? filtered[0] : undefined;
 }
 
-export async function getTokenAdminAddress(denom: string): Promise<string> {
-    return (await getTokenAuthority(denom)).admin;
-}
-
-export async function getTokenAuthority(denom: string): Promise<DenomAuthority> {
+export async function getTokenAuthority(denom: string): Promise<DenomAuthority | undefined> {
     return fetchDenomAuthority(
         async (url: string) => {
             const res = await fetch(url);

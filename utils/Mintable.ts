@@ -19,7 +19,9 @@ export function resolveDenomAuthority(raw: RawAuthority): DenomAuthority {
 export type JsonFetcher = (url: string) => Promise<any>;
 
 // bzejs 1.9 does not decode `mintable`, so the authority is read as plain JSON.
-export async function fetchDenomAuthority(fetchJson: JsonFetcher, restUrl: string, denom: string): Promise<DenomAuthority> {
+// Resolves to undefined when the authority could not be read: callers must treat that as
+// "unknown" and never as "no admin".
+export async function fetchDenomAuthority(fetchJson: JsonFetcher, restUrl: string, denom: string): Promise<DenomAuthority | undefined> {
     try {
         const base = restUrl.replace(/\/+$/, "");
         const res = await fetchJson(`${base}/bze/tokenfactory/denom_authority?denom=${encodeURIComponent(denom)}`);
@@ -28,6 +30,6 @@ export async function fetchDenomAuthority(fetchJson: JsonFetcher, restUrl: strin
     } catch (e) {
         console.error(e);
 
-        return {admin: "", mintable: false};
+        return undefined;
     }
 }

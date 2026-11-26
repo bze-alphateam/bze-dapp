@@ -26,8 +26,8 @@ describe("fetchDenomAuthority", () => {
         expect(res).toEqual({admin: "bze1a", mintable: false});
     });
 
-    it("returns a locked authority when the request fails", async () => {
+    it("returns undefined (unknown) instead of 'no admin' when the request fails", async () => {
         const fetcher = vi.fn().mockRejectedValue(new Error("down"));
-        expect(await fetchDenomAuthority(fetcher, "https://r", "ubze")).toEqual({admin: "", mintable: false});
+        expect(await fetchDenomAuthority(fetcher, "https://r", "ubze")).toBeUndefined();
     });
 });
